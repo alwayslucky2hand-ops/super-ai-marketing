@@ -8,39 +8,54 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     :root { --app-bg: #F5F5F7; --primary: #0f172a; }
-    body { background-color: var(--app-bg); font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--app-bg); font-family: -apple-system, "SF Pro Text", sans-serif; -webkit-tap-highlight-color: transparent; }
     .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-top: 1px solid rgba(0,0,0,0.05); }
     .ios-card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.04); }
     .input-ios { width: 100%; background: #f1f5f9; border: 1px solid transparent; border-radius: 12px; padding: 14px; font-size: 15px; outline: none; transition: 0.2s; }
     .input-ios:focus { background: #FFFFFF; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-    .btn-ios { background: var(--primary); color: white; border-radius: 12px; padding: 14px; font-weight: 600; width: 100%; transition: 0.1s; }
+    .btn-ios { background: var(--primary); color: white; border-radius: 12px; padding: 14px; font-weight: 600; width: 100%; transition: 0.1s; display: flex; justify-content: center; align-items: center; gap: 8px; }
     .btn-ios:active { transform: scale(0.98); opacity: 0.9; }
     .tab-content { display: none; animation: fade 0.3s ease; }
     .tab-content.active { display: block; }
     @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Toast 提示訊息動畫設定 */
+    #system-toast { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
   </style>
 </head>
 <body class="text-slate-800 pb-20 md:pb-0 md:pl-64">
 
+  <div id="system-toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-3 rounded-full shadow-lg font-medium text-sm flex items-center gap-2 opacity-0 -translate-y-10 pointer-events-none">
+    <i data-lucide="info" class="w-4 h-4" id="toast-icon"></i>
+    <span id="toast-message">系統訊息</span>
+  </div>
+
   <div id="loading" class="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm hidden flex-col items-center justify-center">
-    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-900 mb-2"></div>
-    <p class="font-bold text-slate-700" id="loadingText">處理中...</p>
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-900 mb-4"></div>
+    <p class="font-semibold text-slate-700 tracking-wide" id="loadingText">系統處理中...</p>
   </div>
 
   <div id="view-auth" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-50 px-6 overflow-y-auto py-10">
     <div class="ios-card p-8 w-full max-w-sm text-center my-auto">
       <i data-lucide="cpu" class="w-12 h-12 text-blue-600 mx-auto mb-4"></i>
-      <h2 class="text-2xl font-bold mb-6">系統登入 / 註冊</h2>
+      <h2 class="text-2xl font-bold mb-6 tracking-tight">系統登入與註冊</h2>
       <div class="space-y-4">
-        <input type="email" id="authEmail" class="input-ios" placeholder="Email (老會員登入必填)">
-        <hr class="border-slate-100 my-4">
-        <p class="text-xs text-slate-400 font-bold text-left">▼ 首次註冊請填寫以下資訊</p>
+        <input type="email" id="authEmail" class="input-ios" placeholder="工作信箱 (會員登入必填)">
+        
+        <div class="relative py-4">
+          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+          <div class="relative flex justify-center"><span class="bg-white px-4 text-xs font-semibold text-slate-400">首次註冊請填寫以下資訊</span></div>
+        </div>
+
         <input type="text" id="authName" class="input-ios" placeholder="姓名">
         <input type="tel" id="authPhone" class="input-ios" placeholder="電話">
-        <input type="text" id="authIndustry" class="input-ios" placeholder="專業/產業別 (例：精緻搬家)">
+        <input type="text" id="authIndustry" class="input-ios" placeholder="專業或產業別 (例：精緻搬家)">
         <input type="text" id="authTitle" class="input-ios" placeholder="職稱 (例：創辦人)">
-        <input type="text" id="authPurpose" class="input-ios" placeholder="註冊系統用途 (例：管理客服)">
-        <button onclick="login()" class="btn-ios mt-4">登入 / 送出註冊</button>
+        <input type="text" id="authPurpose" class="input-ios" placeholder="系統用途 (例：管理客服)">
+        
+        <button onclick="login()" class="btn-ios mt-6">
+          <i data-lucide="log-in" class="w-4 h-4"></i> 登入或送出註冊
+        </button>
       </div>
     </div>
   </div>
@@ -48,70 +63,111 @@
   <div id="view-main" class="hidden min-h-screen">
     
     <nav class="hidden md:flex flex-col fixed top-0 left-0 w-64 h-full bg-white border-r border-slate-100 p-6 z-40">
-      <h1 class="font-bold text-xl mb-10 text-slate-900">GrowthX</h1>
+      <h1 class="font-bold text-xl mb-10 text-slate-900 tracking-tight">GrowthX</h1>
       <div id="desktop-nav" class="flex-1 space-y-2"></div>
-      <button onclick="logout()" class="text-slate-500 font-bold hover:text-red-500 flex items-center gap-2"><i data-lucide="log-out"></i> 登出</button>
+      <button onclick="logout()" class="text-slate-500 font-bold hover:text-red-500 flex items-center gap-2 mt-auto transition-colors">
+        <i data-lucide="log-out" class="w-5 h-5"></i> 安全登出
+      </button>
     </nav>
-    <header class="md:hidden sticky top-0 glass-nav z-30 px-6 py-4 font-bold text-lg" id="mobile-header">會員中心</header>
+    
+    <header class="md:hidden sticky top-0 glass-nav z-30 px-6 py-4 font-bold text-lg tracking-tight" id="mobile-header">會員專區</header>
 
     <main class="p-4 md:p-8 max-w-4xl mx-auto space-y-6">
       
-      <section id="tab-profile" class="tab-content active ios-card p-6">
-        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="user"></i> 會員專區</h2>
+      <section id="tab-profile" class="tab-content active ios-card p-6 md:p-8">
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
+          <i data-lucide="user" class="text-blue-600"></i> 會員專區
+        </h2>
         
-        <div class="bg-slate-50 p-4 rounded-xl mb-6">
-          <p class="text-sm text-slate-500 mb-1">會員 ID</p>
-          <p class="font-mono font-bold text-lg" id="ui-mid">-</p>
+        <div class="bg-slate-50 p-5 rounded-xl mb-6 border border-slate-100">
+          <p class="text-sm text-slate-500 mb-1 font-medium">系統配發會員 ID</p>
+          <p class="font-mono font-bold text-lg text-slate-800" id="ui-mid">-</p>
         </div>
 
-        <h3 class="font-bold text-slate-800 mb-3">修改個人資料</h3>
+        <h3 class="font-bold text-slate-800 mb-4 text-sm tracking-wide">個人資料設定</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <input type="text" id="prf_姓名" class="input-ios cacheable" placeholder="姓名">
           <input type="tel" id="prf_電話" class="input-ios cacheable" placeholder="電話">
-          <input type="text" id="prf_專業/產業別" class="input-ios cacheable" placeholder="專業/產業別">
+          <input type="text" id="prf_專業/產業別" class="input-ios cacheable" placeholder="專業或產業別">
           <input type="text" id="prf_職稱" class="input-ios cacheable" placeholder="職稱">
           <input type="text" id="prf_註冊系統用途" class="input-ios cacheable md:col-span-2" placeholder="註冊系統用途">
         </div>
-        <button onclick="saveData('saveProfile', 'prf_')" class="btn-ios mb-8">更新會員資料</button>
+        <button onclick="saveData('saveProfile', 'prf_')" class="btn-ios mb-8 w-full md:w-auto px-8">
+          <i data-lucide="save" class="w-4 h-4"></i> 更新會員資料
+        </button>
 
-        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-          <p class="text-sm text-blue-600 font-bold mb-2">你的專屬 LINE Webhook 網址 (請貼到 LINE Developer)</p>
-          <code class="block bg-slate-900 text-green-400 p-3 rounded-lg text-xs break-all" id="ui-webhook"></code>
+        <div class="bg-slate-900 p-5 rounded-xl">
+          <p class="text-sm text-white font-medium mb-3 flex items-center gap-2">
+            <i data-lucide="link" class="w-4 h-4 text-blue-400"></i> 專屬 LINE Webhook 網址
+          </p>
+          <p class="text-xs text-slate-400 mb-3">請複製下方網址，並貼至您的 LINE Developers Console。</p>
+          <code class="block bg-black text-green-400 p-4 rounded-lg text-xs break-all border border-slate-800" id="ui-webhook"></code>
         </div>
       </section>
 
-      <section id="tab-settings" class="tab-content ios-card p-6">
-        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="bot"></i> 智能設定</h2>
+      <section id="tab-settings" class="tab-content ios-card p-6 md:p-8">
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
+          <i data-lucide="bot" class="text-indigo-600"></i> 智能設定
+        </h2>
         <div class="space-y-4">
-          <input type="text" id="set_LINE_TOKEN" class="input-ios cacheable" placeholder="LINE TOKEN">
-          <input type="text" id="set_GEMINI_API_KEY" class="input-ios cacheable" placeholder="GEMINI API KEY">
-          <div class="grid grid-cols-2 gap-4">
-            <input type="text" id="set_客服自稱" class="input-ios cacheable" placeholder="客服自稱 (例: 小岳)">
-            <input type="text" id="set_服務目的" class="input-ios cacheable" placeholder="服務目的">
+          <input type="password" id="set_LINE_TOKEN" class="input-ios cacheable" placeholder="LINE Channel Access Token">
+          <input type="password" id="set_GEMINI_API_KEY" class="input-ios cacheable" placeholder="Gemini API Key">
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <input type="text" id="set_客服自稱" class="input-ios cacheable" placeholder="客服自稱 (例: 搬家小岳)">
+            <input type="text" id="set_服務目的" class="input-ios cacheable" placeholder="服務目的 (例: 引導場勘)">
           </div>
-          <textarea id="set_講話風格" class="input-ios cacheable h-20" placeholder="講話風格"></textarea>
-          <textarea id="set_敘事結構" class="input-ios cacheable h-20" placeholder="敘事結構"></textarea>
-          <textarea id="set_回覆限制" class="input-ios cacheable h-20" placeholder="回覆限制"></textarea>
-          <button onclick="saveData('saveSettings', 'set_')" class="btn-ios mt-4 !bg-slate-900">同步寫入至資料庫</button>
+          
+          <textarea id="set_講話風格" class="input-ios cacheable h-24" placeholder="講話風格 (例: 溫暖、同理心)"></textarea>
+          <textarea id="set_敘事結構" class="input-ios cacheable h-24" placeholder="敘事結構 (例: 1.確認問題 2.提供方案)"></textarea>
+          <textarea id="set_回覆限制" class="input-ios cacheable h-24" placeholder="回覆限制 (例: 字數不超過300字)"></textarea>
+          
+          <div class="pt-4">
+            <button onclick="saveData('saveSettings', 'set_')" class="btn-ios w-full md:w-auto px-8 bg-indigo-600 hover:bg-indigo-700">
+              <i data-lucide="cloud-upload" class="w-4 h-4"></i> 儲存智能大腦設定
+            </button>
+          </div>
         </div>
       </section>
 
-      <section id="tab-knowledge" class="tab-content ios-card p-6">
-        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="database"></i> 老闆智庫</h2>
+      <section id="tab-knowledge" class="tab-content ios-card p-6 md:p-8">
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
+          <i data-lucide="database" class="text-amber-600"></i> 老闆智庫
+        </h2>
         <div class="space-y-4">
-          <textarea id="knw_逐字稿內容" class="input-ios cacheable h-32" placeholder="逐字稿內容..."></textarea>
-          <textarea id="knw_重點整理內容" class="input-ios cacheable h-32" placeholder="重點整理..."></textarea>
-          <button onclick="saveData('saveKnowledge', 'knw_')" class="btn-ios mt-4">儲存智庫紀錄</button>
+          <textarea id="knw_逐字稿內容" class="input-ios cacheable h-32 leading-relaxed" placeholder="逐字稿內容..."></textarea>
+          <textarea id="knw_重點整理內容" class="input-ios cacheable h-32 leading-relaxed" placeholder="重點整理..."></textarea>
+          <div class="pt-4">
+            <button onclick="saveData('saveKnowledge', 'knw_')" class="btn-ios w-full md:w-auto px-8 bg-amber-600 hover:bg-amber-700">
+              <i data-lucide="save" class="w-4 h-4"></i> 儲存智庫紀錄
+            </button>
+          </div>
         </div>
       </section>
 
-      <section id="tab-marketing" class="tab-content ios-card p-6">
-        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="pen-tool"></i> 營銷文章</h2>
+      <section id="tab-marketing" class="tab-content ios-card p-6 md:p-8">
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
+          <i data-lucide="pen-tool" class="text-teal-600"></i> 營銷文章
+        </h2>
         <div class="space-y-4">
-          <textarea id="mkt_前導與時事" class="input-ios cacheable h-20" placeholder="前導與時事..."></textarea>
-          <input type="text" id="mkt_SEO關鍵字" class="input-ios cacheable" placeholder="SEO關鍵字">
-          <textarea id="mkt_產出長文HTML" class="input-ios cacheable h-40" placeholder="產出的 HTML 長文..."></textarea>
-          <button onclick="saveData('saveMarketing', 'mkt_')" class="btn-ios mt-4 !bg-slate-900">儲存營銷文章</button>
+          <textarea id="mkt_前導與時事" class="input-ios cacheable h-24 leading-relaxed" placeholder="前導與時事引言..."></textarea>
+          <input type="text" id="mkt_SEO關鍵字" class="input-ios cacheable" placeholder="SEO關鍵字 (建議以逗號分隔)">
+          <input type="text" id="mkt_提案標題" class="input-ios cacheable" placeholder="文章提案標題">
+          
+          <button onclick="generateMarketing()" class="w-full bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold p-4 rounded-xl transition-colors flex items-center justify-center gap-2">
+            <i data-lucide="sparkles" class="w-5 h-5"></i> 自動產出長文與社群圖文
+          </button>
+          
+          <div class="pt-4 space-y-4">
+            <textarea id="mkt_產出長文HTML" class="input-ios cacheable h-48 font-mono text-sm leading-relaxed bg-slate-800 text-slate-300 focus:bg-slate-900 border-none" placeholder="<產出的 HTML 長文>"></textarea>
+            <textarea id="mkt_社群圖文" class="input-ios cacheable h-48 leading-relaxed" placeholder="產出的社群貼文與視覺 Prompt..."></textarea>
+          </div>
+          
+          <div class="pt-4">
+            <button onclick="saveData('saveMarketing', 'mkt_')" class="btn-ios w-full md:w-auto px-8 bg-teal-600 hover:bg-teal-700">
+              <i data-lucide="save" class="w-4 h-4"></i> 儲存營銷素材
+            </button>
+          </div>
         </div>
       </section>
 
@@ -121,15 +177,51 @@
   </div>
 
   <script>
+    // 初始化圖示
     lucide.createIcons();
     
-    // ★ 系統會自動抓取你部署的 GAS Web App 網址
-    const GAS_URL = '<?= ScriptApp.getService().getUrl() ?>'; 
+    // ==========================================
+    // ★★★ 請將你在 GAS 部署獲得的 Web App URL 貼在下方字串中 ★★★
+    // ==========================================
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw-WxzOfwBSmdx8ZiG1cats0-3BTFjRi1S1GIRjeF1h7ZXpmxhd1k-TxqAnwoJ0aQW7/exec'; 
     
     let currentUser = JSON.parse(localStorage.getItem('sys_user') || 'null');
     let currentRecordIds = JSON.parse(localStorage.getItem('sys_ids') || '{}');
 
-    // ★ 初始化快取 (防斷線機制)
+    // ★ 專業版提示系統 (取代 alert)
+    let toastTimeout;
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('system-toast');
+      const icon = document.getElementById('toast-icon');
+      const msgEl = document.getElementById('toast-message');
+      
+      // 清除舊的計時器
+      if (toastTimeout) clearTimeout(toastTimeout);
+      
+      // 設定樣式與文字
+      msgEl.innerText = message;
+      if (type === 'error') {
+        toast.className = "fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-4 rounded-xl shadow-[0_8px_30px_rgb(220,38,38,0.2)] font-semibold text-sm flex items-center gap-3 bg-red-600 text-white transition-all duration-300";
+        icon.setAttribute('data-lucide', 'alert-circle');
+      } else if (type === 'info') {
+        toast.className = "fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-4 rounded-xl shadow-lg font-semibold text-sm flex items-center gap-3 bg-slate-800 text-white transition-all duration-300";
+        icon.setAttribute('data-lucide', 'info');
+      } else {
+        toast.className = "fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-4 rounded-xl shadow-[0_8px_30px_rgb(16,185,129,0.2)] font-semibold text-sm flex items-center gap-3 bg-emerald-600 text-white transition-all duration-300";
+        icon.setAttribute('data-lucide', 'check-circle-2');
+      }
+      lucide.createIcons();
+      
+      // 顯示
+      toast.classList.remove('opacity-0', '-translate-y-10', 'pointer-events-none');
+      
+      // 隱藏
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-10', 'pointer-events-none');
+      }, 3500);
+    }
+
+    // 防斷線機制
     document.querySelectorAll('.cacheable').forEach(el => {
       const cached = localStorage.getItem('cache_' + el.id);
       if (cached) el.value = cached;
@@ -145,21 +237,28 @@
 
     if (currentUser) enterSystem();
 
+    // 核心 API 請求
     async function apiCall(action, data, msg) {
       document.getElementById('loading').style.display = 'flex';
       document.getElementById('loadingText').innerText = msg;
       try {
-        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action, data}), headers: {'Content-Type': 'text/plain'} });
+        const res = await fetch(GAS_API_URL, { 
+          method: 'POST', 
+          body: JSON.stringify({action, data}), 
+          headers: {'Content-Type': 'text/plain'} 
+        });
         const json = await res.json();
         document.getElementById('loading').style.display = 'none';
         if (json.status === 'success') return json.data;
         throw new Error(json.message);
       } catch (err) {
         document.getElementById('loading').style.display = 'none';
-        alert("錯誤：" + err.message); throw err;
+        showToast("系統錯誤：" + err.message, "error");
+        throw err;
       }
     }
 
+    // 登入
     async function login() {
       const payload = {
         email: document.getElementById('authEmail').value,
@@ -169,23 +268,26 @@
         title: document.getElementById('authTitle').value,
         purpose: document.getElementById('authPurpose').value
       };
-      if (!payload.email) return alert("請輸入 Email");
+      if (!payload.email) return showToast("請輸入工作信箱", "error");
       
-      const res = await apiCall("auth", payload, "登入與資料驗證中...");
+      const res = await apiCall("auth", payload, "驗證身分中...");
       currentUser = res;
       localStorage.setItem('sys_user', JSON.stringify(currentUser));
+      
+      if(res.isNew) showToast("註冊成功，系統已為您開通免費試用。", "success");
+      else showToast("登入成功，歡迎回來。", "info");
+      
       enterSystem();
     }
 
+    // 進入系統介面
     function enterSystem() {
       document.getElementById('view-auth').style.display = 'none';
       document.getElementById('view-main').style.display = 'block';
       
-      // 自動填入會員專區資料
       document.getElementById('ui-mid').innerText = currentUser.memberId;
-      document.getElementById('ui-webhook').innerText = `${GAS_URL}?mid=${currentUser.memberId}`;
+      document.getElementById('ui-webhook').innerText = `${GAS_API_URL}?mid=${currentUser.memberId}`;
       
-      // 若快取為空，用資料庫的資料填寫畫面
       if(!document.getElementById('prf_姓名').value) document.getElementById('prf_姓名').value = currentUser.name || "";
       if(!document.getElementById('prf_電話').value) document.getElementById('prf_電話').value = currentUser.phone || "";
       if(!document.getElementById('prf_專業/產業別').value) document.getElementById('prf_專業/產業別').value = currentUser.industry || "";
@@ -195,9 +297,9 @@
       renderNav();
     }
 
-    // ★ 泛型儲存機制
+    // 儲存資料
     async function saveData(action, prefix) {
-      if (!currentUser) return alert("請先登入");
+      if (!currentUser) return showToast("請先登入系統", "error");
       let payload = { 會員ID: currentUser.memberId };
       
       document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => {
@@ -207,15 +309,40 @@
 
       const idFieldName = action === 'saveSettings' ? '設定ID' : (action === 'saveKnowledge' ? '智庫ID' : (action === 'saveProfile' ? '會員ID' : '營銷ID'));
       if (currentRecordIds[prefix]) payload[idFieldName] = currentRecordIds[prefix];
-      if (action === 'saveProfile') payload['會員ID'] = currentUser.memberId; // 會員特例
+      if (action === 'saveProfile') payload['會員ID'] = currentUser.memberId;
 
-      const res = await apiCall(action, payload, "資料同步至雲端中...");
+      const res = await apiCall(action, payload, "資料加密同步中...");
       
       if (res.id && action !== 'saveProfile') {
         currentRecordIds[prefix] = res.id;
         localStorage.setItem('sys_ids', JSON.stringify(currentRecordIds));
       }
-      alert(res.status + "！");
+      showToast("資料已安全寫入資料庫。", "success");
+    }
+
+    // 營銷生成
+    async function generateMarketing() {
+      const transcript = document.getElementById('knw_逐字稿內容').value;
+      if(!transcript) return showToast("無法產出：請先至「老闆智庫」填寫逐字稿。", "error");
+      
+      try {
+        const intro = await apiCall('step1_GenerateIntro', { transcript }, "正在構思前導文章...");
+        document.getElementById('mkt_前導與時事').value = intro.introText;
+        
+        const blog = await apiCall('step6_FinalBlog', { title: document.getElementById('mkt_提案標題').value || "AI生成標題", introText: intro.introText }, "正在撰寫高轉換長文...");
+        document.getElementById('mkt_產出長文HTML').value = blog.html;
+        
+        const social = await apiCall('step7_SocialMedia', { article: blog.html }, "正在生成社群圖文指令...");
+        document.getElementById('mkt_社群圖文').value = social.social_post;
+        
+        // 保存至本機快取
+        document.querySelectorAll('.cacheable').forEach(el => {
+          localStorage.setItem('cache_' + el.id, el.value);
+        });
+        showToast("產出完畢！請查閱並點擊「儲存營銷素材」。", "success");
+      } catch (err) {
+        // 錯誤已在 apiCall 中攔截處理
+      }
     }
 
     function renderNav() {
@@ -224,8 +351,8 @@
       dNav.innerHTML = ''; mNav.innerHTML = '';
       tabs.forEach((t, i) => {
         const active = i === 0;
-        dNav.innerHTML += `<button onclick="switchTab('${t.id}', '${t.name}')" id="nd-${t.id}" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-bold ${active?'bg-slate-900 text-white':'text-slate-500'}"><i data-lucide="${t.icon}"></i> ${t.name}</button>`;
-        mNav.innerHTML += `<button onclick="switchTab('${t.id}', '${t.name}')" id="nm-${t.id}" class="flex flex-col items-center gap-1 p-2 ${active?'text-blue-600':'text-slate-400'}"><i data-lucide="${t.icon}"></i><span class="text-[10px] font-bold">${t.name}</span></button>`;
+        dNav.innerHTML += `<button onclick="switchTab('${t.id}', '${t.name}')" id="nd-${t.id}" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${active?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}"><i data-lucide="${t.icon}" class="w-5 h-5"></i> ${t.name}</button>`;
+        mNav.innerHTML += `<button onclick="switchTab('${t.id}', '${t.name}')" id="nm-${t.id}" class="flex flex-col items-center gap-1 p-2 transition-colors ${active?'text-slate-900':'text-slate-400'}"><i data-lucide="${t.icon}" class="w-6 h-6"></i><span class="text-[10px] font-semibold">${t.name}</span></button>`;
       });
       lucide.createIcons();
     }
@@ -235,13 +362,16 @@
       document.getElementById(`tab-${id}`).classList.add('active');
       document.getElementById('mobile-header').innerText = name;
       tabs.forEach(t => {
-        document.getElementById(`nd-${t.id}`).className = `flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-bold ${t.id===id?'bg-slate-900 text-white':'text-slate-500'}`;
-        document.getElementById(`nm-${t.id}`).className = `flex flex-col items-center gap-1 p-2 ${t.id===id?'text-blue-600':'text-slate-400'}`;
+        document.getElementById(`nd-${t.id}`).className = `flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${t.id===id?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}`;
+        document.getElementById(`nm-${t.id}`).className = `flex flex-col items-center gap-1 p-2 transition-colors ${t.id===id?'text-slate-900':'text-slate-400'}`;
       });
       window.scrollTo(0,0);
     }
 
-    function logout() { localStorage.clear(); location.reload(); }
+    function logout() { 
+      localStorage.clear(); 
+      location.reload(); 
+    }
   </script>
 </body>
 </html>
