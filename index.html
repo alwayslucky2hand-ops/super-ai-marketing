@@ -522,18 +522,14 @@
       </section>
 
       <section id="tab-ecard" class="tab-content ios-card p-6 md:p-8">
-        <!-- 【關鍵修復】：新增這一層專屬的 flex 容器，完美避開外層 display: block 的 CSS 衝突 -->
-        <div class="flex flex-col h-[calc(100vh-8rem)] min-h-[500px]">
-          
-          <h2 class="text-xl font-bold mb-4 flex-none flex items-center gap-2 tracking-tight">
-            <i data-lucide="credit-card" class="text-pink-600"></i> 電子名片系統
-          </h2>
-          
-          <!-- flex-1 會讓這個外框自動吃滿下方所有的剩餘空間 -->
-          <div class="flex-1 w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100 relative">
-            <iframe src="https://rubybranddesign-cloud.github.io/e-line-card-backer/" class="absolute inset-0 w-full h-full border-0"></iframe>
-          </div>
-          
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
+          <i data-lucide="credit-card" class="text-pink-600"></i> 電子名片系統
+        </h2>
+        
+        <!-- 【關鍵修復】：移除所有限制高度與鎖死畫面的 class，單純做一個美觀的外框 -->
+        <div class="w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100">
+          <!-- 【關鍵修復】：拔除 absolute，直接給予 iframe 極大的高度 (h-[850px] 或更大)，讓它自然撐開父層，跟隨網頁一同往下捲動！ -->
+          <iframe src="https://rubybranddesign-cloud.github.io/e-line-card-backer/" class="w-full h-[850px] md:h-[1000px] border-0"></iframe>
         </div>
       </section>
 
