@@ -686,15 +686,23 @@
       const otp = document.getElementById('authOTP').value.trim();
       if (!otp) return showSysToast("請輸入驗證碼", "error");
 
+      // 防止使用者因為網路延遲而連續點擊按鈕
+      if (btn.disabled) return; 
+
       setBtnLoading(btn, "驗證中...");
       try {
+        // apiCall 已經回傳了脫殼後的使用者資料
         const res = await apiCall("verifyOTP", { email: email, otp: otp });
-        if(res.data) {
-          currentUser = res.data;
+        
+        // 修正：直接判斷 res 是否有資料即可，不要再用 res.data
+        if(res) {
+          currentUser = res; // 修正：直接賦值 res
           localStorage.setItem('sys_user', JSON.stringify(currentUser));
           processLoginData(currentUser);
           showSysToast("登入成功，已載入雲端資料。", "success");
-          enterSystem();
+          
+          // 呼叫進入系統畫面的函式
+          enterSystem(); 
         }
       } catch(e) {
         console.error(e);
