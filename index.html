@@ -185,21 +185,57 @@
         <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
           <i data-lucide="bot" class="text-indigo-600"></i> 智能設定
         </h2>
-        <div class="flex flex-col space-y-4">
-          <input type="password" id="set_LINE_TOKEN" class="input-ios cacheable" placeholder="LINE Channel Access Token">
-          <input type="password" id="set_GEMINI_API_KEY" class="input-ios cacheable" placeholder="您的專屬 Gemini API Key (必填)">
+        
+        <div class="flex flex-col space-y-6">
           
-          <div class="flex flex-col space-y-4 pt-2">
-            <input type="text" id="set_客服自稱" class="input-ios cacheable" placeholder="客服自稱 (例: 搬家小岳)">
-            <input type="text" id="set_專業產業" class="input-ios cacheable" placeholder="專業/產業 (例: 精緻搬家)">
-            <input type="text" id="set_服務目的" class="input-ios cacheable" placeholder="服務目的 (例: 引導場勘)">
+          <!-- LINE Token 設定 -->
+          <div class="flex flex-col gap-2">
+            <label for="set_LINE_TOKEN" class="text-sm font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="message-circle" class="w-4 h-4 text-green-500"></i> LINE Channel Access Token</label>
+            <input type="password" id="set_LINE_TOKEN" class="input-ios cacheable" placeholder="請貼上您的 LINE Token">
+          </div>
+
+          <!-- Gemini API 設定 -->
+          <div class="flex flex-col gap-2">
+            <label for="set_GEMINI_API_KEY" class="text-sm font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="key" class="w-4 h-4 text-amber-500"></i> 專屬 Gemini API Key (必填)</label>
+            <input type="password" id="set_GEMINI_API_KEY" class="input-ios cacheable" placeholder="請貼上您的 API Key">
           </div>
           
-          <textarea id="set_講話風格" class="input-ios cacheable h-24" placeholder="講話風格 (例: 溫暖、同理心)"></textarea>
-          <textarea id="set_敘事結構" class="input-ios cacheable h-24" placeholder="敘事結構 (例: 1.確認問題 2.提供方案)"></textarea>
-          <textarea id="set_回覆限制" class="input-ios cacheable h-24" placeholder="回覆限制 (例: 字數不超過300字)"></textarea>
+          <!-- 角色基礎設定群組 (加上微灰底色框，視覺更集中) -->
+          <div class="p-5 bg-slate-50 border border-slate-100 rounded-xl flex flex-col space-y-4">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1"><i data-lucide="user-cog" class="w-4 h-4 text-indigo-500"></i> 基礎角色設定</h3>
+            
+            <div class="flex flex-col gap-2">
+              <label for="set_客服自稱" class="text-xs font-bold text-slate-500">客服自稱</label>
+              <input type="text" id="set_客服自稱" class="input-ios cacheable" placeholder="例: 搬家小岳 或 AI賦能師特洛伊">
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="set_專業產業" class="text-xs font-bold text-slate-500">專業 / 產業</label>
+              <input type="text" id="set_專業產業" class="input-ios cacheable" placeholder="例: 精緻搬家 或 AI自動化系統教學">
+            </div>
+            <div class="flex flex-col gap-2">
+              <label for="set_服務目的" class="text-xs font-bold text-slate-500">服務目的</label>
+              <input type="text" id="set_服務目的" class="input-ios cacheable" placeholder="例: 讓客戶AI問題被解決、感覺良好">
+            </div>
+          </div>
           
-          <div class="mt-8 border-t border-slate-100 pt-6 flex flex-col">
+          <!-- 進階 Prompt 設定 -->
+          <div class="flex flex-col gap-2">
+            <label for="set_講話風格" class="text-sm font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="mic" class="w-4 h-4 text-blue-500"></i> 講話風格</label>
+            <textarea id="set_講話風格" class="input-ios cacheable h-24" placeholder="例: 參考方格子文章，作風幽默、同理心..."></textarea>
+          </div>
+          
+          <div class="flex flex-col gap-2">
+            <label for="set_敘事結構" class="text-sm font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="layers" class="w-4 h-4 text-purple-500"></i> 敘事結構</label>
+            <textarea id="set_敘事結構" class="input-ios cacheable h-24" placeholder="例: 1.先開心理解 2.條列式回覆..."></textarea>
+          </div>
+          
+          <div class="flex flex-col gap-2">
+            <label for="set_回覆限制" class="text-sm font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="shield-alert" class="w-4 h-4 text-red-500"></i> 回覆限制</label>
+            <textarea id="set_回覆限制" class="input-ios cacheable h-24" placeholder="例: 每次回覆不要超過200字..."></textarea>
+          </div>
+          
+          <!-- 以下保留原有的 特定情境 與 參考資料來源 區塊 -->
+          <div class="mt-4 border-t border-slate-100 pt-6 flex flex-col">
             <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="git-merge" class="w-4 h-4 text-indigo-500"></i> 特定情境與回覆策略設定</h3>
             <div id="strategy-list" class="flex flex-col space-y-3"></div>
             <button type="button" onclick="addStrategy()" class="mt-3 text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-3 py-2 rounded-lg transition self-start"><i data-lucide="plus-circle" class="w-4 h-4"></i> 新增回覆策略</button>
