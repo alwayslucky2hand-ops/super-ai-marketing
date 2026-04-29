@@ -62,7 +62,7 @@
         <input type="text" id="authTitle" class="input-ios" placeholder="職稱 (例：創辦人)">
         <input type="text" id="authPurpose" class="input-ios" placeholder="系統用途 (例：管理客服)">
         <input type="text" id="authReferral" class="input-ios" placeholder="推薦人會員ID (選填)">
-        <button onclick="login()" class="btn-ios mt-6">
+        <button type="button" onclick="login()" class="btn-ios mt-6">
           <i data-lucide="log-in" class="w-4 h-4"></i> 登入或送出註冊
         </button>
       </div>
@@ -74,7 +74,7 @@
     <nav class="hidden md:flex flex-col fixed top-0 left-0 w-64 h-full bg-white border-r border-slate-100 p-6 z-40">
       <h1 class="font-bold text-xl mb-10 text-slate-900 tracking-tight">GrowthX</h1>
       <div id="desktop-nav" class="flex-1 space-y-2"></div>
-      <button onclick="logout()" class="text-slate-500 font-bold hover:text-red-500 flex items-center gap-2 mt-auto transition-colors">
+      <button type="button" onclick="logout()" class="text-slate-500 font-bold hover:text-red-500 flex items-center gap-2 mt-auto transition-colors">
         <i data-lucide="log-out" class="w-5 h-5"></i> 安全登出
       </button>
     </nav>
@@ -98,7 +98,7 @@
           <input type="text" id="prf_職稱" class="input-ios cacheable" placeholder="職稱">
           <input type="text" id="prf_註冊系統用途" class="input-ios cacheable md:col-span-2" placeholder="註冊系統用途">
         </div>
-        <button onclick="saveData('saveProfile', 'prf_')" class="btn-ios mb-8 w-full md:w-auto px-8">
+        <button type="button" onclick="saveData('saveProfile', 'prf_')" class="btn-ios mb-8 w-full md:w-auto px-8">
           <i data-lucide="save" class="w-4 h-4"></i> 更新會員資料
         </button>
         <div class="bg-slate-900 p-5 rounded-xl">
@@ -130,19 +130,19 @@
           <div class="mt-8 border-t border-slate-100 pt-6">
             <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="git-merge" class="w-4 h-4 text-indigo-500"></i> 特定情境與回覆策略設定</h3>
             <div id="strategy-list" class="space-y-3"></div>
-            <button onclick="addStrategy()" class="mt-3 text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-3 py-2 rounded-lg transition"><i data-lucide="plus-circle" class="w-4 h-4"></i> 新增回覆策略</button>
+            <button type="button" onclick="addStrategy()" class="mt-3 text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-3 py-2 rounded-lg transition"><i data-lucide="plus-circle" class="w-4 h-4"></i> 新增回覆策略</button>
           </div>
 
           <div class="mt-6 border-t border-slate-100 pt-6">
             <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="book-open" class="w-4 h-4 text-emerald-500"></i> 參考資料來源</h3>
             <div id="source-list" class="space-y-3"></div>
-            <button onclick="addSource()" class="mt-3 text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 px-3 py-2 rounded-lg transition"><i data-lucide="plus-circle" class="w-4 h-4"></i> 新增資料來源</button>
+            <button type="button" onclick="addSource()" class="mt-3 text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 px-3 py-2 rounded-lg transition"><i data-lucide="plus-circle" class="w-4 h-4"></i> 新增資料來源</button>
           </div>
 
           <input type="hidden" id="set_資料來源JSON" class="cacheable">
 
           <div class="pt-6">
-            <button onclick="saveData('saveSettings', 'set_')" class="btn-ios w-full md:w-auto px-8 bg-indigo-600 hover:bg-indigo-700">
+            <button type="button" onclick="saveData('saveSettings', 'set_')" class="btn-ios w-full md:w-auto px-8 bg-indigo-600 hover:bg-indigo-700">
               <i data-lucide="cloud-upload" class="w-4 h-4"></i> 儲存智能大腦設定
             </button>
           </div>
@@ -157,7 +157,7 @@
           <textarea id="knw_逐字稿內容" class="input-ios cacheable h-32 leading-relaxed" placeholder="逐字稿內容..."></textarea>
           <textarea id="knw_重點整理內容" class="input-ios cacheable h-32 leading-relaxed" placeholder="重點整理..."></textarea>
           <div class="pt-4">
-            <button onclick="saveData('saveKnowledge', 'knw_')" class="btn-ios w-full md:w-auto px-8 bg-amber-600 hover:bg-amber-700">
+            <button type="button" onclick="saveData('saveKnowledge', 'knw_')" class="btn-ios w-full md:w-auto px-8 bg-amber-600 hover:bg-amber-700">
               <i data-lucide="save" class="w-4 h-4"></i> 儲存智庫紀錄
             </button>
           </div>
@@ -170,13 +170,13 @@
           <nav class="absolute top-0 w-full z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 flex flex-wrap justify-between items-center gap-3">
             <div class="font-bold text-xl tracking-tight text-gray-900">GROWTHX<span class="text-gray-400 font-normal ml-2 text-lg hidden sm:inline">AI 文章營銷經理</span></div>
             <div class="space-x-2 flex flex-wrap gap-2">
-              <button onclick="openSearchModal()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition">
+              <button type="button" onclick="openSearchModal()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition">
                 <span class="material-icons text-[18px] mr-1">history</span>讀取歷史
               </button>
-              <button onclick="saveToDatabase()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition">
+              <button type="button" onclick="saveToDatabase()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition">
                 <span class="material-icons text-[18px] mr-1">save</span>儲存
               </button>
-              <button onclick="resetApp()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-red-50 hover:text-red-600 transition">
+              <button type="button" onclick="resetApp()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-red-50 hover:text-red-600 transition">
                 <span class="material-icons text-[18px] mr-1">refresh</span>清空重置
               </button>
             </div>
@@ -203,13 +203,13 @@
                   <label class="block font-semibold text-sm text-gray-700 flex items-center">
                     <span class="material-icons text-[18px] mr-1">link</span> 相關文章對標網址
                   </label>
-                  <button onclick="addUrlInput()" class="text-xs font-semibold bg-gray-50 text-gray-600 border px-3 py-1.5 rounded-lg hover:bg-gray-100 transition flex items-center">
+                  <button type="button" onclick="addUrlInput()" class="text-xs font-semibold bg-gray-50 text-gray-600 border px-3 py-1.5 rounded-lg hover:bg-gray-100 transition flex items-center">
                     <span class="material-icons text-[16px] mr-1">add</span> 新增
                   </button>
                 </div>
                 <div id="urlContainer" class="flex flex-col space-y-3"></div>
               </div>
-              <button onclick="runStep1()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center">
+              <button type="button" onclick="runStep1()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center">
                 <span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出時事共鳴與前導文章
               </button>
               
@@ -218,7 +218,7 @@
                   <span class="material-icons text-[18px] mr-1">check_circle</span> 前導文章內容 (可編輯)
                 </label>
                 <textarea id="introText" class="w-full p-4 border border-blue-100 rounded-xl h-64 bg-blue-50/30"></textarea>
-                <button onclick="goStep(2)" class="w-full mt-4 bg-gray-100 text-gray-800 font-semibold py-3 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">
+                <button type="button" onclick="goStep(2)" class="w-full mt-4 bg-gray-100 text-gray-800 font-semibold py-3 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">
                   確認內容，進入 Step 2 <span class="material-icons text-[18px] ml-1">arrow_forward</span>
                 </button>
               </div>
@@ -242,7 +242,7 @@
                   <input type="text" id="painPoint" class="w-full p-3 border border-gray-300 rounded-xl bg-gray-50/50" placeholder="例如：營運成本高...">
                 </div>
               </div>
-              <button onclick="runStep2()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center">
+              <button type="button" onclick="runStep2()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center">
                 <span class="material-icons text-[20px] mr-2">search</span> 萃取推薦關鍵字
               </button>
               
@@ -252,7 +252,7 @@
                     <h3 class="font-bold text-gray-900 text-lg flex items-center"><span class="material-icons text-[20px] mr-1 text-gray-500">analytics</span> GKP 數據對校</h3>
                     <p class="text-sm text-gray-500 mt-1">點擊複製 AI 關鍵字並前往 Google Keyword Planner。</p>
                   </div>
-                  <button id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition flex items-center">
+                  <button type="button" id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition flex items-center">
                     <span class="material-icons text-[18px] mr-1">content_copy</span> 複製並開啟
                   </button>
                 </div>
@@ -263,7 +263,7 @@
                   </label>
                   <textarea id="gkpPasteArea" class="w-full h-32 rounded-xl border-gray-300 p-3 border text-sm mb-4 bg-gray-50/50" placeholder="從 GKP 複製表格後貼於此處..."></textarea>
                   <div id="gkpPreviewWrapper" class="hidden mb-4 overflow-x-auto border border-gray-200 rounded-xl no-scrollbar"><table class="min-w-full text-xs text-left"><thead class="bg-gray-50"><tr id="gkpPreviewHeaders"></tr></thead><tbody id="gkpPreviewBody" class="divide-y divide-gray-100"></tbody></table></div>
-                  <button onclick="analyzeGKPDataFlow()" class="w-full bg-gray-800 text-white font-semibold py-4 rounded-xl hover:bg-gray-900 transition flex items-center justify-center">
+                  <button type="button" onclick="analyzeGKPDataFlow()" class="w-full bg-gray-800 text-white font-semibold py-4 rounded-xl hover:bg-gray-900 transition flex items-center justify-center">
                     <span class="material-icons text-[20px] mr-2">sort</span> 產生演算法排行
                   </button>
                 </div>
@@ -276,7 +276,7 @@
                   <div id="gkpCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                 </div>
 
-                <button id="nextTo3" onclick="goStep(3)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">
+                <button type="button" id="nextTo3" onclick="goStep(3)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">
                   確認勾選，進入 Step 3 <span class="material-icons text-[18px] ml-1">arrow_forward</span>
                 </button>
               </div>
@@ -286,7 +286,7 @@
               <h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center">
                 <span class="material-icons mr-2 text-gray-400">looks_3</span> 流量密碼提案
               </h2>
-              <button onclick="runStep3()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center">
+              <button type="button" onclick="runStep3()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center">
                 <span class="material-icons text-[20px] mr-2">auto_awesome</span> 生成 10 大提案
               </button>
               <div id="proposalsResult" class="hidden mt-8 space-y-4"></div>
@@ -322,7 +322,7 @@
                 </label>
                 <textarea id="myRealization" class="w-full p-4 border border-gray-300 rounded-xl bg-white" placeholder="我的感觸體認..."></textarea>
               </div>
-              <button onclick="goStep(5)" class="w-full bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">
+              <button type="button" onclick="goStep(5)" class="w-full bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">
                 完成作答，進入 Step 5 <span class="material-icons text-[18px] ml-1">arrow_forward</span>
               </button>
             </div>
@@ -331,7 +331,7 @@
               <h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center">
                 <span class="material-icons mr-2 text-gray-400">looks_5</span> 結尾與導購產生
               </h2>
-              <button onclick="runStep5()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center mb-8">
+              <button type="button" onclick="runStep5()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center mb-8">
                 <span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出祝福與 CTA
               </button>
               
@@ -347,7 +347,7 @@
                 </label>
                 <textarea id="cta" class="w-full p-4 border border-gray-300 rounded-xl bg-gray-50/50"></textarea>
               </div>
-              <button onclick="runStep6()" class="w-full bg-[#0071e3] text-white font-bold py-4 rounded-xl shadow-md hover:bg-[#005bb5] transition flex items-center justify-center text-lg">
+              <button type="button" onclick="runStep6()" class="w-full bg-[#0071e3] text-white font-bold py-4 rounded-xl shadow-md hover:bg-[#005bb5] transition flex items-center justify-center text-lg">
                 <span class="material-icons mr-2">send</span> 套用阿岳語氣，產出爆款長文
               </button>
             </div>
@@ -357,13 +357,13 @@
                 <h2 class="text-2xl font-bold text-gray-900 flex items-center">
                   <span class="material-icons mr-2 text-gray-400">looks_6</span> 專屬文章
                 </h2>
-                <button onclick="copyContent('finalContent')" class="text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center">
+                <button type="button" onclick="copyContent('finalContent')" class="text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center">
                   <span class="material-icons text-[18px] mr-1">copy_all</span> 一鍵複製
                 </button>
               </div>
               <div id="finalContent" class="prose prose-lg max-w-none text-gray-800 leading-relaxed bg-[#fbfbfd] p-8 rounded-2xl border border-gray-200"></div>
               
-              <button id="nextTo7" onclick="goStep(7)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">
+              <button type="button" id="nextTo7" onclick="goStep(7)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">
                 確認文章，進入 Step 7 產出社群圖文 <span class="material-icons text-[18px] ml-1">arrow_forward</span>
               </button>
             </div>
@@ -380,7 +380,7 @@
                 <textarea id="finalArticleText" class="w-full p-4 border border-gray-300 rounded-xl h-64 bg-gray-50/50" placeholder="這裡會帶入產出後的文章內容..."></textarea>
               </div>
 
-              <button onclick="runStep7()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center mb-8">
+              <button type="button" onclick="runStep7()" class="w-full bg-[#1d1d1f] text-white font-semibold py-4 rounded-xl shadow-sm hover:bg-[#333336] transition flex items-center justify-center mb-8">
                 <span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出社群貼文與輪播圖 Prompts
               </button>
 
@@ -390,7 +390,7 @@
                     <h3 class="text-lg font-bold text-gray-900 flex items-center">
                       <span class="material-icons mr-2 text-blue-500">article</span> 社群貼文 (Phase 1 & 2)
                     </h3>
-                    <button onclick="copyContent('socialPostContent')" class="text-xs bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center">
+                    <button type="button" onclick="copyContent('socialPostContent')" class="text-xs bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center">
                       <span class="material-icons text-[16px] mr-1">content_copy</span> 複製貼文
                     </button>
                   </div>
@@ -402,7 +402,7 @@
                     <h3 class="text-lg font-bold text-gray-900 flex items-center">
                       <span class="material-icons mr-2 text-green-500">image</span> 10頁輪播圖 Prompts (Phase 3)
                     </h3>
-                    <button onclick="copyContent('imagePromptsContent')" class="text-xs bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center">
+                    <button type="button" onclick="copyContent('imagePromptsContent')" class="text-xs bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center">
                       <span class="material-icons text-[16px] mr-1">content_copy</span> 複製 Prompts
                     </button>
                   </div>
@@ -417,7 +417,7 @@
             <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
               <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2">folder_open</span> 讀取知識庫</h3>
-                <button onclick="closeSearchModal()" class="text-gray-400 hover:text-gray-800 transition"><span class="material-icons">close</span></button>
+                <button type="button" onclick="closeSearchModal()" class="text-gray-400 hover:text-gray-800 transition"><span class="material-icons">close</span></button>
               </div>
               <div class="p-5 border-b border-gray-100 flex flex-wrap gap-4 items-end bg-white">
                 <div class="flex-1 min-w-[200px]">
@@ -432,7 +432,7 @@
                   <label class="block text-xs font-semibold mb-1 text-gray-500">結束日期</label>
                   <input type="date" id="searchEnd" class="w-full p-2.5 border border-gray-300 rounded-xl text-sm">
                 </div>
-                <button onclick="executeSearch()" class="bg-[#1d1d1f] text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-[#333336] transition">搜尋</button>
+                <button type="button" onclick="executeSearch()" class="bg-[#1d1d1f] text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-[#333336] transition">搜尋</button>
               </div>
               <div class="p-5 overflow-y-auto no-scrollbar flex-1 bg-gray-50">
                 <div id="searchResults" class="space-y-3 text-sm">
@@ -530,7 +530,7 @@
         industry: document.getElementById('authIndustry').value,
         title: document.getElementById('authTitle').value,
         purpose: document.getElementById('authPurpose').value,
-        referral: document.getElementById('authReferral').value // 推薦人ID
+        referral: document.getElementById('authReferral').value
       };
       if (!payload.email) return showSysToast("請輸入工作信箱", "error");
       
@@ -585,7 +585,7 @@
       const id = Date.now();
       document.getElementById('strategy-list').insertAdjacentHTML('beforeend', `
         <div class="cs-strategy flex flex-col gap-2 bg-white p-3 rounded-xl border border-slate-200" id="strat-${id}">
-          <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500">情境觸發條件</span><button onclick="document.getElementById('strat-${id}').remove(); packCsJSON();" class="text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
+          <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500">情境觸發條件</span><button type="button" onclick="document.getElementById('strat-${id}').remove(); packCsJSON();" class="text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
           <input type="text" class="cs-cond input-ios p-2 text-sm" placeholder="例如：詢問價格時..." value="${cond}" oninput="packCsJSON()">
           <textarea class="cs-resp input-ios p-2 text-sm h-16" placeholder="回覆策略或文案..." oninput="packCsJSON()">${resp}</textarea>
         </div>`);
@@ -596,7 +596,7 @@
       const id = Date.now();
       document.getElementById('source-list').insertAdjacentHTML('beforeend', `
         <div class="cs-source flex flex-col gap-2 bg-white p-3 rounded-xl border border-slate-200" id="src-${id}">
-          <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500">資料標題</span><button onclick="document.getElementById('src-${id}').remove(); packCsJSON();" class="text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
+          <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500">資料標題</span><button type="button" onclick="document.getElementById('src-${id}').remove(); packCsJSON();" class="text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
           <input type="text" class="cs-title input-ios p-2 text-sm" placeholder="標題或網址..." value="${title}" oninput="packCsJSON()">
           <textarea class="cs-content input-ios p-2 text-sm h-16" placeholder="詳細內容或摘要..." oninput="packCsJSON()">${content}</textarea>
         </div>`);
@@ -632,8 +632,8 @@
       dNav.innerHTML = ''; mNav.innerHTML = '';
       tabs.forEach((t, i) => {
         const active = i === 0;
-        dNav.innerHTML += `<button onclick="switchTab('${t.id}', '${t.name}')" id="nd-${t.id}" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${active?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}"><i data-lucide="${t.icon}" class="w-5 h-5"></i> ${t.name}</button>`;
-        mNav.innerHTML += `<button onclick="switchTab('${t.id}', '${t.name}')" id="nm-${t.id}" class="flex flex-col items-center gap-1 p-2 transition-colors ${active?'text-slate-900':'text-slate-400'}"><i data-lucide="${t.icon}" class="w-6 h-6"></i><span class="text-[10px] font-semibold">${t.name}</span></button>`;
+        dNav.innerHTML += `<button type="button" onclick="switchTab('${t.id}', '${t.name}')" id="nd-${t.id}" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${active?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}"><i data-lucide="${t.icon}" class="w-5 h-5"></i> ${t.name}</button>`;
+        mNav.innerHTML += `<button type="button" onclick="switchTab('${t.id}', '${t.name}')" id="nm-${t.id}" class="flex flex-col items-center gap-1 p-2 transition-colors ${active?'text-slate-900':'text-slate-400'}"><i data-lucide="${t.icon}" class="w-6 h-6"></i><span class="text-[10px] font-semibold">${t.name}</span></button>`;
       });
       lucide.createIcons();
     }
@@ -652,7 +652,7 @@
     function logout() { localStorage.clear(); location.reload(); }
 
     // =========================================================================
-    // ★ 營銷系統獨立核心邏輯 (一字不漏保留，負責與知識庫連動) ★
+    // ★ 營銷系統獨立核心邏輯 (修復 OffsetTop 與 Button Type) ★
     // =========================================================================
     let state = {
       recordId: "", urls: [""], transcript: "", introText: "", industry: "", painPoint: "", 
@@ -705,7 +705,7 @@
       container.innerHTML = state.urls.map((u, i) => `
         <div class="flex items-center space-x-2 w-full">
           <input type="text" class="url-input flex-1 p-3 border border-gray-300 rounded-xl bg-gray-50/50" placeholder="https://..." value="${u}" oninput="updateUrlState()">
-          ${state.urls.length > 1 ? `<button onclick="removeUrlInput(${i})" class="text-gray-400 hover:text-red-500 bg-white border border-gray-200 px-3 py-3 rounded-xl transition shadow-sm flex-shrink-0 flex items-center justify-center"><span class="material-icons text-[20px]">delete_outline</span></button>` : `<button class="text-gray-200 bg-gray-50 border border-gray-100 px-3 py-3 rounded-xl cursor-not-allowed flex-shrink-0 flex items-center justify-center" disabled><span class="material-icons text-[20px]">delete_outline</span></button>`}
+          ${state.urls.length > 1 ? `<button type="button" onclick="removeUrlInput(${i})" class="text-gray-400 hover:text-red-500 bg-white border border-gray-200 px-3 py-3 rounded-xl transition shadow-sm flex-shrink-0 flex items-center justify-center"><span class="material-icons text-[20px]">delete_outline</span></button>` : `<button type="button" class="text-gray-200 bg-gray-50 border border-gray-100 px-3 py-3 rounded-xl cursor-not-allowed flex-shrink-0 flex items-center justify-center" disabled><span class="material-icons text-[20px]">delete_outline</span></button>`}
         </div>
       `).join('');
     }
@@ -795,7 +795,7 @@
               <div class="text-xs text-gray-500 mb-1">更新：${row['更新時間']} | 產業：${row['產業']}</div>
               <div class="text-xs text-blue-600 font-medium truncate max-w-lg">標籤：${row['選定關鍵字']}</div>
             </div>
-            <button onclick="loadRecordToUI(${i})" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition whitespace-nowrap">載入</button>
+            <button type="button" onclick="loadRecordToUI(${i})" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition whitespace-nowrap">載入</button>
           </div>
         `).join('');
       } catch (err) {
@@ -847,9 +847,13 @@
       t.className = `fixed top-24 left-1/2 transform -translate-x-1/2 z-[200] px-6 py-3 rounded-full shadow-lg font-semibold text-sm transition-opacity duration-300 w-11/12 max-w-md text-center text-white ${isErr?'bg-red-500':'bg-gray-900'}`;
       t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000);
     }
+    
+    // 🔥 修復滾動定位的核心代碼
     function goStep(num) {
-      document.getElementById('step' + num).classList.remove('hidden');
-      window.scrollTo({ top: document.getElementById('step' + num).offsetTop - 80, behavior: 'smooth' });
+      document.querySelectorAll('.step-section').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById('step' + num);
+      target.classList.add('active');
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
     }
 
     async function runStep1() {
@@ -869,10 +873,12 @@
       try {
         let res = await runGasFunction('step2_GenerateKeywords', state);
         state.aiKeywords = res.keywords;
-        document.getElementById('gkpSection').classList.remove('hidden');
+        const target = document.getElementById('gkpSection');
+        target.classList.remove('hidden');
         saveLocal();
         showMktToast('收斂完成');
-        window.scrollTo({ top: document.getElementById('gkpSection').offsetTop - 80, behavior: 'smooth' });
+        // 🔥 修復滾動定位
+        window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
       } catch(err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
     }
 
@@ -946,7 +952,7 @@
           <div class="border border-gray-200 p-5 rounded-xl bg-gray-50 hover:border-blue-400 cursor-pointer transition" onclick="selectProposal(${i})">
             <h4 class="font-bold text-gray-900 text-lg mb-2">${p.title}</h4>
             <p class="text-sm text-gray-600 mb-3"><strong class="text-gray-800">內容方向：</strong>${p.summary}</p>
-            <button class="mt-2 text-sm bg-white border border-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center">選擇提案 <span class="material-icons text-[16px] ml-1">arrow_forward</span></button>
+            <button type="button" class="mt-2 text-sm bg-white border border-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center">選擇提案 <span class="material-icons text-[16px] ml-1">arrow_forward</span></button>
           </div>
         `).join('');
         document.getElementById('proposalsResult').classList.remove('hidden');
@@ -1005,10 +1011,13 @@
         state.imagePrompts = data.image_prompts;
         document.getElementById('socialPostContent').innerHTML = data.social_post;
         document.getElementById('imagePromptsContent').value = data.image_prompts;
-        document.getElementById('socialResult').classList.remove('hidden');
+        
+        const target = document.getElementById('socialResult');
+        target.classList.remove('hidden');
         saveLocal();
         showMktToast('社群圖文生成成功！');
-        window.scrollTo({ top: document.getElementById('socialResult').offsetTop - 80, behavior: 'smooth' });
+        // 🔥 修復滾動定位
+        window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
       } catch (err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
     }
 
