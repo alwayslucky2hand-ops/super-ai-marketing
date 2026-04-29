@@ -618,29 +618,44 @@
     if (currentUser) enterSystem();
 
     async function apiCall(action, data, btnContext = null) {
-  // 1. 取得 Gemini Key (若有設定)
-  data.geminiKey = document.getElementById('set_GEMINI_API_KEY') ? document.getElementById('set_GEMINI_API_KEY').value : '';
-  
-  // 2. 【修復邏輯】檢查 data 裡面是否已經有傳入 email
-  // 如果 data.email 已經有值 (例如登入驗證時傳入的)，就保留它。
-  // 如果沒有值，才嘗試從 currentUser 中撈取。
-  data.email = data.email || (currentUser ? currentUser.email : '');
+      // 1. 確保 data 是物件，避免意外報錯
+      data = data || {};
 
-  try {
-    const res = await fetch(GAS_API_URL, { 
-      method: 'POST', 
-      body: JSON.stringify({action, data, params: data}), 
-      headers: {'Content-Type': 'text/plain'} 
-    });
-    
-    const json = await res.json();
-    if (json.status === 'success') return json.data || json;
-    
-    throw new Error(json.message || json.error || "未知錯誤");
-  } catch (err) {
-    throw err; 
-  }
-}
+      // 2. 帶入 Gemini Key (若有)
+      const geminiInput = document.getElementById('set_GEMINI_API_KEY');
+      data.geminiKey = geminiInput ? geminiInput.value : '';
+
+      // 3. 【終極防護機制】
+      // 只有在 data 裡面「沒有」 email，且 currentUser 存在時，才去撈取快取。
+      // 這樣可以保證我們在「登入驗證」時傳入的 email 絕對不會被蓋掉！
+      if (!data.email && currentUser && currentUser.email) {
+        data.email = currentUser.email;
+      }
+
+      // 🌟 [除錯監視器]：在 Console 印出我們到底送了什麼資料給伺服器
+      console.log(`[🚀 送出請求] 動作: ${action}`, data);
+
+      try {
+        const res = await fetch(GAS_API_URL, { 
+          method: 'POST', 
+          body: JSON.stringify({action: action, data: data, params: data}), 
+          headers: {'Content-Type': 'text/plain'} 
+        });
+        
+        const json = await res.json();
+        
+        // 🌟 [除錯監視器]：在 Console 印出伺服器回傳了什麼
+        console.log(`[📥 伺服器回應] 動作: ${action}`, json);
+
+        if (json.status === 'success') {
+          return json.data || json;
+        }
+        
+        throw new Error(json.message || json.error || "未知錯誤");
+      } catch (err) {
+        throw err; 
+      }
+    }
 
     async function checkAuthEmail(btn) {
       const email = document.getElementById('authEmail').value.trim().toLowerCase();
