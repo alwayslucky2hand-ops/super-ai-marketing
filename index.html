@@ -735,22 +735,54 @@
     function enterSystem() {
       document.getElementById('view-auth').style.display = 'none';
       document.getElementById('view-main').style.display = 'block';
+      
+      // 填入本地快取資料... (保留你原本的程式碼)
       document.getElementById('ui-mid').innerText = currentUser.memberId;
       document.getElementById('ui-webhook').innerText = `${GAS_API_URL}?mid=${currentUser.memberId}`;
-      
       if(!document.getElementById('prf_姓名').value) document.getElementById('prf_姓名').value = currentUser.name || "";
       if(!document.getElementById('prf_電話').value) document.getElementById('prf_電話').value = currentUser.phone || "";
       if(!document.getElementById('prf_專業/產業別').value) document.getElementById('prf_專業/產業別').value = currentUser.industry || "";
       if(!document.getElementById('prf_職稱').value) document.getElementById('prf_職稱').value = currentUser.title || "";
       if(!document.getElementById('prf_註冊系統用途').value) document.getElementById('prf_註冊系統用途').value = currentUser.purpose || "";
-      
-      if(currentUser.ecardUrl) {
-          document.getElementById('ecard_WebhookUrl').value = currentUser.ecardUrl;
-      }
+      if(currentUser.ecardUrl) document.getElementById('ecard_WebhookUrl').value = currentUser.ecardUrl;
 
       renderNav();
       restoreCsJSON();
       fetchBossFeed();
+
+      // [新增] 進入系統後，觸發背景同步，撈取最新雲端資料
+      syncCurrentUserData();
+    }
+
+    // [新增] 背景同步函式
+    async function syncCurrentUserData() {
+      if (!currentUser || !currentUser.email) return;
+      try {
+        // 向 GAS 請求該信箱最新的所有資料（包含設定檔、名片網址等）
+        const freshData = await apiCall("syncUserData", { email: currentUser.email });
+        
+        if (freshData) {
+          // 覆寫本地快取
+          currentUser = freshData;
+          localStorage.setItem('sys_user', JSON.stringify(currentUser));
+          
+          // 重新載入設定與環境
+          processLoginData(currentUser);
+          
+          // 更新 UI 面板上的個人資料
+          document.getElementById('prf_姓名').value = currentUser.name || "";
+          document.getElementById('prf_電話').value = currentUser.phone || "";
+          document.getElementById('prf_專業/產業別').value = currentUser.industry || "";
+          document.getElementById('prf_職稱').value = currentUser.title || "";
+          document.getElementById('prf_註冊系統用途').value = currentUser.purpose || "";
+          if(currentUser.ecardUrl) document.getElementById('ecard_WebhookUrl').value = currentUser.ecardUrl;
+          
+          // 可以在 Console 中確認已同步
+          console.log("背景資料同步完成，已確保前端為最新資料！");
+        }
+      } catch(e) {
+        console.warn("背景同步資料失敗", e);
+      }
     }
 
     function toggleMobileMenu() {
