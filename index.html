@@ -8,6 +8,7 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     /* === 主系統樣式 === */
@@ -32,6 +33,26 @@
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0,0,0,0.4); } 70% { box-shadow: 0 0 0 20px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
     .step-section { display: none; animation: fade 0.3s ease; }
     .step-section.active { display: block; }
+
+    /* === 老闆智庫錄影專屬樣式 === */
+    .video-container { position: relative; width: 100%; max-height: 450px; background: #000; border-radius: 16px; margin-bottom: 16px; overflow: hidden; display: none; }
+    video { width: 100%; height: 100%; object-fit: contain; }
+    .status-badge { position: absolute; top: 16px; right: 16px; background: rgba(220, 38, 38, 0.9); color: white; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 13px; display: none; z-index: 10; align-items: center; gap: 6px; letter-spacing: 0.5px; }
+    .pulse-dot { width: 8px; height: 8px; background-color: white; border-radius: 50%; animation: pulse-dot-anim 1.5s infinite; }
+    @keyframes pulse-dot-anim { 0% { transform: scale(0.95); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.5; } }
+    .controls-overlay { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); padding: 12px 24px; border-radius: 100px; display: flex; gap: 20px; align-items: center; opacity: 1; z-index: 20; transition: opacity 0.4s ease; }
+    .control-btn { background: none; border: none; color: white; cursor: pointer; padding: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; outline: none; }
+    .control-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    
+    .content-box { font-size: 15px; line-height: 1.8; color: #475569; }
+    .content-box h1, .content-box h2, .content-box h3, .content-box h4 { font-size: 16px; font-weight: 700; color: #1e293b; margin-top: 18px; margin-bottom: 10px; }
+    .content-box strong { color: #2563eb; font-weight: 600; background-color: rgba(37, 99, 235, 0.05); padding: 0 4px; border-radius: 4px; }
+    .content-box ul, .content-box ol { padding-left: 24px; margin-top: 8px; margin-bottom: 16px; }
+    
+    details summary { cursor: pointer; font-size: 14px; font-weight: 500; color: #64748b; display: flex; align-items: center; gap: 8px; list-style: none; user-select: none; transition: color 0.2s; }
+    details summary:hover { color: #1e293b; }
+    details summary::-webkit-details-marker { display: none; }
+    .details-content { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #f1f5f9; margin-top: 12px; font-size: 13px; line-height: 1.6; max-height: 300px; overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; color: #475569; }
   </style>
 </head>
 <body class="text-slate-800 md:pb-0 md:pl-64">
@@ -171,14 +192,46 @@
         <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
           <i data-lucide="database" class="text-amber-600"></i> 老闆智庫
         </h2>
-        <div class="space-y-4">
-          <textarea id="knw_逐字稿內容" class="input-ios cacheable h-32 leading-relaxed" placeholder="逐字稿內容..."></textarea>
-          <textarea id="knw_重點整理內容" class="input-ios cacheable h-32 leading-relaxed" placeholder="重點整理..."></textarea>
-          <div class="pt-4">
-            <button type="button" onclick="saveData('saveKnowledge', 'knw_')" class="btn-ios w-full md:w-auto px-8 bg-amber-600 hover:bg-amber-700">
-              <i data-lucide="save" class="w-4 h-4"></i> 儲存智庫紀錄
-            </button>
+        
+        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5 mb-8">
+          <div class="flex justify-between items-center cursor-pointer" onclick="toggleRecordUI()">
+            <h3 class="m-0 font-bold text-slate-800 flex items-center">
+              <i data-lucide="video" class="w-5 h-5 me-2 text-amber-500"></i> 新增語音/影音智庫紀錄
+            </h3>
+            <i data-lucide="chevron-down" class="text-slate-400"></i>
           </div>
+          
+          <div id="recordUI" style="display:none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+            <div class="video-container shadow-inner" id="videoContainer">
+              <div id="recBadge" class="status-badge"><div class="pulse-dot"></div><span id="recText">REC</span></div>
+              <video id="mediaPlayer" autoplay muted playsinline></video>
+              <div class="controls-overlay" id="playerControls">
+                <button class="control-btn" onclick="switchSourceAction()"><i data-lucide="switch-camera"></i></button>
+                <button class="control-btn" onclick="toggleVideo()" id="toggleVideoBtn"><i data-lucide="video" id="icon-video"></i></button>
+                <div class="control-divider w-px h-5 bg-white/20 mx-2" id="recordDivider" style="display:none;"></div>
+                <button class="control-btn pause-btn" id="btnPause" onclick="pauseMeeting()" style="display:none;"><i data-lucide="pause" style="fill:currentColor;"></i></button>
+                <button class="control-btn play-btn" id="btnResume" onclick="resumeMeeting()" style="display:none;"><i data-lucide="play" style="fill:currentColor;"></i></button>
+                <button class="control-btn stop-btn text-red-400 hover:text-red-300" id="btnStop" onclick="stopMeeting()" style="display:none;"><i data-lucide="square" style="fill:currentColor;"></i></button>
+              </div>
+            </div>
+
+            <button type="button" class="btn-ios w-full mt-4 bg-amber-500 hover:bg-amber-600 py-3 flex justify-center items-center gap-2" id="btnStartPost" onclick="startRecord()">
+              <i data-lucide="mic" class="w-5 h-5"></i> 開始錄製並由 AI 產出紀錄
+            </button>
+            <p id="recordStatus" class="mt-4 text-center text-slate-500 font-medium text-sm tracking-wide"></p>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-slate-800 tracking-wide text-sm flex items-center gap-2">
+            <i data-lucide="history" class="w-4 h-4 text-slate-400"></i> 歷史智庫紀錄
+          </h3>
+          <button type="button" onclick="fetchBossFeed()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i> 重新整理
+          </button>
+        </div>
+        <div id="bossFeedContainer" class="space-y-5">
+          <div class="text-center py-10 text-slate-400 text-sm">載入中...</div>
         </div>
       </section>
 
@@ -514,15 +567,20 @@
 
   <script>
     lucide.createIcons();
+    marked.setOptions({ breaks: true, gfm: true });
     
     // ==========================================
     // ★★★ 請替換成你部署的 GAS Web App URL ★★★
     // ==========================================
+    // 請確認這支 API 的後端已更新為最新的程式碼
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyDNMsyhrNihMDPJHXK72vQEuD1iyy-YpTwYWgJEdq9Mm18-hNiX_WBpdVpHNRSF0F2/exec'; 
     
     let currentUser = JSON.parse(localStorage.getItem('sys_user') || 'null');
     let currentRecordIds = JSON.parse(localStorage.getItem('sys_ids') || '{}');
 
+    // ==========================================
+    // 核心 UI 與系統函式
+    // ==========================================
     let toastTimeout;
     function showSysToast(message, type = 'success') {
       const toast = document.getElementById('system-toast');
@@ -561,17 +619,20 @@
     if (currentUser) enterSystem();
 
     async function apiCall(action, data, msg) {
-      document.getElementById('loading').style.display = 'flex';
-      document.getElementById('loadingText').innerText = msg;
+      if(msg) {
+        document.getElementById('loading').style.display = 'flex';
+        document.getElementById('loadingText').innerText = msg;
+      }
       data.geminiKey = document.getElementById('set_GEMINI_API_KEY') ? document.getElementById('set_GEMINI_API_KEY').value : '';
+      data.email = currentUser ? currentUser.email : '';
       try {
-        const res = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({action, data}), headers: {'Content-Type': 'text/plain'} });
+        const res = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({action, data, params: data}), headers: {'Content-Type': 'text/plain'} });
         const json = await res.json();
-        document.getElementById('loading').style.display = 'none';
+        if(msg) document.getElementById('loading').style.display = 'none';
         if (json.status === 'success') return json.data;
-        throw new Error(json.message || json.error);
+        throw new Error(json.message || json.error || "未知錯誤");
       } catch (err) {
-        document.getElementById('loading').style.display = 'none';
+        if(msg) document.getElementById('loading').style.display = 'none';
         showSysToast("系統錯誤：" + err.message, "error");
         throw err;
       }
@@ -594,7 +655,6 @@
       currentUser = res;
       localStorage.setItem('sys_user', JSON.stringify(currentUser));
       
-      // 將雲端拉回的 settings 和 knowledge 寫入畫面與 LocalStorage，達成覆蓋快取效果
       if (res.settings) {
         Object.keys(res.settings).forEach(key => {
           let el = document.getElementById('set_' + key);
@@ -603,16 +663,7 @@
         if (res.settings['設定ID']) currentRecordIds['set_'] = res.settings['設定ID'];
       }
       
-      if (res.knowledge) {
-        Object.keys(res.knowledge).forEach(key => {
-          let el = document.getElementById('knw_' + key);
-          if (el) { el.value = res.knowledge[key]; localStorage.setItem('cache_knw_' + key, el.value); }
-        });
-        if (res.knowledge['智庫ID']) currentRecordIds['knw_'] = res.knowledge['智庫ID'];
-      }
-      
       localStorage.setItem('sys_ids', JSON.stringify(currentRecordIds));
-      
       if(res.isNew) showSysToast("註冊成功，系統已為您開通免費試用。", "success");
       else showSysToast("登入成功，已載入雲端最新資料。", "info");
       
@@ -633,8 +684,52 @@
 
       renderNav();
       restoreCsJSON();
+      fetchBossFeed();
     }
 
+    function toggleMobileMenu() {
+      const nav = document.getElementById('mobile-nav');
+      const backdrop = document.getElementById('mobile-menu-backdrop');
+      if (nav.classList.contains('translate-x-full')) {
+        nav.classList.remove('translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        nav.classList.add('translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function renderNav() {
+      const dNav = document.getElementById('desktop-nav');
+      const mNavItems = document.getElementById('mobile-nav-items');
+      dNav.innerHTML = ''; mNavItems.innerHTML = '';
+      tabs.forEach((t, i) => {
+        const active = i === 0;
+        dNav.innerHTML += `<button type="button" onclick="switchTab('${t.id}', '${t.name}')" id="nd-${t.id}" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${active?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}"><i data-lucide="${t.icon}" class="w-5 h-5"></i> ${t.name}</button>`;
+        mNavItems.innerHTML += `<button type="button" onclick="switchTab('${t.id}', '${t.name}'); toggleMobileMenu();" id="nm-${t.id}" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${active?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}"><i data-lucide="${t.icon}" class="w-5 h-5"></i> ${t.name}</button>`;
+      });
+      lucide.createIcons();
+    }
+
+    function switchTab(id, name) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById(`tab-${id}`).classList.add('active');
+      document.getElementById('mobile-header').innerText = name;
+      tabs.forEach(t => {
+        const btnD = document.getElementById(`nd-${t.id}`);
+        const btnM = document.getElementById(`nm-${t.id}`);
+        if(btnD) btnD.className = `flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${t.id===id?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}`;
+        if(btnM) btnM.className = `flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${t.id===id?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}`;
+      });
+      window.scrollTo(0,0);
+      if(id === 'knowledge') fetchBossFeed();
+    }
+
+    function logout() { localStorage.clear(); location.reload(); }
+
+    // ==========================================
+    // 個人設定與資料 JSON 轉換
+    // ==========================================
     function restoreCsJSON() {
       try {
         document.getElementById('strategy-list').innerHTML = '';
@@ -704,42 +799,271 @@
       showSysToast("資料已安全寫入資料庫。", "success");
     }
 
-    function toggleMobileMenu() {
-      const nav = document.getElementById('mobile-nav');
-      const backdrop = document.getElementById('mobile-menu-backdrop');
-      if (nav.classList.contains('translate-x-full')) {
-        nav.classList.remove('translate-x-full');
-        backdrop.classList.remove('hidden');
+    // =========================================================================
+    // ★ 老闆智庫 (錄影、切片、辨識與呈現) ★
+    // =========================================================================
+    let currentStream = null, mediaRecorder = null;
+    let chunkInterval, chunkIndex = 1;
+    let recordData = { folderId: '', rowIndex: 0, recordId: '' };
+    
+    let isRecording = false, isPaused = false;
+    let isVideoEnabled = true; 
+    let isSwitchingSource = false; 
+    let activeProcessingTasks = new Set();
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let mobileFacingMode = "user", desktopSource = "camera";
+
+    const mediaPlayer = document.getElementById('mediaPlayer');
+
+    async function acquireStream() {
+      const oldStream = currentStream; 
+      const constraints = { audio: true };
+      let tempStream;
+
+      if (isMobile) {
+        constraints.video = { facingMode: mobileFacingMode, width: { ideal: 854 }, height: { ideal: 480 } };
+        tempStream = await navigator.mediaDevices.getUserMedia(constraints);
       } else {
-        nav.classList.add('translate-x-full');
-        backdrop.classList.add('hidden');
+        if (desktopSource === "camera") {
+          constraints.video = { width: { ideal: 854 }, height: { ideal: 480 } };
+          tempStream = await navigator.mediaDevices.getUserMedia(constraints);
+        } else {
+          tempStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+          tempStream.getVideoTracks()[0].onended = async () => { 
+            if(isRecording) { 
+              isSwitchingSource = true;
+              if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); clearTimeout(chunkInterval); }
+              desktopSource = "camera"; 
+              await acquireStream();
+              isSwitchingSource = false;
+              if(isRecording && !isPaused) startChunkRecording();
+            } else {
+              desktopSource = "camera";
+              await acquireStream();
+            }
+          };
+        }
+      }
+      
+      currentStream = tempStream;
+      mediaPlayer.srcObject = currentStream;
+      if (oldStream) oldStream.getTracks().forEach(track => track.stop());
+      
+      const videoTrack = currentStream.getVideoTracks()[0];
+      if (videoTrack) videoTrack.enabled = isVideoEnabled;
+      
+      const iconBtn = document.getElementById('toggleVideoBtn');
+      if (iconBtn) {
+        iconBtn.innerHTML = `<i data-lucide="${isVideoEnabled ? 'video' : 'video-off'}" id="icon-video"></i>`;
+        lucide.createIcons();
       }
     }
 
-    function renderNav() {
-      const dNav = document.getElementById('desktop-nav');
-      const mNavItems = document.getElementById('mobile-nav-items');
-      dNav.innerHTML = ''; mNavItems.innerHTML = '';
-      tabs.forEach((t, i) => {
-        const active = i === 0;
-        dNav.innerHTML += `<button type="button" onclick="switchTab('${t.id}', '${t.name}')" id="nd-${t.id}" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${active?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}"><i data-lucide="${t.icon}" class="w-5 h-5"></i> ${t.name}</button>`;
-        mNavItems.innerHTML += `<button type="button" onclick="switchTab('${t.id}', '${t.name}'); toggleMobileMenu();" id="nm-${t.id}" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${active?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}"><i data-lucide="${t.icon}" class="w-5 h-5"></i> ${t.name}</button>`;
+    async function switchSourceAction() {
+      const wasRecording = isRecording;
+      if (wasRecording && mediaRecorder && mediaRecorder.state === "recording") { 
+        isSwitchingSource = true; mediaRecorder.stop(); clearTimeout(chunkInterval); 
+      }
+      const oldMobileMode = mobileFacingMode, oldDesktopSource = desktopSource;
+      if (isMobile) mobileFacingMode = (mobileFacingMode === "user") ? "environment" : "user";
+      else desktopSource = (desktopSource === "camera") ? "screen" : "camera";
+      
+      try { await acquireStream(); } 
+      catch (err) { mobileFacingMode = oldMobileMode; desktopSource = oldDesktopSource; await acquireStream(); }
+      
+      if (wasRecording && !isPaused) { isSwitchingSource = false; startChunkRecording(); }
+    }
+
+    function toggleVideo() {
+      if (currentStream && currentStream.getVideoTracks()[0]) {
+        isVideoEnabled = !isVideoEnabled;
+        currentStream.getVideoTracks()[0].enabled = isVideoEnabled;
+        const iconBtn = document.getElementById('toggleVideoBtn');
+        if (iconBtn) { iconBtn.innerHTML = `<i data-lucide="${isVideoEnabled ? 'video' : 'video-off'}" id="icon-video"></i>`; lucide.createIcons(); }
+      }
+    }
+
+    function toggleRecordUI(forceOpen = false) {
+      const el = document.getElementById('recordUI');
+      if (isRecording && !forceOpen && el.style.display === 'block') {
+         showSysToast("⚠️ 錄製正在進行中，請先完成錄製再關閉面板。", "error"); return;
+      }
+      
+      el.style.display = (forceOpen || el.style.display === 'none') ? 'block' : 'none';
+      if(el.style.display === 'block') {
+        document.getElementById('videoContainer').style.display = 'block';
+        acquireStream().catch(()=>{});
+      } else {
+        if (currentStream) currentStream.getTracks().forEach(track => track.stop());
+      }
+    }
+
+    async function startRecord() {
+      const btn = document.getElementById('btnStartPost');
+      btn.disabled = true;
+      document.getElementById('recordStatus').innerText = "系統安全連線中...";
+      try {
+        const res = await apiCall("initBossRecord", { memberId: currentUser.memberId, folderIds: currentUser.folderIds }, null);
+        recordData = res;
+        document.getElementById('recordDivider').style.display = 'block';
+        document.getElementById('btnPause').style.display = 'flex';
+        document.getElementById('btnStop').style.display = 'flex';
+        btn.style.display = 'none';
+        
+        if (!currentStream) await acquireStream();
+        isRecording = true; isPaused = false; chunkIndex = 1;
+        document.getElementById('recBadge').style.display = 'flex';
+        document.getElementById('recordStatus').innerText = "錄製進行中... (背景安全同步中)";
+        startChunkRecording();
+      } catch(e) { document.getElementById('recordStatus').innerText = "啟動失敗，請確認網路連線"; btn.disabled = false; }
+    }
+
+    function pauseMeeting() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        isPaused = true; mediaRecorder.stop(); clearTimeout(chunkInterval);
+        document.getElementById('btnPause').style.display = 'none';
+        document.getElementById('btnResume').style.display = 'flex';
+        document.getElementById('recBadge').style.background = "#f59e0b";
+        document.getElementById('recText').innerText = "PAUSED";
+        document.getElementById('recordStatus').innerText = "錄製已暫停";
+      }
+    }
+    
+    function resumeMeeting() {
+      if (currentStream) {
+        isPaused = false; startChunkRecording();
+        document.getElementById('btnResume').style.display = 'none';
+        document.getElementById('btnPause').style.display = 'flex';
+        document.getElementById('recBadge').style.background = "rgba(220, 38, 38, 0.9)";
+        document.getElementById('recText').innerText = "REC";
+        document.getElementById('recordStatus').innerText = "錄製進行中...";
+      }
+    }
+
+    function startChunkRecording() {
+      if (!isRecording || !currentStream || isPaused) return;
+      let recordedChunks = [];
+      const mimeType = MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 'video/webm';
+      mediaRecorder = new MediaRecorder(currentStream, { mimeType: mimeType });
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+      
+      mediaRecorder.onstop = () => {
+        if (recordedChunks.length > 0) {
+          const blob = new Blob(recordedChunks, { type: mimeType });
+          processChunk(blob, mimeType, chunkIndex);
+          chunkIndex++;
+        }
+        if (isRecording && !isPaused && !isSwitchingSource) startChunkRecording();
+      };
+      try { mediaRecorder.start(); chunkInterval = setTimeout(() => { if (mediaRecorder.state === "recording") mediaRecorder.stop(); }, 60000); } catch (err) { console.error(err); }
+    }
+
+    function processChunk(blob, mimeType, cIndex) {
+      const task = new Promise(resolve => {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+          const b64 = reader.result.split(',')[1];
+          try {
+            await Promise.all([
+              apiCall("saveBossChunk", { base64Data: b64, mimeType: mimeType, folderId: recordData.folderId, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null),
+              apiCall("recognizeBossChunk", { base64Data: b64, mimeType: mimeType, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null)
+            ]);
+          } catch(err) { console.error(`切片 ${cIndex} 上傳錯誤`, err); } finally { resolve(); }
+        };
+      });
+      activeProcessingTasks.add(task);
+      task.then(() => activeProcessingTasks.delete(task));
+    }
+
+    async function stopMeeting() {
+      isRecording = false; isPaused = false; clearTimeout(chunkInterval);
+      document.getElementById('recBadge').style.display = 'none';
+      document.getElementById('playerControls').style.display = 'none';
+      document.getElementById('recordStatus').innerHTML = '<i data-lucide="loader" class="pulse-dot bg-transparent me-2 d-inline-block"></i> 正在安全封裝檔案並產出智能分析...';
+      lucide.createIcons();
+      
+      const onStopPromise = new Promise(resolve => {
+        if (mediaRecorder && (mediaRecorder.state === "recording" || mediaRecorder.state === "paused")) {
+          const originalOnStop = mediaRecorder.onstop;
+          mediaRecorder.onstop = (e) => { if(originalOnStop) originalOnStop(e); resolve(); };
+          mediaRecorder.stop(); 
+        } else { resolve(); }
+      });
+
+      await onStopPromise;
+      if(currentStream) currentStream.getTracks().forEach(t => t.stop());
+      while(activeProcessingTasks.size > 0) await Promise.all(Array.from(activeProcessingTasks));
+
+      await apiCall("finalizeBossRecord", { rowIndex: recordData.rowIndex, memberId: currentUser.memberId }, null);
+      
+      document.getElementById('recordStatus').innerText = "智庫分析完成！";
+      setTimeout(() => {
+        toggleRecordUI(false); 
+        const btn = document.getElementById('btnStartPost');
+        btn.disabled = false; btn.style.display = 'flex';
+        fetchBossFeed();
+      }, 1500);
+    }
+
+    async function fetchBossFeed() {
+      if(!currentUser) return;
+      const container = document.getElementById('bossFeedContainer');
+      container.innerHTML = '<div class="text-center py-10 text-slate-400 text-sm"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-900 mx-auto mb-2"></div>讀取中...</div>';
+      try {
+        const records = await apiCall("getBossFeed", { memberId: currentUser.memberId }, null);
+        renderBossFeed(records);
+      } catch (err) {
+        container.innerHTML = `<div class="text-center py-10 text-red-400 text-sm">讀取失敗：${err.message}</div>`;
+      }
+    }
+
+    function renderBossFeed(posts) {
+      const container = document.getElementById('bossFeedContainer');
+      container.innerHTML = '';
+      if(posts.length === 0) {
+        container.innerHTML = '<div class="text-center py-10 text-slate-400 text-sm">目前尚無智庫紀錄。</div>';
+        return;
+      }
+      
+      posts.forEach(post => {
+        const urls = (post['影音連結'] || '').split(',\n').filter(u => u);
+        const videoHtml = urls.length > 0 ? `<div class="flex gap-2 overflow-x-auto pb-2 mt-4">` + urls.map((url, i) => `<a href="${url}" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-amber-600 hover:bg-amber-50 transition whitespace-nowrap"><i data-lucide="play-circle" class="w-4 h-4"></i> 段落 ${i+1}</a>`).join('') + `</div>` : '';
+
+        let cleanSummary = (post['重點整理內容'] || '系統處理中...').replace(/####/g, '');
+        const htmlSummary = marked.parse(cleanSummary);
+        
+        let statusColor = post['狀態'] === '錄製中' ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+
+        container.innerHTML += `
+          <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-50">
+              <div class="font-semibold text-slate-800 text-sm flex items-center gap-2">
+                 <i data-lucide="calendar-clock" class="w-4 h-4 text-slate-400"></i>
+                 ${new Date(post['建立日期時間']).toLocaleString('zh-TW', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold ${statusColor}">${post['狀態']}</span>
+            </div>
+            
+            <details class="mb-4">
+              <summary><i data-lucide="align-left" class="w-4 h-4"></i> 檢視完整逐字稿與畫面紀錄</summary>
+              <div class="details-content">${post['逐字稿內容']}</div>
+            </details>
+
+            <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <div class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
+                <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i> AI 重點精華
+              </div>
+              <div class="content-box text-sm">${htmlSummary}</div>
+            </div>
+            
+            ${videoHtml}
+          </div>
+        `;
       });
       lucide.createIcons();
     }
 
-    function switchTab(id, name) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.getElementById(`tab-${id}`).classList.add('active');
-      document.getElementById('mobile-header').innerText = name;
-      tabs.forEach(t => {
-        document.getElementById(`nd-${t.id}`).className = `flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${t.id===id?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}`;
-        document.getElementById(`nm-${t.id}`).className = `flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${t.id===id?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}`;
-      });
-      window.scrollTo(0,0);
-    }
-
-    function logout() { localStorage.clear(); location.reload(); }
 
     // =========================================================================
     // ★ 營銷系統獨立核心邏輯 ★
@@ -750,7 +1074,7 @@
       aiKeywords: [], gkpPasteArea: "", parsedGKPData: [], globalGkpData: [], selectedKeywordsList: [],
       introText: "", proposalsList: [], proposal: null, mySaw: "", myThought: "", myExp: "", myRealization: "",
       conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: "",
-      aspectRatio: "1:1 (適合 IG 貼文、FB 貼文)" // 加入長寬比狀態預設值
+      aspectRatio: "1:1 (適合 IG 貼文、FB 貼文)"
     };
     
     let currentSearchResults = [];
