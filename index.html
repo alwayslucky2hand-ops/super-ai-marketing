@@ -23,7 +23,7 @@
     .tab-content.active { display: block; }
     #system-toast { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
-    /* === 營銷系統獨立樣式 (一字不漏保留) === */
+    /* === 營銷系統獨立樣式 === */
     .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .progress-red { background: linear-gradient(90deg, #ff4d4d, #b30000); }
@@ -207,6 +207,35 @@
               <h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center">
                 <span class="material-icons mr-2 text-gray-400">looks_one</span> 抓取對標與時事引言生成
               </h2>
+              
+              <div class="mb-8 p-5 bg-slate-50 border border-slate-100 rounded-xl space-y-4">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center"><span class="material-icons text-[18px] mr-1">tune</span> 產出參數與受眾設定</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block font-semibold mb-2 text-xs text-slate-600">目標受眾 (Target Audience)</label>
+                    <input type="text" id="targetAudience" class="input-ios" placeholder="例：20-45歲的青年微型創業者">
+                  </div>
+                  <div>
+                    <label class="block font-semibold mb-2 text-xs text-slate-600">視覺設計風格 (Image Prompts)</label>
+                    <input type="text" id="visualStyle" class="input-ios" placeholder="例：日系極簡風、2D向量插畫">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label class="block font-semibold mb-2 text-xs text-slate-600">前導文章字數</label>
+                    <input type="text" id="introLength" class="input-ios" placeholder="例：300-500字">
+                  </div>
+                  <div>
+                    <label class="block font-semibold mb-2 text-xs text-slate-600">部落格文章字數</label>
+                    <input type="text" id="blogLength" class="input-ios" placeholder="例：2000-3000字">
+                  </div>
+                  <div>
+                    <label class="block font-semibold mb-2 text-xs text-slate-600">社群文章字數</label>
+                    <input type="text" id="socialLength" class="input-ios" placeholder="例：300-600字">
+                  </div>
+                </div>
+              </div>
+
               <div class="mb-5">
                 <div class="flex justify-between items-end mb-2 flex-wrap gap-2">
                   <label class="block font-bold text-sm">🎬 YouTube 逐字稿 (對標影片)</label>
@@ -366,7 +395,7 @@
                 <textarea id="cta" class="input-ios h-32"></textarea>
               </div>
               <button type="button" onclick="runStep6()" class="btn-ios bg-blue-600 hover:bg-blue-700 text-lg">
-                <span class="material-icons mr-2">send</span> 套用設定語氣，產出爆款長文
+                <span class="material-icons mr-2">send</span> 套用專屬人設，產出爆款長文
               </button>
             </div>
 
@@ -479,9 +508,6 @@
     // ==========================================
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbysvtZFD4E_6FkfMOyYxJmy0Y_8AVBnC4u3Gyrrl9TwBbCOFCIMxppQW_8kPVJlMxYA/exec'; 
     
-    // ==========================================
-    // 系統登入與主框架邏輯
-    // ==========================================
     let currentUser = JSON.parse(localStorage.getItem('sys_user') || 'null');
     let currentRecordIds = JSON.parse(localStorage.getItem('sys_ids') || '{}');
 
@@ -643,7 +669,6 @@
       showSysToast("資料已安全寫入資料庫。", "success");
     }
 
-    // ★ 加入漢堡選單邏輯
     function toggleMobileMenu() {
       const nav = document.getElementById('mobile-nav');
       const backdrop = document.getElementById('mobile-menu-backdrop');
@@ -685,9 +710,10 @@
     // ★ 營銷系統獨立核心邏輯 ★
     // =========================================================================
     let state = {
-      recordId: "", urls: [""], transcript: "", introText: "", industry: "", painPoint: "", 
+      recordId: "", mktId: "", urls: [""], transcript: "", industry: "", painPoint: "", 
+      targetAudience: "", visualStyle: "", introLength: "", blogLength: "", socialLength: "",
       aiKeywords: [], gkpPasteArea: "", parsedGKPData: [], globalGkpData: [], selectedKeywordsList: [],
-      proposalsList: [], proposal: null, mySaw: "", myThought: "", myExp: "", myRealization: "",
+      introText: "", proposalsList: [], proposal: null, mySaw: "", myThought: "", myExp: "", myRealization: "",
       conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: ""
     };
     
@@ -696,6 +722,7 @@
     async function runGasFunction(actionName, payload) {
       try {
         payload.geminiKey = document.getElementById('set_GEMINI_API_KEY').value || '';
+        payload.memberId = currentUser.memberId; // ★ 確保所有請求都帶上 memberId
         let response = await fetch(GAS_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -714,7 +741,7 @@
         try {
           let parsed = JSON.parse(saved);
           state = Object.assign(state, parsed);
-          ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText'].forEach(id => {
+          ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength'].forEach(id => {
             let el = document.getElementById(id); if(el && state[id]) el.value = state[id];
           });
           if(state.introText) document.getElementById('introResult').classList.remove('hidden');
@@ -745,7 +772,7 @@
     function updateUrlState() { state.urls = Array.from(document.querySelectorAll('.url-input')).map(inp => inp.value); }
 
     function saveLocal() {
-      ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText'].forEach(id => {
+      ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength'].forEach(id => {
         let el = document.getElementById(id); if(el) state[id] = el.value;
       });
       updateUrlState();
@@ -755,12 +782,13 @@
     function resetApp() {
       localStorage.removeItem('troy_eeat_system');
       state = {
-        recordId: "", urls: [""], transcript: "", introText: "", industry: "", painPoint: "", 
+        recordId: "", mktId: "", urls: [""], transcript: "", introText: "", industry: "", painPoint: "", 
+        targetAudience: "", visualStyle: "", introLength: "", blogLength: "", socialLength: "",
         aiKeywords: [], gkpPasteArea: "", parsedGKPData: [], globalGkpData: [], selectedKeywordsList: [],
         proposalsList: [], proposal: null, mySaw: "", myThought: "", myExp: "", myRealization: "",
         conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: ""
       };
-      ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'imagePromptsContent'].forEach(id => {
+      ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'imagePromptsContent', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength'].forEach(id => {
         let el = document.getElementById(id); if(el) el.value = "";
       });
       document.getElementById('searchKw').value = "";
@@ -799,6 +827,7 @@
         state.memberId = currentUser.memberId;
         let res = await runGasFunction('syncDatabase', state);
         state.recordId = res.recordId; 
+        if (res.mktId) state.mktId = res.mktId;
         saveLocal();
         showMktToast('儲存成功');
       } catch(err) { showMktToast('儲存失敗：' + err.message, true); } 
@@ -840,6 +869,14 @@
       state.recordId = record['記錄ID'];
       state.industry = record['產業'];
       state.painPoint = record['痛點'];
+      
+      // ★ 新增五個欄位讀取
+      state.targetAudience = record['目標受眾'] || "";
+      state.visualStyle = record['視覺風格'] || "";
+      state.introLength = record['前導字數'] || "";
+      state.blogLength = record['部落格字數'] || "";
+      state.socialLength = record['社群字數'] || "";
+
       state.introText = record['前導文章'];
       state.mySaw = record['所見所聞'];
       state.myThought = record['所思所想'];
@@ -851,8 +888,9 @@
       state.selectedKeywordsList = record['選定關鍵字'] ? record['選定關鍵字'].split(', ') : [];
       state.proposal = { title: record['提案標題'], summary: "已從歷史紀錄載入" };
 
-      ['industry', 'painPoint', 'introText', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta'].forEach(id => {
-        document.getElementById(id).value = state[id];
+      ['industry', 'painPoint', 'introText', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength'].forEach(id => {
+        let el = document.getElementById(id);
+        if (el) el.value = state[id];
       });
       
       document.getElementById('introResult').classList.remove('hidden');
