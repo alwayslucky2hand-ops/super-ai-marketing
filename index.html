@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GrowthX｜超級營銷智能系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root { --app-bg: #F5F5F7; --primary: #0f172a; }
+    body { background-color: var(--app-bg); font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    .glass-nav { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-top: 1px solid rgba(0,0,0,0.05); }
+    .ios-card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.04); }
+    .input-ios { width: 100%; background: #f1f5f9; border: 1px solid transparent; border-radius: 12px; padding: 14px; font-size: 15px; outline: none; transition: 0.2s; }
+    .input-ios:focus { background: #FFFFFF; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    .btn-ios { background: var(--primary); color: white; border-radius: 12px; padding: 14px; font-weight: 600; width: 100%; transition: 0.1s; }
+    .btn-ios:active { transform: scale(0.98); opacity: 0.9; }
+    .tab-content { display: none; animation: fade 0.3s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="text-slate-800 pb-20 md:pb-0 md:pl-64">
+
+  <div id="loading" class="fixed inset-0 z-[100] bg-white/80 backdrop-blur-sm hidden flex-col items-center justify-center">
+    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-slate-900 mb-2"></div>
+    <p class="font-bold text-slate-700" id="loadingText">處理中...</p>
+  </div>
+
+  <div id="view-auth" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-50 px-6 overflow-y-auto py-10">
+    <div class="ios-card p-8 w-full max-w-sm text-center my-auto">
+      <i data-lucide="cpu" class="w-12 h-12 text-blue-600 mx-auto mb-4"></i>
+      <h2 class="text-2xl font-bold mb-6">系統登入 / 註冊</h2>
+      <div class="space-y-4">
+        <input type="email" id="authEmail" class="input-ios" placeholder="Email (老會員登入必填)">
+        <hr class="border-slate-100 my-4">
+        <p class="text-xs text-slate-400 font-bold text-left">▼ 首次註冊請填寫以下資訊</p>
+        <input type="text" id="authName" class="input-ios" placeholder="姓名">
+        <input type="tel" id="authPhone" class="input-ios" placeholder="電話">
+        <input type="text" id="authIndustry" class="input-ios" placeholder="專業/產業別 (例：精緻搬家)">
+        <input type="text" id="authTitle" class="input-ios" placeholder="職稱 (例：創辦人)">
+        <input type="text" id="authPurpose" class="input-ios" placeholder="註冊系統用途 (例：管理客服)">
+        <button onclick="login()" class="btn-ios mt-4">登入 / 送出註冊</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-main" class="hidden min-h-screen">
+    
+    <nav class="hidden md:flex flex-col fixed top-0 left-0 w-64 h-full bg-white border-r border-slate-100 p-6 z-40">
+      <h1 class="font-bold text-xl mb-10 text-slate-900">GrowthX</h1>
+      <div id="desktop-nav" class="flex-1 space-y-2"></div>
+      <button onclick="logout()" class="text-slate-500 font-bold hover:text-red-500 flex items-center gap-2"><i data-lucide="log-out"></i> 登出</button>
+    </nav>
+    <header class="md:hidden sticky top-0 glass-nav z-30 px-6 py-4 font-bold text-lg" id="mobile-header">會員中心</header>
+
+    <main class="p-4 md:p-8 max-w-4xl mx-auto space-y-6">
+      
+      <section id="tab-profile" class="tab-content active ios-card p-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="user"></i> 會員專區</h2>
+        
+        <div class="bg-slate-50 p-4 rounded-xl mb-6">
+          <p class="text-sm text-slate-500 mb-1">會員 ID</p>
+          <p class="font-mono font-bold text-lg" id="ui-mid">-</p>
+        </div>
+
+        <h3 class="font-bold text-slate-800 mb-3">修改個人資料</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <input type="text" id="prf_姓名" class="input-ios cacheable" placeholder="姓名">
+          <input type="tel" id="prf_電話" class="input-ios cacheable" placeholder="電話">
+          <input type="text" id="prf_專業/產業別" class="input-ios cacheable" placeholder="專業/產業別">
+          <input type="text" id="prf_職稱" class="input-ios cacheable" placeholder="職稱">
+          <input type="text" id="prf_註冊系統用途" class="input-ios cacheable md:col-span-2" placeholder="註冊系統用途">
+        </div>
+        <button onclick="saveData('saveProfile', 'prf_')" class="btn-ios mb-8">更新會員資料</button>
+
+        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+          <p class="text-sm text-blue-600 font-bold mb-2">你的專屬 LINE Webhook 網址 (請貼到 LINE Developer)</p>
+          <code class="block bg-slate-900 text-green-400 p-3 rounded-lg text-xs break-all" id="ui-webhook"></code>
+        </div>
+      </section>
+
+      <section id="tab-settings" class="tab-content ios-card p-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="bot"></i> 智能設定</h2>
+        <div class="space-y-4">
+          <input type="text" id="set_LINE_TOKEN" class="input-ios cacheable" placeholder="LINE TOKEN">
+          <input type="text" id="set_GEMINI_API_KEY" class="input-ios cacheable" placeholder="GEMINI API KEY">
+          <div class="grid grid-cols-2 gap-4">
+            <input type="text" id="set_客服自稱" class="input-ios cacheable" placeholder="客服自稱 (例: 小岳)">
+            <input type="text" id="set_服務目的" class="input-ios cacheable" placeholder="服務目的">
+          </div>
+          <textarea id="set_講話風格" class="input-ios cacheable h-20" placeholder="講話風格"></textarea>
+          <textarea id="set_敘事結構" class="input-ios cacheable h-20" placeholder="敘事結構"></textarea>
+          <textarea id="set_回覆限制" class="input-ios cacheable h-20" placeholder="回覆限制"></textarea>
+          <button onclick="saveData('saveSettings', 'set_')" class="btn-ios mt-4 !bg-slate-900">同步寫入至資料庫</button>
+        </div>
+      </section>
+
+      <section id="tab-knowledge" class="tab-content ios-card p-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="database"></i> 老闆智庫</h2>
+        <div class="space-y-4">
+          <textarea id="knw_逐字稿內容" class="input-ios cacheable h-32" placeholder="逐字稿內容..."></textarea>
+          <textarea id="knw_重點整理內容" class="input-ios cacheable h-32" placeholder="重點整理..."></textarea>
+          <button onclick="saveData('saveKnowledge', 'knw_')" class="btn-ios mt-4">儲存智庫紀錄</button>
+        </div>
+      </section>
+
+      <section id="tab-marketing" class="tab-content ios-card p-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i data-lucide="pen-tool"></i> 營銷文章</h2>
+        <div class="space-y-4">
+          <textarea id="mkt_前導與時事" class="input-ios cacheable h-20" placeholder="前導與時事..."></textarea>
+          <input type="text" id="mkt_SEO關鍵字" class="input-ios cacheable" placeholder="SEO關鍵字">
+          <textarea id="mkt_產出長文HTML" class="input-ios cacheable h-40" placeholder="產出的 HTML 長文..."></textarea>
+          <button onclick="saveData('saveMarketing', 'mkt_')" class="btn-ios mt-4 !bg-slate-900">儲存營銷文章</button>
+        </div>
+      </section>
+
+    </main>
+
+    <nav class="md:hidden glass-nav fixed bottom-0 left-0 w-full px-6 py-2 pb-safe z-40 flex justify-between items-center" id="mobile-nav"></nav>
+  </div>
+
+  <script>
+    lucide.createIcons();
+    
+    // ★ 系統會自動抓取你部署的 GAS Web App 網址
+    const GAS_URL = '<?= ScriptApp.getService().getUrl() ?>'; 
+    
+    let currentUser = JSON.parse(localStorage.getItem('sys_user') || 'null');
+    let currentRecordIds = JSON.parse(localStorage.getItem('sys_ids') || '{}');
+
+    // ★ 初始化快取 (防斷線機制)
+    document.querySelectorAll('.cacheable').forEach(el => {
+      const cached = localStorage.getItem('cache_' + el.id);
+      if (cached) el.value = cached;
+      el.addEventListener('input', (e) => localStorage.setItem('cache_' + el.id, e.target.value));
+    });
+
+    const tabs = [
+      { id: 'profile', name: '會員專區', icon: 'user' },
+      { id: 'settings', name: '智能設定', icon: 'bot' },
+      { id: 'knowledge', name: '老闆智庫', icon: 'database' },
+      { id: 'marketing', name: '營銷文章', icon: 'pen-tool' }
+    ];
+
+    if (currentUser) enterSystem();
+
+    async function apiCall(action, data, msg) {
+      document.getElementById('loading').style.display = 'flex';
+      document.getElementById('loadingText').innerText = msg;
+      try {
+        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({action, data}), headers: {'Content-Type': 'text/plain'} });
+        const json = await res.json();
+        document.getElementById('loading').style.display = 'none';
+        if (json.status === 'success') return json.data;
+        throw new Error(json.message);
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        alert("錯誤：" + err.message); throw err;
+      }
+    }
+
+    async function login() {
+      const payload = {
+        email: document.getElementById('authEmail').value,
+        name: document.getElementById('authName').value,
+        phone: document.getElementById('authPhone').value,
+        industry: document.getElementById('authIndustry').value,
+        title: document.getElementById('authTitle').value,
+        purpose: document.getElementById('authPurpose').value
+      };
+      if (!payload.email) return alert("請輸入 Email");
+      
+      const res = await apiCall("auth", payload, "登入與資料驗證中...");
+      currentUser = res;
+      localStorage.setItem('sys_user', JSON.stringify(currentUser));
+      enterSystem();
+    }
+
+    function enterSystem() {
+      document.getElementById('view-auth').style.display = 'none';
+      document.getElementById('view-main').style.display = 'block';
+      
+      // 自動填入會員專區資料
+      document.getElementById('ui-mid').innerText = currentUser.memberId;
+      document.getElementById('ui-webhook').innerText = `${GAS_URL}?mid=${currentUser.memberId}`;
+      
+      // 若快取為空，用資料庫的資料填寫畫面
+      if(!document.getElementById('prf_姓名').value) document.getElementById('prf_姓名').value = currentUser.name || "";
+      if(!document.getElementById('prf_電話').value) document.getElementById('prf_電話').value = currentUser.phone || "";
+      if(!document.getElementById('prf_專業/產業別').value) document.getElementById('prf_專業/產業別').value = currentUser.industry || "";
+      if(!document.getElementById('prf_職稱').value) document.getElementById('prf_職稱').value = currentUser.title || "";
+      if(!document.getElementById('prf_註冊系統用途').value) document.getElementById('prf_註冊系統用途').value = currentUser.purpose || "";
+
+      renderNav();
+    }
+
+    // ★ 泛型儲存機制
+    async function saveData(action, prefix) {
+      if (!currentUser) return alert("請先登入");
+      let payload = { 會員ID: currentUser.memberId };
+      
+      document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => {
+        const fieldName = el.id.replace(prefix, ''); 
+        payload[fieldName] = el.value;
+      });
+
+      const idFieldName = action === 'saveSettings' ? '設定ID' : (action === 'saveKnowledge' ? '智庫ID' : (action === 'saveProfile' ? '會員ID' : '營銷ID'));
+      if (currentRecordIds[prefix]) payload[idFieldName] = currentRecordIds[prefix];
+      if (action === 'saveProfile') payload['會員ID'] = currentUser.memberId; // 會員特例
+
+      const res = await apiCall(action, payload, "資料同步至雲端中...");
+      
+      if (res.id && action !== 'saveProfile') {
+        currentRecordIds[prefix] = res.id;
+        localStorage.setItem('sys_ids', JSON.stringify(currentRecordIds));
+      }
+      alert(res.status + "！");
+    }
+
+    function renderNav() {
+      const dNav = document.getElementById('desktop-nav');
+      const mNav = document.getElementById('mobile-nav');
+      dNav.innerHTML = ''; mNav.innerHTML = '';
+      tabs.forEach((t, i) => {
+        const active = i === 0;
+        dNav.innerHTML += `<button onclick="switchTab('${t.id}', '${t.name}')" id="nd-${t.id}" class="flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-bold ${active?'bg-slate-900 text-white':'text-slate-500'}"><i data-lucide="${t.icon}"></i> ${t.name}</button>`;
+        mNav.innerHTML += `<button onclick="switchTab('${t.id}', '${t.name}')" id="nm-${t.id}" class="flex flex-col items-center gap-1 p-2 ${active?'text-blue-600':'text-slate-400'}"><i data-lucide="${t.icon}"></i><span class="text-[10px] font-bold">${t.name}</span></button>`;
+      });
+      lucide.createIcons();
+    }
+
+    function switchTab(id, name) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById(`tab-${id}`).classList.add('active');
+      document.getElementById('mobile-header').innerText = name;
+      tabs.forEach(t => {
+        document.getElementById(`nd-${t.id}`).className = `flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-bold ${t.id===id?'bg-slate-900 text-white':'text-slate-500'}`;
+        document.getElementById(`nm-${t.id}`).className = `flex flex-col items-center gap-1 p-2 ${t.id===id?'text-blue-600':'text-slate-400'}`;
+      });
+      window.scrollTo(0,0);
+    }
+
+    function logout() { localStorage.clear(); location.reload(); }
+  </script>
+</body>
+</html>
