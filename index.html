@@ -135,10 +135,10 @@
           <input type="password" id="set_LINE_TOKEN" class="input-ios cacheable" placeholder="LINE Channel Access Token">
           <input type="password" id="set_GEMINI_API_KEY" class="input-ios cacheable" placeholder="您的專屬 Gemini API Key (必填)">
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+          <div class="flex flex-col space-y-4 pt-2">
             <input type="text" id="set_客服自稱" class="input-ios cacheable" placeholder="客服自稱 (例: 搬家小岳)">
             <input type="text" id="set_專業產業" class="input-ios cacheable" placeholder="專業/產業 (例: 精緻搬家)">
-            <input type="text" id="set_服務目的" class="input-ios cacheable md:col-span-2" placeholder="服務目的 (例: 引導場勘)">
+            <input type="text" id="set_服務目的" class="input-ios cacheable" placeholder="服務目的 (例: 引導場勘)">
           </div>
           
           <textarea id="set_講話風格" class="input-ios cacheable h-24" placeholder="講話風格 (例: 溫暖、同理心)"></textarea>
@@ -210,7 +210,7 @@
               
               <div class="mb-8 p-5 bg-slate-50 border border-slate-100 rounded-xl space-y-4">
                 <h3 class="font-bold text-slate-800 text-sm flex items-center"><span class="material-icons text-[18px] mr-1">tune</span> 產出參數與受眾設定</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col space-y-4">
                   <div>
                     <label class="block font-semibold mb-2 text-xs text-slate-600">目標受眾 (Target Audience)</label>
                     <input type="text" id="targetAudience" class="input-ios" placeholder="例：20-45歲的青年微型創業者">
@@ -220,7 +220,7 @@
                     <input type="text" id="visualStyle" class="input-ios" placeholder="例：日系極簡風、2D向量插畫">
                   </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex flex-col space-y-4">
                   <div>
                     <label class="block font-semibold mb-2 text-xs text-slate-600">前導文章字數</label>
                     <input type="text" id="introLength" class="input-ios" placeholder="例：300-500字">
@@ -275,7 +275,7 @@
               <h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center">
                 <span class="material-icons mr-2 text-gray-400">looks_two</span> 產業痛點與 GKP 收斂
               </h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+              <div class="flex flex-col space-y-5 mb-8">
                 <div>
                   <label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center">
                     <span class="material-icons text-[18px] mr-1">gps_fixed</span> 產業 / 產品
@@ -427,6 +427,18 @@
                 <textarea id="finalArticleText" class="input-ios h-64" placeholder="這裡會帶入產出後的文章內容..."></textarea>
               </div>
 
+              <div class="mb-6">
+                <label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center">
+                  <span class="material-icons text-[18px] mr-1 text-gray-400">aspect_ratio</span> 社群圖片比例 (Aspect Ratio)
+                </label>
+                <select id="aspectRatio" class="input-ios">
+                  <option value="1:1 (適合 IG 貼文、FB 貼文)">1:1 (適合 IG 貼文、FB 貼文)</option>
+                  <option value="4:5 (適合 IG 貼文、直式閱讀)">4:5 (適合 IG 貼文、直式閱讀)</option>
+                  <option value="16:9 (適合 FB 連結、YT 封面)">16:9 (適合 FB 連結、YT 封面)</option>
+                  <option value="9:16 (適合 Reels、限時動態)">9:16 (適合 Reels、限時動態)</option>
+                </select>
+              </div>
+
               <button type="button" onclick="runStep7()" class="btn-ios text-lg mb-8">
                 <span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出社群貼文與輪播圖 Prompts
               </button>
@@ -551,7 +563,7 @@
     async function apiCall(action, data, msg) {
       document.getElementById('loading').style.display = 'flex';
       document.getElementById('loadingText').innerText = msg;
-      data.geminiKey = document.getElementById('set_GEMINI_API_KEY').value || '';
+      data.geminiKey = document.getElementById('set_GEMINI_API_KEY') ? document.getElementById('set_GEMINI_API_KEY').value : '';
       try {
         const res = await fetch(GAS_API_URL, { method: 'POST', body: JSON.stringify({action, data}), headers: {'Content-Type': 'text/plain'} });
         const json = await res.json();
@@ -577,12 +589,33 @@
       };
       if (!payload.email) return showSysToast("請輸入工作信箱", "error");
       
-      const res = await apiCall("auth", payload, "驗證身分中...");
+      const res = await apiCall("auth", payload, "驗證身分並載入雲端資料中...");
+      
       currentUser = res;
       localStorage.setItem('sys_user', JSON.stringify(currentUser));
       
+      // 將雲端拉回的 settings 和 knowledge 寫入畫面與 LocalStorage，達成覆蓋快取效果
+      if (res.settings) {
+        Object.keys(res.settings).forEach(key => {
+          let el = document.getElementById('set_' + key);
+          if (el) { el.value = res.settings[key]; localStorage.setItem('cache_set_' + key, el.value); }
+        });
+        if (res.settings['設定ID']) currentRecordIds['set_'] = res.settings['設定ID'];
+      }
+      
+      if (res.knowledge) {
+        Object.keys(res.knowledge).forEach(key => {
+          let el = document.getElementById('knw_' + key);
+          if (el) { el.value = res.knowledge[key]; localStorage.setItem('cache_knw_' + key, el.value); }
+        });
+        if (res.knowledge['智庫ID']) currentRecordIds['knw_'] = res.knowledge['智庫ID'];
+      }
+      
+      localStorage.setItem('sys_ids', JSON.stringify(currentRecordIds));
+      
       if(res.isNew) showSysToast("註冊成功，系統已為您開通免費試用。", "success");
-      else showSysToast("登入成功，歡迎回來。", "info");
+      else showSysToast("登入成功，已載入雲端最新資料。", "info");
+      
       enterSystem();
     }
 
@@ -604,6 +637,8 @@
 
     function restoreCsJSON() {
       try {
+        document.getElementById('strategy-list').innerHTML = '';
+        document.getElementById('source-list').innerHTML = '';
         let raw = document.getElementById('set_資料來源JSON').value;
         if (!raw) return;
         let data = JSON.parse(raw);
@@ -714,15 +749,16 @@
       targetAudience: "", visualStyle: "", introLength: "", blogLength: "", socialLength: "",
       aiKeywords: [], gkpPasteArea: "", parsedGKPData: [], globalGkpData: [], selectedKeywordsList: [],
       introText: "", proposalsList: [], proposal: null, mySaw: "", myThought: "", myExp: "", myRealization: "",
-      conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: ""
+      conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: "",
+      aspectRatio: "1:1 (適合 IG 貼文、FB 貼文)" // 加入長寬比狀態預設值
     };
     
     let currentSearchResults = [];
 
     async function runGasFunction(actionName, payload) {
       try {
-        payload.geminiKey = document.getElementById('set_GEMINI_API_KEY').value || '';
-        payload.memberId = currentUser.memberId; // ★ 確保所有請求都帶上 memberId
+        payload.geminiKey = document.getElementById('set_GEMINI_API_KEY') ? document.getElementById('set_GEMINI_API_KEY').value : '';
+        payload.memberId = currentUser.memberId; 
         let response = await fetch(GAS_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -741,7 +777,7 @@
         try {
           let parsed = JSON.parse(saved);
           state = Object.assign(state, parsed);
-          ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength'].forEach(id => {
+          ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength', 'aspectRatio'].forEach(id => {
             let el = document.getElementById(id); if(el && state[id]) el.value = state[id];
           });
           if(state.introText) document.getElementById('introResult').classList.remove('hidden');
@@ -772,7 +808,7 @@
     function updateUrlState() { state.urls = Array.from(document.querySelectorAll('.url-input')).map(inp => inp.value); }
 
     function saveLocal() {
-      ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength'].forEach(id => {
+      ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength', 'aspectRatio'].forEach(id => {
         let el = document.getElementById(id); if(el) state[id] = el.value;
       });
       updateUrlState();
@@ -786,11 +822,15 @@
         targetAudience: "", visualStyle: "", introLength: "", blogLength: "", socialLength: "",
         aiKeywords: [], gkpPasteArea: "", parsedGKPData: [], globalGkpData: [], selectedKeywordsList: [],
         proposalsList: [], proposal: null, mySaw: "", myThought: "", myExp: "", myRealization: "",
-        conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: ""
+        conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: "",
+        aspectRatio: "1:1 (適合 IG 貼文、FB 貼文)"
       };
       ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'imagePromptsContent', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength'].forEach(id => {
         let el = document.getElementById(id); if(el) el.value = "";
       });
+      let arEl = document.getElementById('aspectRatio');
+      if (arEl) arEl.value = state.aspectRatio;
+
       document.getElementById('searchKw').value = "";
       document.getElementById('searchStart').value = "";
       document.getElementById('searchEnd').value = "";
@@ -870,7 +910,6 @@
       state.industry = record['產業'];
       state.painPoint = record['痛點'];
       
-      // ★ 新增五個欄位讀取
       state.targetAudience = record['目標受眾'] || "";
       state.visualStyle = record['視覺風格'] || "";
       state.introLength = record['前導字數'] || "";
