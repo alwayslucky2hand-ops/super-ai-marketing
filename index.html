@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>GROWTHX｜超級營銷系統</title>
-  <script src="[https://cdn.tailwindcss.com?plugins=typography](https://cdn.tailwindcss.com?plugins=typography)"></script>
-  <script defer src="[https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js](https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js)"></script>
-  <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
-  <script src="[https://unpkg.com/lucide@latest](https://unpkg.com/lucide@latest)"></script>
-  <script src="[https://cdn.jsdelivr.net/npm/marked/marked.min.js](https://cdn.jsdelivr.net/npm/marked/marked.min.js)"></script>
-  <link href="[https://fonts.googleapis.com/icon?family=Material+Icons](https://fonts.googleapis.com/icon?family=Material+Icons)" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root { --app-bg: #F5F5F7; --primary: #0f172a; }
     body { background-color: var(--app-bg); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -361,7 +361,7 @@
               <div class="mb-5 flex flex-col">
                 <div class="flex flex-col mb-2 gap-2">
                   <label class="block font-bold text-sm flex items-center gap-1"><span class="material-icons">movie</span> YouTube 逐字稿 (對標影片)</label>
-                  <a href="[https://colab.research.google.com/drive/1xFxIM0zwJaK1D7mBn94GciXj9Ks0eBqc?usp=sharing](https://colab.research.google.com/drive/1xFxIM0zwJaK1D7mBn94GciXj9Ks0eBqc?usp=sharing)" target="_blank" class="text-xs font-bold bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition shadow-sm flex items-center justify-center">
+                  <a href="https://colab.research.google.com/drive/1xFxIM0zwJaK1D7mBn94GciXj9Ks0eBqc?usp=sharing" target="_blank" class="text-xs font-bold bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition shadow-sm flex items-center justify-center">
                     <span class="material-icons text-base mr-1">play_circle</span> 使用 YT 解析器獲取逐字稿
                   </a>
                 </div>
@@ -541,7 +541,7 @@
         </div>
 
         <div class="w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100">
-          <iframe id="ecard-iframe" src="[https://rubybranddesign-cloud.github.io/e-line-card-backer/](https://rubybranddesign-cloud.github.io/e-line-card-backer/)" class="w-full h-[850px] md:h-[1000px] border-0"></iframe>
+          <iframe id="ecard-iframe" src="https://rubybranddesign-cloud.github.io/e-line-card-backer/" class="w-full h-[850px] md:h-[1000px] border-0"></iframe>
         </div>
       </section>
 
@@ -1573,7 +1573,7 @@
       if (!state.aiKeywords || state.aiKeywords.length === 0) return showMktToast('無關鍵字', true);
       navigator.clipboard.writeText(state.aiKeywords.join('\r\n')).then(() => {
         showMktToast('複製成功，前往 GKP');
-        window.open('[https://ads.google.com/aw/keywordplanner/home](https://ads.google.com/aw/keywordplanner/home)', '_blank');
+        window.open('https://ads.google.com/aw/keywordplanner/home', '_blank');
       });
     }
 
