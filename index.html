@@ -624,7 +624,8 @@
     }
 
     async function checkAuthEmail(btn) {
-      const email = document.getElementById('authEmail').value;
+      // 加入 .trim().toLowerCase() 確保字串乾淨且全小寫
+      const email = document.getElementById('authEmail').value.trim().toLowerCase();
       if (!email) return showSysToast("請輸入工作信箱", "error");
       
       setBtnLoading(btn, "檢查中...");
@@ -643,8 +644,8 @@
     }
 
     async function verifyOTP(btn) {
-      const email = document.getElementById('authEmail').value;
-      const otp = document.getElementById('authOTP').value;
+      const email = document.getElementById('authEmail').value.trim().toLowerCase();
+      const otp = document.getElementById('authOTP').value.trim();
       if (!otp) return showSysToast("請輸入驗證碼", "error");
 
       setBtnLoading(btn, "驗證中...");
@@ -662,13 +663,13 @@
 
     async function submitRegistration(btn) {
       const payload = {
-        email: document.getElementById('authEmail').value,
-        name: document.getElementById('authName').value,
-        phone: document.getElementById('authPhone').value,
-        industry: document.getElementById('authIndustry').value,
-        title: document.getElementById('authTitle').value,
-        purpose: document.getElementById('authPurpose').value,
-        referral: document.getElementById('authReferral').value
+        email: document.getElementById('authEmail').value.trim().toLowerCase(),
+        name: document.getElementById('authName').value.trim(),
+        phone: document.getElementById('authPhone').value.trim(),
+        industry: document.getElementById('authIndustry').value.trim(),
+        title: document.getElementById('authTitle').value.trim(),
+        purpose: document.getElementById('authPurpose').value.trim(),
+        referral: document.getElementById('authReferral').value.trim()
       };
       
       if (!payload.name || !payload.phone) return showSysToast("姓名與電話為必填資料", "error");
