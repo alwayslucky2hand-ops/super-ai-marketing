@@ -20,6 +20,7 @@
     .input-ios:focus { background: #FFFFFF; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
     .btn-ios { background: var(--primary); color: white; border-radius: 12px; padding: 14px; font-weight: 600; width: 100%; transition: 0.1s; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
     .btn-ios:active { transform: scale(0.98); opacity: 0.9; }
+    .btn-ios:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
     .tab-content { display: none; animation: fade 0.3s ease; }
     .tab-content.active { display: block; }
     #system-toast { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -44,7 +45,8 @@
     .control-btn { background: none; border: none; color: white; cursor: pointer; padding: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; outline: none; }
     .control-btn:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.05); }
     
-    /* 蘋果風格卡片細節 */
+    /* 蘋果風格卡片細節與方格子舒適閱讀體驗 */
+    .vocus-reading { font-size: 16px; line-height: 2; letter-spacing: 0.02em; color: #334155; }
     .content-box { font-size: 15px; line-height: 1.8; color: #334155; }
     .content-box h1, .content-box h2, .content-box h3, .content-box h4 { font-size: 16px; font-weight: 700; color: #0f172a; margin-top: 18px; margin-bottom: 10px; }
     .content-box strong { color: #2563eb; font-weight: 600; background-color: rgba(37, 99, 235, 0.05); padding: 0 4px; border-radius: 4px; }
@@ -234,20 +236,22 @@
           </div>
         </div>
 
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+        <div class="flex flex-col mb-6 gap-4 border-b border-slate-100 pb-4">
           <h3 class="font-bold text-slate-900 tracking-wide text-lg flex items-center gap-2">
             <i data-lucide="history" class="w-5 h-5 text-indigo-500"></i> 歷史智庫紀錄
           </h3>
           
-          <div class="flex flex-wrap items-center gap-3 bg-slate-50 border border-slate-200 p-1.5 rounded-xl w-full md:w-auto">
-            <div class="flex items-center gap-2 px-2">
-              <label class="text-xs text-slate-500 font-bold hidden sm:block">時間</label>
-              <input type="date" id="bossFilterStart" class="bg-transparent border-none text-sm outline-none text-slate-700 w-32 cursor-pointer">
-              <span class="text-slate-300">-</span>
-              <input type="date" id="bossFilterEnd" class="bg-transparent border-none text-sm outline-none text-slate-700 w-32 cursor-pointer">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-slate-50 border border-slate-200 p-3 sm:p-2 rounded-xl w-full">
+            <div class="flex items-center gap-2 w-full">
+              <label class="text-xs text-slate-500 font-bold hidden sm:block">時間篩選</label>
+              <div class="flex items-center gap-2 flex-1">
+                 <input type="date" id="bossFilterStart" class="bg-white sm:bg-transparent border border-slate-200 sm:border-none p-2 sm:p-0 rounded-lg text-sm outline-none text-slate-700 w-full sm:w-32 cursor-pointer transition focus:border-indigo-400">
+                 <span class="text-slate-400">-</span>
+                 <input type="date" id="bossFilterEnd" class="bg-white sm:bg-transparent border border-slate-200 sm:border-none p-2 sm:p-0 rounded-lg text-sm outline-none text-slate-700 w-full sm:w-32 cursor-pointer transition focus:border-indigo-400">
+              </div>
             </div>
-            <button type="button" onclick="fetchBossFeed()" class="bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 font-semibold px-4 py-1.5 rounded-lg shadow-sm transition flex items-center gap-1.5 text-sm ml-auto">
-              <i data-lucide="search" class="w-4 h-4"></i> 篩選
+            <button type="button" onclick="fetchBossFeed()" class="bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 font-semibold px-4 py-2 sm:py-1.5 rounded-lg shadow-sm transition flex justify-center items-center gap-1.5 text-sm w-full sm:w-auto">
+              <i data-lucide="search" class="w-4 h-4"></i> 查詢
             </button>
           </div>
         </div>
@@ -258,17 +262,24 @@
             載入中...
           </div>
         </div>
+        
+        <div id="bossLoadMoreContainer" class="hidden mt-6 flex justify-center">
+          <button type="button" onclick="loadMoreBossFeed()" class="bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-800 font-semibold px-6 py-2.5 rounded-full shadow-sm transition text-sm flex items-center gap-2">
+            <i data-lucide="chevron-down" class="w-4 h-4"></i> 載入更多紀錄
+          </button>
+        </div>
       </section>
+
       <section id="tab-marketing" class="tab-content relative font-sans text-base">
         <div class="pb-32 flex flex-col md:block relative -mx-4 md:mx-0 md:pt-24">
           
           <nav class="relative md:absolute top-0 w-full z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 flex flex-wrap justify-between items-center gap-3 mb-6 md:mb-0">
             <div class="font-bold text-xl tracking-tight text-gray-900">GROWTHX<span class="text-gray-400 font-normal ml-2 text-lg hidden sm:inline">AI 文章營銷經理</span></div>
             <div class="space-x-2 flex flex-wrap gap-2">
-              <button type="button" onclick="openSearchModal()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition">
+              <button type="button" onclick="toggleSearchBlock()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition">
                 <span class="material-icons text-[18px] mr-1">history</span>讀取歷史
               </button>
-              <button type="button" onclick="saveToDatabase()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition">
+              <button type="button" onclick="saveToDatabase(this)" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition">
                 <span class="material-icons text-[18px] mr-1">save</span>儲存
               </button>
               <button type="button" onclick="resetApp()" class="flex items-center text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-full font-semibold hover:bg-red-50 hover:text-red-600 transition">
@@ -279,6 +290,36 @@
 
           <div class="max-w-4xl mx-auto px-4 md:px-6">
             <div id="mktSystemToast" class="hidden fixed top-24 left-1/2 transform -translate-x-1/2 z-[200] bg-gray-900 text-white px-6 py-3 rounded-full shadow-lg font-semibold text-sm transition-opacity duration-300 w-11/12 max-w-md text-center"></div>
+
+            <!-- 讀取知識庫 (內嵌式顯示) -->
+            <div id="inlineSearchBlock" class="hidden ios-card mb-8 overflow-hidden border-2 border-indigo-100 shadow-sm">
+              <div class="bg-indigo-50/50 p-5 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-indigo-900 flex items-center"><span class="material-icons mr-2 text-indigo-500">folder_open</span> 讀取知識庫</h3>
+                <button type="button" onclick="toggleSearchBlock()" class="text-gray-400 hover:text-gray-800 transition"><span class="material-icons">close</span></button>
+              </div>
+              <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row flex-wrap gap-4 items-end bg-white">
+                <div class="flex-1 w-full sm:min-w-[200px]">
+                  <label class="block text-xs font-semibold mb-1 text-gray-500">關鍵字 (標題/產業/痛點)</label>
+                  <input type="text" id="searchKw" class="input-ios p-2.5" placeholder="搜尋...">
+                </div>
+                <div class="w-full sm:w-auto flex gap-4">
+                  <div class="flex-1 sm:flex-none">
+                    <label class="block text-xs font-semibold mb-1 text-gray-500">開始日期</label>
+                    <input type="date" id="searchStart" class="input-ios p-2.5 text-sm w-full">
+                  </div>
+                  <div class="flex-1 sm:flex-none">
+                    <label class="block text-xs font-semibold mb-1 text-gray-500">結束日期</label>
+                    <input type="date" id="searchEnd" class="input-ios p-2.5 text-sm w-full">
+                  </div>
+                </div>
+                <button type="button" onclick="executeSearch(this)" class="btn-ios px-6 py-2.5 h-[46px] w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700">搜尋</button>
+              </div>
+              <div class="p-5 max-h-[300px] overflow-y-auto no-scrollbar bg-slate-50">
+                <div id="searchResults" class="space-y-3 text-sm">
+                  <p class="text-gray-400 text-center py-6 font-medium">請設定條件並點擊搜尋</p>
+                </div>
+              </div>
+            </div>
 
             <div id="step1" class="step-section active ios-card p-6 md:p-8 mb-8">
               <h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center">
@@ -297,16 +338,16 @@
                     <input type="text" id="visualStyle" class="input-ios" placeholder="例：日系極簡風、2D向量插畫">
                   </div>
                 </div>
-                <div class="flex flex-col space-y-4">
-                  <div>
+                <div class="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:gap-4">
+                  <div class="flex-1">
                     <label class="block font-semibold mb-2 text-xs text-slate-600">前導文章字數</label>
                     <input type="text" id="introLength" class="input-ios" placeholder="例：300-500字">
                   </div>
-                  <div>
+                  <div class="flex-1">
                     <label class="block font-semibold mb-2 text-xs text-slate-600">部落格文章字數</label>
                     <input type="text" id="blogLength" class="input-ios" placeholder="例：2000-3000字">
                   </div>
-                  <div>
+                  <div class="flex-1">
                     <label class="block font-semibold mb-2 text-xs text-slate-600">社群文章字數</label>
                     <input type="text" id="socialLength" class="input-ios" placeholder="例：300-600字">
                   </div>
@@ -333,7 +374,7 @@
                 </div>
                 <div id="urlContainer" class="flex flex-col space-y-3"></div>
               </div>
-              <button type="button" onclick="runStep1()" class="btn-ios text-lg">
+              <button type="button" onclick="runStep1(this)" class="btn-ios text-lg">
                 <span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出時事共鳴與前導文章
               </button>
               
@@ -341,7 +382,7 @@
                 <label class="block font-semibold mb-3 text-blue-600 flex items-center">
                   <span class="material-icons text-[18px] mr-1">check_circle</span> 前導文章內容 (可編輯)
                 </label>
-                <textarea id="introText" class="input-ios h-64 bg-blue-50/30 border-blue-100"></textarea>
+                <textarea id="introText" class="input-ios h-64 bg-blue-50/30 border-blue-100 vocus-reading"></textarea>
                 <button type="button" onclick="goStep(2)" class="w-full mt-4 bg-gray-100 text-gray-800 font-semibold py-3 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">
                   確認內容，進入 Step 2 <span class="material-icons text-[18px] ml-1">arrow_forward</span>
                 </button>
@@ -362,7 +403,7 @@
                   <input type="text" id="painPoint" class="input-ios" placeholder="例如：營運成本高...">
                 </div>
               </div>
-              <button type="button" onclick="runStep2()" class="btn-ios text-lg"><span class="material-icons text-[20px] mr-2">search</span> 萃取推薦關鍵字</button>
+              <button type="button" onclick="runStep2(this)" class="btn-ios text-lg"><span class="material-icons text-[20px] mr-2">search</span> 萃取推薦關鍵字</button>
               
               <div id="gkpSection" class="hidden mt-10 pt-8 border-t border-gray-100">
                 <div class="bg-gray-50 p-6 rounded-2xl mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -370,7 +411,7 @@
                     <h3 class="font-bold text-gray-900 text-lg flex items-center"><span class="material-icons text-[20px] mr-1 text-gray-500">analytics</span> GKP 數據對校</h3>
                     <p class="text-sm text-gray-500 mt-1">點擊複製 AI 關鍵字並前往 Google Keyword Planner。</p>
                   </div>
-                  <button type="button" id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition flex items-center">
+                  <button type="button" id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition flex items-center w-full sm:w-auto justify-center">
                     <span class="material-icons text-[18px] mr-1">content_copy</span> 複製並開啟
                   </button>
                 </div>
@@ -378,7 +419,7 @@
                   <label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1">download</span> 貼上 GKP 數據</label>
                   <textarea id="gkpPasteArea" class="input-ios h-32 mb-4" placeholder="從 GKP 複製表格後貼於此處..."></textarea>
                   <div id="gkpPreviewWrapper" class="hidden mb-4 overflow-x-auto border border-gray-200 rounded-xl no-scrollbar"><table class="min-w-full text-xs text-left"><thead class="bg-gray-50"><tr id="gkpPreviewHeaders"></tr></thead><tbody id="gkpPreviewBody" class="divide-y divide-gray-100"></tbody></table></div>
-                  <button type="button" onclick="analyzeGKPDataFlow()" class="btn-ios text-lg"><span class="material-icons text-[20px] mr-2">sort</span> 產生演算法排行</button>
+                  <button type="button" onclick="analyzeGKPDataFlow(this)" class="btn-ios text-lg"><span class="material-icons text-[20px] mr-2">sort</span> 產生演算法排行</button>
                 </div>
                 <div id="gkpAnalyzedResults" class="hidden mt-8 pt-8 border-t border-gray-100">
                   <div class="flex justify-between items-center mb-4">
@@ -395,7 +436,7 @@
               <h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center">
                 <span class="material-icons mr-2 text-gray-400">looks_3</span> 流量密碼提案
               </h2>
-              <button type="button" onclick="runStep3()" class="btn-ios text-lg"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 生成 10 大提案</button>
+              <button type="button" onclick="runStep3(this)" class="btn-ios text-lg"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 生成 10 大提案</button>
               <div id="proposalsResult" class="hidden mt-8 space-y-4"></div>
             </div>
 
@@ -404,35 +445,35 @@
               <p class="text-sm text-gray-500 mb-8">哈佛教授 AI 已為您準備好問題，請填寫血肉內容：</p>
               <div class="mb-6">
                 <label id="q_saw" class="block font-semibold text-gray-800 mb-2 bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start"><span class="material-icons text-blue-500 mr-2 mt-0.5 text-[20px]">visibility</span> <span class="leading-relaxed">載入中...</span></label>
-                <textarea id="mySaw" class="input-ios h-24" placeholder="我的所見所聞..."></textarea>
+                <textarea id="mySaw" class="input-ios h-24 vocus-reading" placeholder="我的所見所聞..."></textarea>
               </div>
               <div class="mb-6">
                 <label id="q_thought" class="block font-semibold text-gray-800 mb-2 bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start"><span class="material-icons text-green-500 mr-2 mt-0.5 text-[20px]">psychology</span> <span class="leading-relaxed">載入中...</span></label>
-                <textarea id="myThought" class="input-ios h-24" placeholder="我的所思所想..."></textarea>
+                <textarea id="myThought" class="input-ios h-24 vocus-reading" placeholder="我的所思所想..."></textarea>
               </div>
               <div class="mb-6">
                 <label id="q_exp" class="block font-semibold text-gray-800 mb-2 bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start"><span class="material-icons text-purple-500 mr-2 mt-0.5 text-[20px]">menu_book</span> <span class="leading-relaxed">載入中...</span></label>
-                <textarea id="myExp" class="input-ios h-24" placeholder="我的親身經歷案例..."></textarea>
+                <textarea id="myExp" class="input-ios h-24 vocus-reading" placeholder="我的親身經歷案例..."></textarea>
               </div>
               <div class="mb-8">
                 <label id="q_realization" class="block font-semibold text-gray-800 mb-2 bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start"><span class="material-icons text-orange-500 mr-2 mt-0.5 text-[20px]">lightbulb</span> <span class="leading-relaxed">載入中...</span></label>
-                <textarea id="myRealization" class="input-ios h-24" placeholder="我的感觸體認..."></textarea>
+                <textarea id="myRealization" class="input-ios h-24 vocus-reading" placeholder="我的感觸體認..."></textarea>
               </div>
               <button type="button" onclick="goStep(5)" class="w-full bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">完成作答，進入 Step 5 <span class="material-icons text-[18px] ml-1">arrow_forward</span></button>
             </div>
 
             <div id="step5" class="step-section hidden ios-card p-6 md:p-8 mb-8">
               <h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_5</span> 結尾與導購產生</h2>
-              <button type="button" onclick="runStep5()" class="btn-ios text-lg mb-8"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出祝福與 CTA</button>
+              <button type="button" onclick="runStep5(this)" class="btn-ios text-lg mb-8"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出祝福與 CTA</button>
               <div class="mb-5">
                 <label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">card_giftcard</span> 真摯推薦與祝福 (Conclusion)</label>
-                <textarea id="conclusion" class="input-ios h-32"></textarea>
+                <textarea id="conclusion" class="input-ios h-32 vocus-reading"></textarea>
               </div>
               <div class="mb-8">
                 <label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">ads_click</span> 導購行動呼籲 (CTA)</label>
-                <textarea id="cta" class="input-ios h-32"></textarea>
+                <textarea id="cta" class="input-ios h-32 vocus-reading"></textarea>
               </div>
-              <button type="button" onclick="runStep6()" class="btn-ios bg-blue-600 hover:bg-blue-700 text-lg"><span class="material-icons mr-2">send</span> 套用專屬人設，產出爆款長文</button>
+              <button type="button" onclick="runStep6(this)" class="btn-ios bg-blue-600 hover:bg-blue-700 text-lg"><span class="material-icons mr-2">send</span> 套用專屬人設，產出爆款長文</button>
             </div>
 
             <div id="step6" class="step-section hidden ios-card p-6 md:p-8 mb-8">
@@ -440,7 +481,7 @@
                 <h2 class="text-2xl font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_6</span> 專屬文章</h2>
                 <button type="button" onclick="copyContent('finalContent')" class="text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center"><span class="material-icons text-[18px] mr-1">copy_all</span> 一鍵複製</button>
               </div>
-              <div id="finalContent" class="prose prose-lg max-w-none text-gray-800 leading-relaxed bg-slate-50 p-8 rounded-2xl border border-gray-200"></div>
+              <div id="finalContent" class="prose prose-lg max-w-none text-gray-800 bg-slate-50 p-8 rounded-2xl border border-gray-200 vocus-reading"></div>
               <button type="button" id="nextTo7" onclick="goStep(7)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">確認文章，進入 Step 7 產出社群圖文 <span class="material-icons text-[18px] ml-1">arrow_forward</span></button>
             </div>
 
@@ -448,7 +489,7 @@
               <h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_7</span> 產出社群圖文</h2>
               <div class="mb-6">
                 <label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">edit_document</span> 最終產出的文章 (可自由編輯)</label>
-                <textarea id="finalArticleText" class="input-ios h-64" placeholder="這裡會帶入產出後的文章內容..."></textarea>
+                <textarea id="finalArticleText" class="input-ios h-64 vocus-reading" placeholder="這裡會帶入產出後的文章內容..."></textarea>
               </div>
               <div class="mb-6">
                 <label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">aspect_ratio</span> 社群圖片比例</label>
@@ -459,14 +500,14 @@
                   <option value="9:16 (適合 Reels、限時動態)">9:16 (適合 Reels、限時動態)</option>
                 </select>
               </div>
-              <button type="button" onclick="runStep7()" class="btn-ios text-lg mb-8"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出社群貼文與輪播圖 Prompts</button>
+              <button type="button" onclick="runStep7(this)" class="btn-ios text-lg mb-8"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出社群貼文與輪播圖 Prompts</button>
               <div id="socialResult" class="hidden mt-8 space-y-8">
                 <div>
                   <div class="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
                     <h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-blue-500">article</span> 社群貼文</h3>
                     <button type="button" onclick="copyContent('socialPostContent')" class="text-xs bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center"><span class="material-icons text-[16px] mr-1">content_copy</span> 複製貼文</button>
                   </div>
-                  <div id="socialPostContent" class="prose max-w-none text-gray-800 leading-relaxed bg-slate-50 p-6 rounded-xl border border-gray-200"></div>
+                  <div id="socialPostContent" class="prose max-w-none text-gray-800 bg-slate-50 p-6 rounded-xl border border-gray-200 vocus-reading"></div>
                 </div>
                 <div>
                   <div class="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
@@ -479,40 +520,6 @@
             </div>
           </div>
 
-          <div id="searchModal" class="hidden absolute inset-0 bg-gray-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
-              <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2">folder_open</span> 讀取知識庫</h3>
-                <button type="button" onclick="closeSearchModal()" class="text-gray-400 hover:text-gray-800 transition"><span class="material-icons">close</span></button>
-              </div>
-              <div class="p-5 border-b border-gray-100 flex flex-wrap gap-4 items-end bg-white">
-                <div class="flex-1 min-w-[200px]">
-                  <label class="block text-xs font-semibold mb-1 text-gray-500">關鍵字 (標題/產業/痛點)</label>
-                  <input type="text" id="searchKw" class="input-ios p-2.5" placeholder="搜尋...">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold mb-1 text-gray-500">開始日期</label>
-                  <input type="date" id="searchStart" class="input-ios p-2.5 text-sm">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold mb-1 text-gray-500">結束日期</label>
-                  <input type="date" id="searchEnd" class="input-ios p-2.5 text-sm">
-                </div>
-                <button type="button" onclick="executeSearch()" class="btn-ios px-6 py-2.5 h-[46px]">搜尋</button>
-              </div>
-              <div class="p-5 overflow-y-auto no-scrollbar flex-1 bg-gray-50">
-                <div id="searchResults" class="space-y-3 text-sm">
-                  <p class="text-gray-400 text-center py-10 font-medium">請設定條件並點擊搜尋</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div id="mktGlobalLoading" class="hidden absolute inset-0 bg-white/70 backdrop-blur-md z-[100] flex flex-col justify-center items-center">
-            <div class="loader rounded-full border-4 border-t-4 border-gray-200 h-14 w-14 mb-4"></div>
-            <p id="mktLoadingText" class="text-gray-800 font-semibold text-sm tracking-wide">運算中...</p>
-          </div>
-
         </div>
       </section>
 
@@ -523,7 +530,8 @@
     lucide.createIcons();
     marked.setOptions({ breaks: true, gfm: true });
     
-    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyYO5xmrxOwIQYfSQjwHgnAILwFGFWOZ5jhvF6mh2sfxyzb0_ocw8YT7JGhzLeZfOk/exec'; 
+    // 🔥 後端 GAS API 網址已精確更新
+    const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbx2XPP6JkIZMj_me35F5XaeL83d0C_1IhEh5tlIxrFNMOVNkMd4Xk6S_nQkjh3aBIon/exec'; 
     
     let currentUser = JSON.parse(localStorage.getItem('sys_user') || 'null');
     let currentRecordIds = JSON.parse(localStorage.getItem('sys_ids') || '{}');
@@ -548,6 +556,20 @@
       lucide.createIcons();
       toast.classList.remove('opacity-0', '-translate-y-10', 'pointer-events-none');
       toastTimeout = setTimeout(() => toast.classList.add('opacity-0', '-translate-y-10', 'pointer-events-none'), 3500);
+    }
+
+    // 按鈕專用 Loading 動畫函數
+    function setBtnLoading(btn, text) {
+      if(!btn) return;
+      btn.dataset.originalText = btn.innerHTML;
+      btn.innerHTML = `<span class="material-icons animate-spin text-[20px] mr-2">sync</span> ${text}`;
+      btn.disabled = true;
+    }
+    
+    function restoreBtnLoading(btn) {
+      if(!btn) return;
+      btn.innerHTML = btn.dataset.originalText;
+      btn.disabled = false;
     }
 
     document.querySelectorAll('.cacheable').forEach(el => {
@@ -759,7 +781,6 @@
 
     const mediaPlayer = document.getElementById('mediaPlayer');
 
-    // 🍎 新增系統終端機 Log 功能
     function addSysLog(msg, type = 'info') {
       const logDiv = document.getElementById('recordingLogText');
       if(!logDiv) return;
@@ -985,21 +1006,24 @@
         toggleRecordUI(false); 
         const btn = document.getElementById('btnStartPost');
         btn.disabled = false; btn.style.display = 'flex';
-        fetchBossFeed(true); // 帶入 true 表示錄完刷新，可以自動讓最上面那筆進入編輯狀態
+        fetchBossFeed(true);
       }, 2000);
     }
 
-    // 歷史智庫全域變數 (供編輯使用)
+    // 歷史智庫全域變數 (供編輯與分頁使用)
     let globalBossRecords = [];
+    let bossCurrentPage = 1;
+    const bossPageSize = 5;
 
     async function fetchBossFeed(autoEditFirst = false) {
       if(!currentUser) return;
       const container = document.getElementById('bossFeedContainer');
       container.innerHTML = '<div class="text-center py-12 text-slate-400 text-sm flex flex-col items-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-4"></div>資料同步中...</div>';
+      document.getElementById('bossLoadMoreContainer').classList.add('hidden');
+      
       try {
         let records = await apiCall("getBossFeed", { memberId: currentUser.memberId }, null);
         
-        // 🍎 實作日期篩選功能 (根據建立或更新時間)
         const start = document.getElementById('bossFilterStart').value;
         const end = document.getElementById('bossFilterEnd').value;
         
@@ -1012,25 +1036,31 @@
           records = records.filter(r => new Date(r['建立日期時間']) <= endDate);
         }
         
-        // 依照更新時間新到舊排序
-        records.sort((a, b) => new Date(b['更新日期時間'] || b['建立日期時間']) - new Date(a['更新日期時間'] || a['建立日期時間']));
+        // 依照建立時間新到舊排序
+        records.sort((a, b) => new Date(b['建立日期時間']) - new Date(a['建立日期時間']));
         globalBossRecords = records;
-        renderBossFeed(records, autoEditFirst);
+        bossCurrentPage = 1;
+        
+        container.innerHTML = '';
+        renderBossFeed(autoEditFirst);
       } catch (err) {
         container.innerHTML = `<div class="text-center py-10 text-red-400 text-sm">讀取失敗：${err.message}</div>`;
       }
     }
 
-    function renderBossFeed(posts, autoEditFirst = false) {
+    function renderBossFeed(autoEditFirst = false) {
       const container = document.getElementById('bossFeedContainer');
-      container.innerHTML = '';
-      if(posts.length === 0) {
+      const loadMoreContainer = document.getElementById('bossLoadMoreContainer');
+      
+      if(globalBossRecords.length === 0) {
         container.innerHTML = '<div class="text-center py-12 text-slate-400 text-sm flex flex-col items-center"><i data-lucide="inbox" class="w-10 h-10 mb-3 opacity-30"></i>目前尚無符合條件的智庫紀錄。</div>';
         lucide.createIcons();
         return;
       }
       
-      posts.forEach((post, index) => {
+      let postsToRender = globalBossRecords.slice((bossCurrentPage - 1) * bossPageSize, bossCurrentPage * bossPageSize);
+      
+      postsToRender.forEach((post, index) => {
         const urls = (post['影音連結'] || '').split(',\n').filter(u => u);
         const videoHtml = urls.length > 0 ? `<div class="flex gap-2 overflow-x-auto pb-2 mt-4 no-scrollbar">` + urls.map((url, i) => `<a href="${url}" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 transition whitespace-nowrap shadow-sm"><i data-lucide="play-circle" class="w-4 h-4"></i> 切片 ${i+1}</a>`).join('') + `</div>` : '';
 
@@ -1038,72 +1068,117 @@
         const htmlSummary = marked.parse(cleanSummary);
         
         let statusColor = post['狀態'] === '錄製中' ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+        
+        // 判斷是否要預設展開
+        let isFirstItemInFirstPage = (bossCurrentPage === 1 && index === 0 && autoEditFirst);
+        let bodyClass = isFirstItemInFirstPage ? 'block' : 'hidden';
 
         container.innerHTML += `
-          <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition relative group" id="boss-card-${post.rowIndex}">
-            <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-50">
-              <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                 <i data-lucide="calendar-clock" class="w-4 h-4 text-slate-400"></i>
-                 ${new Date(post['建立日期時間']).toLocaleString('zh-TW', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm transition relative group" id="boss-card-${post.rowIndex}">
+            
+            <!-- 收合狀態顯示的 Header -->
+            <div class="flex justify-between items-center cursor-pointer select-none" onclick="toggleBossCard(${post.rowIndex})">
+              <div class="flex flex-col gap-1">
+                <div class="font-bold text-slate-800 text-base flex items-center gap-2">
+                   📝 智庫紀錄：${post['智庫ID'] || '新紀錄'}
+                </div>
+                <div class="text-xs text-slate-500 flex items-center gap-1.5">
+                   <i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i>
+                   ${new Date(post['建立日期時間']).toLocaleString('zh-TW', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}
+                </div>
               </div>
-              <span class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wider ${statusColor}">${post['狀態']}</span>
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 rounded-full text-[11px] font-bold tracking-wider ${statusColor}">${post['狀態']}</span>
+                <i data-lucide="chevron-down" id="boss-icon-${post.rowIndex}" class="w-5 h-5 text-slate-400 transition-transform ${isFirstItemInFirstPage ? 'rotate-180' : ''}"></i>
+              </div>
             </div>
             
-            <div class="bg-slate-50/50 rounded-xl p-5 border border-slate-100 mb-4 transition-all">
-              <div class="font-bold text-slate-800 text-sm mb-3 flex justify-between items-center">
-                <span class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i> AI 重點精華</span>
-                <span class="text-[10px] font-mono text-slate-400 tracking-wider hidden sm:block">ID: ${post['智庫ID']}</span>
+            <!-- 展開的詳細內容區 -->
+            <div id="boss-body-${post.rowIndex}" class="${bodyClass} mt-4 pt-4 border-t border-slate-100">
+              <div class="bg-slate-50/50 rounded-xl p-5 border border-slate-100 mb-4 transition-all">
+                <div class="font-bold text-slate-800 text-sm mb-3 flex justify-between items-center">
+                  <span class="flex items-center gap-2"><i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i> AI 重點精華</span>
+                </div>
+                
+                <div id="summary-view-${post.rowIndex}" class="vocus-reading">${htmlSummary}</div>
+                <textarea id="summary-edit-${post.rowIndex}" class="hidden input-ios h-32 vocus-reading mt-2">${cleanSummary}</textarea>
               </div>
-              
-              <div id="summary-view-${post.rowIndex}" class="content-box text-sm">${htmlSummary}</div>
-              <textarea id="summary-edit-${post.rowIndex}" class="hidden input-ios h-32 text-sm mt-2 font-sans">${cleanSummary}</textarea>
-            </div>
 
-            <details class="mb-4">
-              <summary><i data-lucide="align-left" class="w-4 h-4"></i> 檢視完整畫面描述與逐字稿</summary>
-              <div class="details-content" id="transcript-view-${post.rowIndex}">${post['逐字稿內容']}</div>
-              <textarea id="transcript-edit-${post.rowIndex}" class="hidden input-ios h-64 text-sm mt-3 w-full font-mono text-slate-600 leading-relaxed">${post['逐字稿內容']}</textarea>
-            </details>
-            
-            ${videoHtml}
-
-            <div class="absolute bottom-5 right-5 flex gap-2">
-              <button type="button" id="btn-edit-${post.rowIndex}" onclick="enableBossEdit(${post.rowIndex})" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 shadow-sm rounded-lg px-3 py-1.5 text-xs font-bold transition flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus:opacity-100">
-                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> 編輯
-              </button>
+              <details class="mb-4">
+                <summary><i data-lucide="align-left" class="w-4 h-4"></i> 檢視完整畫面描述與逐字稿</summary>
+                <div class="details-content vocus-reading" id="transcript-view-${post.rowIndex}">${post['逐字稿內容']}</div>
+                <textarea id="transcript-edit-${post.rowIndex}" class="hidden input-ios h-64 text-sm mt-3 w-full font-mono text-slate-600 leading-relaxed">${post['逐字稿內容']}</textarea>
+              </details>
               
-              <button type="button" id="btn-cancel-${post.rowIndex}" onclick="cancelBossEdit(${post.rowIndex})" class="hidden bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 rounded-lg px-4 py-2 text-xs font-bold transition items-center gap-1.5">
-                取消
-              </button>
-              <button type="button" id="btn-save-${post.rowIndex}" onclick="saveBossEdit('${post['智庫ID']}', ${post.rowIndex})" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 rounded-lg px-4 py-2 text-xs font-bold transition items-center gap-1.5">
-                <i data-lucide="save" class="w-3.5 h-3.5"></i> 儲存變更
-              </button>
+              ${videoHtml}
+
+              <div class="mt-4 flex justify-end gap-2 relative z-10">
+                <button type="button" id="btn-edit-${post.rowIndex}" onclick="enableBossEdit(${post.rowIndex})" class="bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 shadow-sm rounded-lg px-4 py-2 text-sm font-bold transition flex items-center gap-1.5">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i> 編輯
+                </button>
+                
+                <button type="button" id="btn-cancel-${post.rowIndex}" onclick="cancelBossEdit(${post.rowIndex})" class="hidden bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 rounded-lg px-4 py-2 text-sm font-bold transition items-center gap-1.5">
+                  取消
+                </button>
+                <button type="button" id="btn-save-${post.rowIndex}" onclick="saveBossEdit('${post['智庫ID']}', ${post.rowIndex}, this)" class="hidden bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 rounded-lg px-4 py-2 text-sm font-bold transition items-center gap-1.5">
+                  <i data-lucide="save" class="w-4 h-4"></i> 儲存變更
+                </button>
+              </div>
             </div>
           </div>
         `;
       });
       lucide.createIcons();
 
-      if (autoEditFirst && posts.length > 0) {
-        // 自動展開最新的一筆進入編輯狀態
-        enableBossEdit(posts[0].rowIndex);
+      // 檢查是否還有更多資料
+      if (bossCurrentPage * bossPageSize < globalBossRecords.length) {
+        loadMoreContainer.classList.remove('hidden');
+      } else {
+        loadMoreContainer.classList.add('hidden');
+      }
+      
+      if (autoEditFirst && postsToRender.length > 0) {
+        enableBossEdit(postsToRender[0].rowIndex);
       }
     }
 
-    // 🍎 歷史紀錄行內編輯功能
+    function loadMoreBossFeed() {
+      bossCurrentPage++;
+      renderBossFeed(false);
+    }
+
+    function toggleBossCard(idx) {
+      const body = document.getElementById(`boss-body-${idx}`);
+      const icon = document.getElementById(`boss-icon-${idx}`);
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+      } else {
+        // 如果正在編輯，禁止直接收合以免資料遺失
+        const isEditing = !document.getElementById(`btn-edit-${idx}`).classList.contains('flex') && document.getElementById(`btn-save-${idx}`).classList.contains('flex');
+        if (isEditing) {
+           showSysToast("請先儲存或取消編輯狀態。", "warn");
+           return;
+        }
+        body.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+      }
+    }
+
     function enableBossEdit(idx) {
       document.getElementById(`summary-view-${idx}`).classList.add('hidden');
       document.getElementById(`summary-edit-${idx}`).classList.remove('hidden');
       document.getElementById(`transcript-view-${idx}`).classList.add('hidden');
       document.getElementById(`transcript-edit-${idx}`).classList.remove('hidden');
       
-      document.getElementById(`btn-edit-${idx}`).classList.add('hidden');
-      document.getElementById(`btn-save-${idx}`).classList.remove('hidden');
-      document.getElementById(`btn-save-${idx}`).classList.add('flex');
-      document.getElementById(`btn-cancel-${idx}`).classList.remove('hidden');
-      document.getElementById(`btn-cancel-${idx}`).classList.add('flex');
+      const btnEdit = document.getElementById(`btn-edit-${idx}`);
+      const btnSave = document.getElementById(`btn-save-${idx}`);
+      const btnCancel = document.getElementById(`btn-cancel-${idx}`);
+      
+      btnEdit.classList.add('hidden'); btnEdit.classList.remove('flex');
+      btnSave.classList.remove('hidden'); btnSave.classList.add('flex');
+      btnCancel.classList.remove('hidden'); btnCancel.classList.add('flex');
 
-      // 自動將 details 展開以顯示逐字稿編輯區
       const card = document.getElementById(`boss-card-${idx}`);
       const details = card.querySelector('details');
       if (details) details.open = true;
@@ -1115,17 +1190,20 @@
       document.getElementById(`transcript-view-${idx}`).classList.remove('hidden');
       document.getElementById(`transcript-edit-${idx}`).classList.add('hidden');
       
-      document.getElementById(`btn-edit-${idx}`).classList.remove('hidden');
-      document.getElementById(`btn-save-${idx}`).classList.add('hidden');
-      document.getElementById(`btn-save-${idx}`).classList.remove('flex');
-      document.getElementById(`btn-cancel-${idx}`).classList.add('hidden');
-      document.getElementById(`btn-cancel-${idx}`).classList.remove('flex');
+      const btnEdit = document.getElementById(`btn-edit-${idx}`);
+      const btnSave = document.getElementById(`btn-save-${idx}`);
+      const btnCancel = document.getElementById(`btn-cancel-${idx}`);
+      
+      btnEdit.classList.remove('hidden'); btnEdit.classList.add('flex');
+      btnSave.classList.add('hidden'); btnSave.classList.remove('flex');
+      btnCancel.classList.add('hidden'); btnCancel.classList.remove('flex');
     }
 
-    async function saveBossEdit(recordId, idx) {
+    async function saveBossEdit(recordId, idx, btn) {
       const newSummary = document.getElementById(`summary-edit-${idx}`).value;
       const newTranscript = document.getElementById(`transcript-edit-${idx}`).value;
       
+      setBtnLoading(btn, "儲存中...");
       showSysToast("資料更新同步中...", "info");
       
       try {
@@ -1136,14 +1214,17 @@
           "逐字稿內容": newTranscript
         });
         showSysToast("變更已成功寫入資料庫！", "success");
-        fetchBossFeed(); // 重新讀取刷新畫面
+        // 刷新列表並回到第一頁
+        fetchBossFeed(); 
       } catch(e) {
         showSysToast("儲存失敗: " + e.message, "error");
+      } finally {
+        restoreBtnLoading(btn);
       }
     }
 
     // =========================================================================
-    // ★ 營銷系統獨立核心邏輯 (完全保留不動) ★
+    // ★ 營銷系統獨立核心邏輯 ★
     // =========================================================================
     let state = {
       recordId: "", mktId: "", urls: [""], transcript: "", industry: "", painPoint: "", 
@@ -1250,6 +1331,7 @@
       
       document.getElementById('socialResult').classList.add('hidden');
       document.getElementById('nextTo7').classList.add('hidden');
+      document.getElementById('inlineSearchBlock').classList.add('hidden');
 
       document.getElementById('finalContent').innerHTML = "";
       document.getElementById('proposalsResult').innerHTML = "";
@@ -1261,9 +1343,9 @@
       showMktToast('系統已完全重置');
     }
 
-    async function saveToDatabase() {
+    async function saveToDatabase(btn) {
       saveLocal(); 
-      showMktLoad('正在同步資料...');
+      setBtnLoading(btn, '同步中');
       try {
         state.memberId = currentUser.memberId;
         let res = await runGasFunction('syncDatabase', state);
@@ -1272,17 +1354,22 @@
         saveLocal();
         showMktToast('儲存成功');
       } catch(err) { showMktToast('儲存失敗：' + err.message, true); } 
-      finally { hideMktLoad(); }
+      finally { restoreBtnLoading(btn); }
     }
 
-    function openSearchModal() { document.getElementById('searchModal').classList.remove('hidden'); }
-    function closeSearchModal() { document.getElementById('searchModal').classList.add('hidden'); }
+    // 內聯搜尋面板切換
+    function toggleSearchBlock() { 
+      document.getElementById('inlineSearchBlock').classList.toggle('hidden'); 
+    }
     
-    async function executeSearch() {
+    async function executeSearch(btn) {
       let keyword = document.getElementById('searchKw').value;
       let startDate = document.getElementById('searchStart').value;
       let endDate = document.getElementById('searchEnd').value;
-      document.getElementById('searchResults').innerHTML = '<p class="text-blue-600 text-center py-10 font-semibold animate-pulse">搜尋中...</p>';
+      
+      setBtnLoading(btn, "搜尋中");
+      document.getElementById('searchResults').innerHTML = '<p class="text-blue-600 text-center py-10 font-semibold animate-pulse">連線搜尋中...</p>';
+      
       try {
         let res = await runGasFunction('searchDatabase', { keyword, startDate, endDate, memberId: currentUser.memberId });
         currentSearchResults = res.results;
@@ -1297,11 +1384,13 @@
               <div class="text-xs text-gray-500 mb-1">更新：${row['更新時間']} | 產業：${row['產業']}</div>
               <div class="text-xs text-blue-600 font-medium truncate max-w-lg">標籤：${row['選定關鍵字']}</div>
             </div>
-            <button type="button" onclick="loadRecordToUI(${i})" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition whitespace-nowrap">載入</button>
+            <button type="button" onclick="loadRecordToUI(${i})" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-50 hover:text-indigo-600 transition whitespace-nowrap">載入紀錄</button>
           </div>
         `).join('');
       } catch (err) {
         document.getElementById('searchResults').innerHTML = `<p class="text-red-500 text-center py-10">發生錯誤：${err.message}</p>`;
+      } finally {
+        restoreBtnLoading(btn);
       }
     }
 
@@ -1346,12 +1435,11 @@
       } else {
         goStep(1); 
       }
-      saveLocal(); closeSearchModal();
-      showMktToast('紀錄已載入');
+      saveLocal(); 
+      document.getElementById('inlineSearchBlock').classList.add('hidden'); // 載入後自動收合
+      showMktToast('紀錄已載入成功');
     }
 
-    function showMktLoad(msg) { document.getElementById('mktLoadingText').innerText = msg; document.getElementById('mktGlobalLoading').classList.remove('hidden'); }
-    function hideMktLoad() { document.getElementById('mktGlobalLoading').classList.add('hidden'); }
     function showMktToast(msg, isErr=false) {
       let t = document.getElementById('mktSystemToast'); t.innerText = msg;
       t.className = `fixed top-24 left-1/2 transform -translate-x-1/2 z-[200] px-6 py-3 rounded-full shadow-lg font-semibold text-sm transition-opacity duration-300 w-11/12 max-w-md text-center text-white ${isErr?'bg-red-500':'bg-gray-900'}`;
@@ -1364,20 +1452,22 @@
       window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
     }
 
-    async function runStep1() {
-      saveLocal(); showMktLoad('分析中...');
+    async function runStep1(btn) {
+      saveLocal(); 
+      setBtnLoading(btn, "AI 產出中...");
       try {
         let res = await runGasFunction('step1_GenerateIntro', state);
         document.getElementById('introText').value = res.introText;
         document.getElementById('introResult').classList.remove('hidden');
         saveLocal();
-      } catch(err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
+      } catch(err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
-    async function runStep2() {
+    async function runStep2(btn) {
       saveLocal(); 
       if(!state.industry || !state.painPoint || !state.introText) return showMktToast('請填寫產業與痛點', true);
-      showMktLoad('萃取中...');
+      
+      setBtnLoading(btn, "萃取關鍵字中...");
       try {
         let res = await runGasFunction('step2_GenerateKeywords', state);
         state.aiKeywords = res.keywords;
@@ -1386,7 +1476,7 @@
         saveLocal();
         showMktToast('收斂完成');
         window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
-      } catch(err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
+      } catch(err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
     function copyAndOpenGKP() {
@@ -1421,9 +1511,10 @@
       state.parsedGKPData = rows.map(row => { let obj = {}; expectedHeaders.forEach((h, i) => obj[h] = row[i] || ''); return obj; }).filter(obj => obj['關鍵字']); 
     });
 
-    async function analyzeGKPDataFlow() {
+    async function analyzeGKPDataFlow(btn) {
       if (state.parsedGKPData.length === 0) return showMktToast('請貼上數據', true);
-      showMktLoad('運算中...');
+      
+      setBtnLoading(btn, "演算分析中...");
       try {
         let res = await runGasFunction('step25_analyzeGKP', state);
         state.globalGkpData = res.gkp_results || [];
@@ -1431,7 +1522,7 @@
         document.getElementById('gkpAnalyzedResults').classList.remove('hidden');
         document.getElementById('nextTo3').classList.remove('hidden');
         saveLocal();
-      } catch(err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
+      } catch(err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
     function renderGkpCards() {
@@ -1448,27 +1539,29 @@
       saveLocal();
     }
 
-    async function runStep3() {
+    async function runStep3(btn) {
       saveLocal(); 
       if(state.selectedKeywordsList.length === 0) return showMktToast('請勾選關鍵字', true);
-      showMktLoad('生成提案中...');
+      
+      setBtnLoading(btn, "提案生成中...");
       try {
         let data = await runGasFunction('step3_Proposals', state);
         state.proposalsList = data.proposals; 
         document.getElementById('proposalsResult').innerHTML = state.proposalsList.map((p, i) => `
-          <div class="border border-gray-200 p-5 rounded-xl bg-gray-50 hover:border-blue-400 cursor-pointer transition" onclick="selectProposal(${i})">
+          <div class="border border-gray-200 p-5 rounded-xl bg-gray-50 hover:border-blue-400 cursor-pointer transition" onclick="selectProposal(${i}, this)">
             <h4 class="font-bold text-gray-900 text-lg mb-2">${p.title}</h4>
             <p class="text-sm text-gray-600 mb-3"><strong class="text-gray-800">內容方向：</strong>${p.summary}</p>
             <button type="button" class="mt-2 text-sm bg-white border border-gray-200 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center">選擇提案 <span class="material-icons text-[16px] ml-1">arrow_forward</span></button>
           </div>
         `).join('');
         document.getElementById('proposalsResult').classList.remove('hidden');
-      } catch (err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
-    async function selectProposal(index) {
+    async function selectProposal(index, element) {
       state.proposal = state.proposalsList[index]; saveLocal();
-      showMktLoad('引導生成中...');
+      const btnInDiv = element.querySelector('button');
+      setBtnLoading(btnInDiv, "引導生成中");
       try {
         let data = await runGasFunction('step4_Socratic', state);
         document.getElementById('q_saw').innerHTML = `<span class="material-icons text-blue-500 mr-2 mt-0.5 text-[20px]">visibility</span> <span class="leading-relaxed">${data.questions.q_saw}</span>`;
@@ -1476,22 +1569,23 @@
         document.getElementById('q_exp').innerHTML = `<span class="material-icons text-purple-500 mr-2 mt-0.5 text-[20px]">menu_book</span> <span class="leading-relaxed">${data.questions.q_exp}</span>`;
         document.getElementById('q_realization').innerHTML = `<span class="material-icons text-orange-500 mr-2 mt-0.5 text-[20px]">lightbulb</span> <span class="leading-relaxed">${data.questions.q_realization}</span>`;
         goStep(4);
-      } catch (err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btnInDiv); }
     }
 
-    async function runStep5() {
-      saveLocal(); showMktLoad('撰寫中...');
+    async function runStep5(btn) {
+      saveLocal(); 
+      setBtnLoading(btn, "撰寫 CTA 中...");
       try {
         let data = await runGasFunction('step5_CTA', state);
         document.getElementById('conclusion').value = data.conclusion;
         document.getElementById('cta').value = data.cta;
         saveLocal(); showMktToast('結語生成成功');
-      } catch (err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
-    async function runStep6() {
+    async function runStep6(btn) {
       saveLocal(); 
-      showMktLoad('組裝長文中...');
+      setBtnLoading(btn, "組裝排版文章中...");
       try {
         let data = await runGasFunction('step6_FinalBlog', state);
         state.finalHtml = data.html; 
@@ -1504,14 +1598,15 @@
 
         goStep(6); 
         document.getElementById('nextTo7').classList.remove('hidden');
-        await saveToDatabase();
-      } catch (err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
+        await runGasFunction('syncDatabase', state); // 背景自動同步
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
-    async function runStep7() {
+    async function runStep7(btn) {
       saveLocal();
       if (!state.finalArticleText) return showMktToast('請先確認有文章內容', true);
-      showMktLoad('生成社群圖文中...');
+      
+      setBtnLoading(btn, "生成社群圖文中...");
       try {
         let data = await runGasFunction('step7_SocialMedia', state);
         state.socialPost = data.social_post;
@@ -1524,7 +1619,7 @@
         saveLocal();
         showMktToast('社群圖文生成成功！');
         window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
-      } catch (err) { showMktToast(err.message, true); } finally { hideMktLoad(); }
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
     function copyContent(elementId) {
