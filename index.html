@@ -13,13 +13,13 @@
     .ios-card { background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.04); }
     .input-ios { width: 100%; background: #f1f5f9; border: 1px solid transparent; border-radius: 12px; padding: 14px; font-size: 15px; outline: none; transition: 0.2s; }
     .input-ios:focus { background: #FFFFFF; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-    .btn-ios { background: var(--primary); color: white; border-radius: 12px; padding: 14px; font-weight: 600; width: 100%; transition: 0.1s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+    .btn-ios { background: var(--primary); color: white; border-radius: 12px; padding: 14px; font-weight: 600; width: 100%; transition: 0.1s; display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
     .btn-ios:active { transform: scale(0.98); opacity: 0.9; }
     .tab-content { display: none; animation: fade 0.3s ease; }
     .tab-content.active { display: block; }
+    .step-section { display: none; animation: fade 0.3s ease; }
+    .step-section.active { display: block; }
     @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* Toast 提示訊息動畫設定 */
     #system-toast { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
   </style>
 </head>
@@ -41,18 +41,15 @@
       <h2 class="text-2xl font-bold mb-6 tracking-tight">系統登入與註冊</h2>
       <div class="space-y-4">
         <input type="email" id="authEmail" class="input-ios" placeholder="工作信箱 (會員登入必填)">
-        
         <div class="relative py-4">
           <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
           <div class="relative flex justify-center"><span class="bg-white px-4 text-xs font-semibold text-slate-400">首次註冊請填寫以下資訊</span></div>
         </div>
-
         <input type="text" id="authName" class="input-ios" placeholder="姓名">
         <input type="tel" id="authPhone" class="input-ios" placeholder="電話">
         <input type="text" id="authIndustry" class="input-ios" placeholder="專業或產業別 (例：精緻搬家)">
         <input type="text" id="authTitle" class="input-ios" placeholder="職稱 (例：創辦人)">
         <input type="text" id="authPurpose" class="input-ios" placeholder="系統用途 (例：管理客服)">
-        
         <button onclick="login()" class="btn-ios mt-6">
           <i data-lucide="log-in" class="w-4 h-4"></i> 登入或送出註冊
         </button>
@@ -78,12 +75,10 @@
         <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
           <i data-lucide="user" class="text-blue-600"></i> 會員專區
         </h2>
-        
         <div class="bg-slate-50 p-5 rounded-xl mb-6 border border-slate-100">
           <p class="text-sm text-slate-500 mb-1 font-medium">系統配發會員 ID</p>
           <p class="font-mono font-bold text-lg text-slate-800" id="ui-mid">-</p>
         </div>
-
         <h3 class="font-bold text-slate-800 mb-4 text-sm tracking-wide">個人資料設定</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <input type="text" id="prf_姓名" class="input-ios cacheable" placeholder="姓名">
@@ -95,7 +90,6 @@
         <button onclick="saveData('saveProfile', 'prf_')" class="btn-ios mb-8 w-full md:w-auto px-8">
           <i data-lucide="save" class="w-4 h-4"></i> 更新會員資料
         </button>
-
         <div class="bg-slate-900 p-5 rounded-xl">
           <p class="text-sm text-white font-medium mb-3 flex items-center gap-2">
             <i data-lucide="link" class="w-4 h-4 text-blue-400"></i> 專屬 LINE Webhook 網址
@@ -111,7 +105,7 @@
         </h2>
         <div class="space-y-4">
           <input type="password" id="set_LINE_TOKEN" class="input-ios cacheable" placeholder="LINE Channel Access Token">
-          <input type="password" id="set_GEMINI_API_KEY" class="input-ios cacheable" placeholder="Gemini API Key">
+          <input type="password" id="set_GEMINI_API_KEY" class="input-ios cacheable" placeholder="您的專屬 Gemini API Key (必填)">
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
             <input type="text" id="set_客服自稱" class="input-ios cacheable" placeholder="客服自稱 (例: 搬家小岳)">
@@ -122,7 +116,21 @@
           <textarea id="set_敘事結構" class="input-ios cacheable h-24" placeholder="敘事結構 (例: 1.確認問題 2.提供方案)"></textarea>
           <textarea id="set_回覆限制" class="input-ios cacheable h-24" placeholder="回覆限制 (例: 字數不超過300字)"></textarea>
           
-          <div class="pt-4">
+          <div class="mt-8 border-t border-slate-100 pt-6">
+            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="git-merge" class="w-4 h-4 text-indigo-500"></i> 特定情境與回覆策略設定</h3>
+            <div id="strategy-list" class="space-y-3"></div>
+            <button onclick="addStrategy()" class="mt-3 text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-3 py-2 rounded-lg transition"><i data-lucide="plus-circle" class="w-4 h-4"></i> 新增回覆策略</button>
+          </div>
+
+          <div class="mt-6 border-t border-slate-100 pt-6">
+            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="book-open" class="w-4 h-4 text-emerald-500"></i> 參考資料來源</h3>
+            <div id="source-list" class="space-y-3"></div>
+            <button onclick="addSource()" class="mt-3 text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 px-3 py-2 rounded-lg transition"><i data-lucide="plus-circle" class="w-4 h-4"></i> 新增資料來源</button>
+          </div>
+
+          <input type="hidden" id="set_資料來源JSON" class="cacheable">
+
+          <div class="pt-6">
             <button onclick="saveData('saveSettings', 'set_')" class="btn-ios w-full md:w-auto px-8 bg-indigo-600 hover:bg-indigo-700">
               <i data-lucide="cloud-upload" class="w-4 h-4"></i> 儲存智能大腦設定
             </button>
@@ -132,14 +140,24 @@
 
       <section id="tab-knowledge" class="tab-content ios-card p-6 md:p-8">
         <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
-          <i data-lucide="database" class="text-amber-600"></i> 老闆智庫
+          <i data-lucide="database" class="text-amber-600"></i> 老闆智庫 & 陪跑素材庫
         </h2>
         <div class="space-y-4">
-          <textarea id="knw_逐字稿內容" class="input-ios cacheable h-32 leading-relaxed" placeholder="逐字稿內容..."></textarea>
+          <label class="block font-semibold text-sm text-slate-700">基礎逐字與整理</label>
+          <textarea id="knw_逐字稿內容" class="input-ios cacheable h-32 leading-relaxed" placeholder="逐字稿內容... (用於 Step 1 產出)"></textarea>
           <textarea id="knw_重點整理內容" class="input-ios cacheable h-32 leading-relaxed" placeholder="重點整理..."></textarea>
+          
+          <div class="border-t border-slate-100 pt-4 mt-4">
+            <label class="block font-semibold text-sm text-slate-700 mb-2">蘇格拉底深度血肉 (用於 Step 6 組裝文章)</label>
+            <textarea id="knw_所見所聞" class="input-ios cacheable h-24 mb-3" placeholder="我的所見所聞..."></textarea>
+            <textarea id="knw_所思所想" class="input-ios cacheable h-24 mb-3" placeholder="我的所思所想..."></textarea>
+            <textarea id="knw_親身經歷" class="input-ios cacheable h-24 mb-3" placeholder="我的親身經歷案例..."></textarea>
+            <textarea id="knw_感觸體認" class="input-ios cacheable h-24 mb-3" placeholder="我的感觸體認..."></textarea>
+          </div>
+
           <div class="pt-4">
             <button onclick="saveData('saveKnowledge', 'knw_')" class="btn-ios w-full md:w-auto px-8 bg-amber-600 hover:bg-amber-700">
-              <i data-lucide="save" class="w-4 h-4"></i> 儲存智庫紀錄
+              <i data-lucide="save" class="w-4 h-4"></i> 儲存智庫與血肉紀錄
             </button>
           </div>
         </div>
@@ -147,58 +165,126 @@
 
       <section id="tab-marketing" class="tab-content ios-card p-6 md:p-8">
         <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
-          <i data-lucide="pen-tool" class="text-teal-600"></i> 營銷文章
+          <i data-lucide="pen-tool" class="text-teal-600"></i> AI 文章營銷經理系統
         </h2>
-        <div class="space-y-4">
-          <textarea id="mkt_前導與時事" class="input-ios cacheable h-24 leading-relaxed" placeholder="前導與時事引言..."></textarea>
-          <input type="text" id="mkt_SEO關鍵字" class="input-ios cacheable" placeholder="SEO關鍵字 (建議以逗號分隔)">
-          <input type="text" id="mkt_提案標題" class="input-ios cacheable" placeholder="文章提案標題">
+
+        <div id="mkt-step1" class="step-section active mb-8">
+          <h3 class="text-lg font-bold mb-4 flex items-center text-slate-800"><span class="bg-slate-100 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">1</span> 抓取對標與時事引言生成</h3>
+          <p class="text-xs text-slate-500 mb-4">系統將自動讀取「老闆智庫」的逐字稿內容作為基礎。</p>
+          <div class="mb-4">
+             <label class="block font-semibold mb-2 text-sm text-slate-700">相關文章對標網址</label>
+             <div id="urlContainer" class="space-y-2"></div>
+             <button onclick="addUrlInput()" class="mt-2 text-xs font-semibold text-teal-600 bg-teal-50 px-3 py-1.5 rounded-lg hover:bg-teal-100 transition">新增網址</button>
+          </div>
+          <button onclick="runStep1()" class="btn-ios bg-slate-800 hover:bg-slate-900 w-full">產出時事共鳴與前導文章</button>
           
-          <button onclick="generateMarketing()" class="w-full bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold p-4 rounded-xl transition-colors flex items-center justify-center gap-2">
-            <i data-lucide="sparkles" class="w-5 h-5"></i> 自動產出長文與社群圖文
-          </button>
+          <div id="introResult" class="hidden mt-6">
+            <label class="block font-semibold mb-2 text-sm text-blue-600">前導文章內容 (可編輯)</label>
+            <textarea id="mkt_前導與時事" class="input-ios cacheable h-48 bg-blue-50/30 border-blue-100"></textarea>
+            <button onclick="goStep(2)" class="btn-ios mt-4 bg-slate-100 text-slate-800 hover:bg-slate-200 w-full">確認內容，進入 Step 2</button>
+          </div>
+        </div>
+
+        <div id="mkt-step2" class="step-section mb-8 pt-6 border-t border-slate-100">
+          <h3 class="text-lg font-bold mb-4 flex items-center text-slate-800"><span class="bg-slate-100 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">2</span> 產業痛點與 GKP 收斂</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <input type="text" id="mkt_產業" class="input-ios cacheable" placeholder="產業 / 產品 (例：AI 自動化導入)">
+            <input type="text" id="mkt_痛點" class="input-ios cacheable" placeholder="客戶痛點 / 情境 (例：營運成本高)">
+          </div>
+          <button onclick="runStep2()" class="btn-ios bg-slate-800 hover:bg-slate-900 w-full">萃取推薦關鍵字</button>
           
-          <div class="pt-4 space-y-4">
-            <textarea id="mkt_產出長文HTML" class="input-ios cacheable h-48 font-mono text-sm leading-relaxed bg-slate-800 text-slate-300 focus:bg-slate-900 border-none" placeholder="<產出的 HTML 長文>"></textarea>
-            <textarea id="mkt_社群圖文" class="input-ios cacheable h-48 leading-relaxed" placeholder="產出的社群貼文與視覺 Prompt..."></textarea>
+          <div id="gkpSection" class="hidden mt-6">
+             <div class="bg-slate-50 p-4 rounded-xl mb-4 flex justify-between items-center">
+                <span class="text-sm font-semibold text-slate-700">請複製 AI 關鍵字並前往 Google Keyword Planner</span>
+                <button onclick="copyAndOpenGKP()" class="bg-blue-600 text-white text-xs px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">複製並開啟</button>
+             </div>
+             <textarea id="gkpPasteArea" class="input-ios h-32 mb-4" placeholder="從 GKP 複製表格後貼於此處..."></textarea>
+             <button onclick="analyzeGKPDataFlow()" class="btn-ios bg-slate-800 hover:bg-slate-900 w-full">產生演算法排行</button>
+          </div>
+          <div id="gkpAnalyzedResults" class="hidden mt-6">
+             <div class="flex justify-between items-center mb-4">
+               <h4 class="font-bold text-sm text-slate-800">勾選主打關鍵字</h4>
+               <span class="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded">已選 <span id="kwCount">0</span> 項</span>
+             </div>
+             <div id="gkpCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4"></div>
+             <button onclick="goStep(3)" class="btn-ios bg-slate-100 text-slate-800 hover:bg-slate-200 w-full">確認勾選，進入 Step 3</button>
+          </div>
+        </div>
+
+        <div id="mkt-step3" class="step-section mb-8 pt-6 border-t border-slate-100">
+          <h3 class="text-lg font-bold mb-4 flex items-center text-slate-800"><span class="bg-slate-100 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">3</span> 流量密碼提案</h3>
+          <button onclick="runStep3()" class="btn-ios bg-slate-800 hover:bg-slate-900 w-full">生成 10 大提案</button>
+          <div id="proposalsResult" class="hidden mt-6 space-y-3"></div>
+          <input type="hidden" id="mkt_提案標題" class="cacheable">
+        </div>
+
+        <div id="mkt-step4" class="step-section mb-8 pt-6 border-t border-slate-100">
+          <h3 class="text-lg font-bold mb-4 flex items-center text-slate-800"><span class="bg-slate-100 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">4/5</span> 蘇格拉底引導 & 結尾生成</h3>
+          <p class="text-sm text-slate-500 mb-4">系統已為您準備好問題，請至「老闆智庫」分頁填寫血肉內容，或直接於下方補齊 CTA。</p>
+          <div class="space-y-4 mb-6">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100" id="socraticQuestions">載入引導問題中...</div>
+            <button onclick="runStep5()" class="btn-ios bg-slate-800 hover:bg-slate-900 w-full">產出祝福與 CTA</button>
+            <textarea id="mkt_結語" class="input-ios cacheable h-24" placeholder="真摯推薦與祝福..."></textarea>
+            <textarea id="mkt_CTA" class="input-ios cacheable h-24" placeholder="導購行動呼籲..."></textarea>
+          </div>
+          <button onclick="runStep6()" class="btn-ios bg-blue-600 hover:bg-blue-700 w-full text-lg">套用阿岳語氣，產出爆款長文</button>
+        </div>
+
+        <div id="mkt-step6" class="step-section mb-8 pt-6 border-t border-slate-100">
+          <div class="flex justify-between items-center mb-4">
+             <h3 class="text-lg font-bold flex items-center text-slate-800"><span class="bg-slate-100 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">6</span> 專屬文章產出</h3>
+             <button onclick="copyContent('mkt_產出長文HTML')" class="text-xs bg-slate-100 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-200">一鍵複製 HTML</button>
+          </div>
+          <textarea id="mkt_產出長文HTML" class="input-ios cacheable h-64 font-mono text-sm leading-relaxed bg-slate-900 text-slate-200 border-none mb-4"></textarea>
+          <button onclick="goStep(7)" class="btn-ios bg-slate-100 text-slate-800 hover:bg-slate-200 w-full">進入 Step 7 產出社群圖文</button>
+        </div>
+
+        <div id="mkt-step7" class="step-section mb-8 pt-6 border-t border-slate-100">
+          <h3 class="text-lg font-bold mb-4 flex items-center text-slate-800"><span class="bg-slate-100 text-slate-600 rounded-full w-6 h-6 flex items-center justify-center text-xs mr-2">7</span> 社群貼文與視覺 Prompt</h3>
+          <button onclick="runStep7()" class="btn-ios bg-slate-800 hover:bg-slate-900 w-full mb-6">產出社群貼文與輪播圖 Prompts</button>
+          
+          <div id="socialResult" class="hidden space-y-4">
+             <div class="flex justify-between items-center">
+                <label class="font-semibold text-sm text-slate-700">社群貼文與 10 頁 Prompts</label>
+                <button onclick="copyContent('mkt_社群圖文')" class="text-xs bg-slate-100 font-semibold px-3 py-1.5 rounded-lg hover:bg-slate-200">一鍵複製</button>
+             </div>
+             <textarea id="mkt_社群圖文" class="input-ios cacheable h-64 leading-relaxed"></textarea>
           </div>
           
-          <div class="pt-4">
+          <div class="pt-6 border-t border-slate-100 mt-6">
             <button onclick="saveData('saveMarketing', 'mkt_')" class="btn-ios w-full md:w-auto px-8 bg-teal-600 hover:bg-teal-700">
-              <i data-lucide="save" class="w-4 h-4"></i> 儲存營銷素材
+              <i data-lucide="save" class="w-4 h-4"></i> 儲存營銷素材至資料庫
             </button>
           </div>
         </div>
+
       </section>
 
     </main>
-
     <nav class="md:hidden glass-nav fixed bottom-0 left-0 w-full px-6 py-2 pb-safe z-40 flex justify-between items-center" id="mobile-nav"></nav>
   </div>
 
   <script>
-    // 初始化圖示
     lucide.createIcons();
     
     // ==========================================
-    // ★★★ 請將你在 GAS 部署獲得的 Web App URL 貼在下方字串中 ★★★
+    // ★★★ 請替換成你部署的 GAS Web App URL ★★★
     // ==========================================
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbw-WxzOfwBSmdx8ZiG1cats0-3BTFjRi1S1GIRjeF1h7ZXpmxhd1k-TxqAnwoJ0aQW7/exec'; 
     
     let currentUser = JSON.parse(localStorage.getItem('sys_user') || 'null');
     let currentRecordIds = JSON.parse(localStorage.getItem('sys_ids') || '{}');
+    
+    // 營銷流狀態管理
+    let mktState = { urls: [""], aiKeywords: [], parsedGKPData: [], globalGkpData: [], selectedKeywordsList: [], proposalsList: [], proposal: null };
 
-    // ★ 專業版提示系統 (取代 alert)
+    // Toast 提示系統
     let toastTimeout;
     function showToast(message, type = 'success') {
       const toast = document.getElementById('system-toast');
       const icon = document.getElementById('toast-icon');
       const msgEl = document.getElementById('toast-message');
-      
-      // 清除舊的計時器
       if (toastTimeout) clearTimeout(toastTimeout);
-      
-      // 設定樣式與文字
       msgEl.innerText = message;
       if (type === 'error') {
         toast.className = "fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-6 py-4 rounded-xl shadow-[0_8px_30px_rgb(220,38,38,0.2)] font-semibold text-sm flex items-center gap-3 bg-red-600 text-white transition-all duration-300";
@@ -211,17 +297,11 @@
         icon.setAttribute('data-lucide', 'check-circle-2');
       }
       lucide.createIcons();
-      
-      // 顯示
       toast.classList.remove('opacity-0', '-translate-y-10', 'pointer-events-none');
-      
-      // 隱藏
-      toastTimeout = setTimeout(() => {
-        toast.classList.add('opacity-0', '-translate-y-10', 'pointer-events-none');
-      }, 3500);
+      toastTimeout = setTimeout(() => toast.classList.add('opacity-0', '-translate-y-10', 'pointer-events-none'), 3500);
     }
 
-    // 防斷線機制
+    // 防斷線快取
     document.querySelectorAll('.cacheable').forEach(el => {
       const cached = localStorage.getItem('cache_' + el.id);
       if (cached) el.value = cached;
@@ -237,10 +317,11 @@
 
     if (currentUser) enterSystem();
 
-    // 核心 API 請求
     async function apiCall(action, data, msg) {
       document.getElementById('loading').style.display = 'flex';
       document.getElementById('loadingText').innerText = msg;
+      // 確保將用戶輸入的 Gemini API Key 傳給後端
+      data.geminiKey = document.getElementById('set_GEMINI_API_KEY').value || '';
       try {
         const res = await fetch(GAS_API_URL, { 
           method: 'POST', 
@@ -250,7 +331,7 @@
         const json = await res.json();
         document.getElementById('loading').style.display = 'none';
         if (json.status === 'success') return json.data;
-        throw new Error(json.message);
+        throw new Error(json.message || json.error);
       } catch (err) {
         document.getElementById('loading').style.display = 'none';
         showToast("系統錯誤：" + err.message, "error");
@@ -258,7 +339,6 @@
       }
     }
 
-    // 登入
     async function login() {
       const payload = {
         email: document.getElementById('authEmail').value,
@@ -276,15 +356,12 @@
       
       if(res.isNew) showToast("註冊成功，系統已為您開通免費試用。", "success");
       else showToast("登入成功，歡迎回來。", "info");
-      
       enterSystem();
     }
 
-    // 進入系統介面
     function enterSystem() {
       document.getElementById('view-auth').style.display = 'none';
       document.getElementById('view-main').style.display = 'block';
-      
       document.getElementById('ui-mid').innerText = currentUser.memberId;
       document.getElementById('ui-webhook').innerText = `${GAS_API_URL}?mid=${currentUser.memberId}`;
       
@@ -295,13 +372,62 @@
       if(!document.getElementById('prf_註冊系統用途').value) document.getElementById('prf_註冊系統用途').value = currentUser.purpose || "";
 
       renderNav();
+      renderUrlInputs();
+      restoreCsJSON();
     }
 
-    // 儲存資料
+    // --- 智能設定：動態 JSON 欄位管理 ---
+    function restoreCsJSON() {
+      try {
+        let raw = document.getElementById('set_資料來源JSON').value;
+        if (!raw) return;
+        let data = JSON.parse(raw);
+        if (data.strategies) data.strategies.forEach(s => addStrategy(s.cond, s.resp));
+        if (data.sources) data.sources.forEach(s => addSource(s.title, s.content));
+      } catch(e) {}
+    }
+    
+    function packCsJSON() {
+      let strategies = Array.from(document.querySelectorAll('.cs-strategy')).map(el => ({
+        cond: el.querySelector('.cs-cond').value, resp: el.querySelector('.cs-resp').value
+      })).filter(s => s.cond || s.resp);
+      
+      let sources = Array.from(document.querySelectorAll('.cs-source')).map(el => ({
+        title: el.querySelector('.cs-title').value, content: el.querySelector('.cs-content').value
+      })).filter(s => s.title || s.content);
+      
+      document.getElementById('set_資料來源JSON').value = JSON.stringify({ strategies, sources });
+      localStorage.setItem('cache_set_資料來源JSON', document.getElementById('set_資料來源JSON').value);
+    }
+
+    function addStrategy(cond = '', resp = '') {
+      const id = Date.now();
+      document.getElementById('strategy-list').insertAdjacentHTML('beforeend', `
+        <div class="cs-strategy flex flex-col gap-2 bg-white p-3 rounded-xl border border-slate-200" id="strat-${id}">
+          <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500">情境觸發條件</span><button onclick="document.getElementById('strat-${id}').remove(); packCsJSON();" class="text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
+          <input type="text" class="cs-cond input-ios p-2 text-sm" placeholder="例如：詢問價格時..." value="${cond}" oninput="packCsJSON()">
+          <textarea class="cs-resp input-ios p-2 text-sm h-16" placeholder="回覆策略或文案..." oninput="packCsJSON()">${resp}</textarea>
+        </div>`);
+      lucide.createIcons();
+    }
+
+    function addSource(title = '', content = '') {
+      const id = Date.now();
+      document.getElementById('source-list').insertAdjacentHTML('beforeend', `
+        <div class="cs-source flex flex-col gap-2 bg-white p-3 rounded-xl border border-slate-200" id="src-${id}">
+          <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-500">資料標題</span><button onclick="document.getElementById('src-${id}').remove(); packCsJSON();" class="text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>
+          <input type="text" class="cs-title input-ios p-2 text-sm" placeholder="標題或網址..." value="${title}" oninput="packCsJSON()">
+          <textarea class="cs-content input-ios p-2 text-sm h-16" placeholder="詳細內容或摘要..." oninput="packCsJSON()">${content}</textarea>
+        </div>`);
+      lucide.createIcons();
+    }
+    // ------------------------------------
+
     async function saveData(action, prefix) {
       if (!currentUser) return showToast("請先登入系統", "error");
+      if (action === 'saveSettings') packCsJSON(); // 確保儲存前打包
+
       let payload = { 會員ID: currentUser.memberId };
-      
       document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => {
         const fieldName = el.id.replace(prefix, ''); 
         payload[fieldName] = el.value;
@@ -320,31 +446,190 @@
       showToast("資料已安全寫入資料庫。", "success");
     }
 
-    // 營銷生成
-    async function generateMarketing() {
-      const transcript = document.getElementById('knw_逐字稿內容').value;
-      if(!transcript) return showToast("無法產出：請先至「老闆智庫」填寫逐字稿。", "error");
-      
-      try {
-        const intro = await apiCall('step1_GenerateIntro', { transcript }, "正在構思前導文章...");
-        document.getElementById('mkt_前導與時事').value = intro.introText;
-        
-        const blog = await apiCall('step6_FinalBlog', { title: document.getElementById('mkt_提案標題').value || "AI生成標題", introText: intro.introText }, "正在撰寫高轉換長文...");
-        document.getElementById('mkt_產出長文HTML').value = blog.html;
-        
-        const social = await apiCall('step7_SocialMedia', { article: blog.html }, "正在生成社群圖文指令...");
-        document.getElementById('mkt_社群圖文').value = social.social_post;
-        
-        // 保存至本機快取
-        document.querySelectorAll('.cacheable').forEach(el => {
-          localStorage.setItem('cache_' + el.id, el.value);
-        });
-        showToast("產出完畢！請查閱並點擊「儲存營銷素材」。", "success");
-      } catch (err) {
-        // 錯誤已在 apiCall 中攔截處理
-      }
+    // === 營銷流 7 步驟核心邏輯 ===
+    function renderUrlInputs() {
+      const container = document.getElementById('urlContainer');
+      if (mktState.urls.length === 0) mktState.urls = [""];
+      container.innerHTML = mktState.urls.map((u, i) => `
+        <div class="flex items-center space-x-2 w-full">
+          <input type="text" class="url-input flex-1 input-ios p-3" placeholder="https://..." value="${u}" oninput="mktState.urls = Array.from(document.querySelectorAll('.url-input')).map(inp => inp.value);">
+          ${mktState.urls.length > 1 ? `<button onclick="mktState.urls.splice(${i}, 1); renderUrlInputs();" class="text-red-400 p-2"><i data-lucide="trash-2" class="w-5 h-5"></i></button>` : ''}
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+    function addUrlInput() { mktState.urls.push(""); renderUrlInputs(); }
+    function goStep(num) {
+      document.querySelectorAll('.step-section').forEach(el => el.classList.remove('active'));
+      document.getElementById('mkt-step' + num).classList.add('active');
     }
 
+    async function runStep1() {
+      const transcript = document.getElementById('knw_逐字稿內容').value;
+      if(!transcript) return showToast("請先至老闆智庫填寫「逐字稿內容」", "error");
+      try {
+        const res = await apiCall('step1_GenerateIntro', { transcript, urls: mktState.urls }, "正在構思前導文章...");
+        document.getElementById('mkt_前導與時事').value = res.introText;
+        document.getElementById('introResult').classList.remove('hidden');
+        localStorage.setItem('cache_mkt_前導與時事', res.introText);
+      } catch (err) {}
+    }
+
+    async function runStep2() {
+      const industry = document.getElementById('mkt_產業').value;
+      const painPoint = document.getElementById('mkt_痛點').value;
+      const introText = document.getElementById('mkt_前導與時事').value;
+      if(!industry || !painPoint || !introText) return showToast('請填寫產業、痛點及前導文章', "error");
+      try {
+        const res = await apiCall('step2_GenerateKeywords', { industry, painPoint, introText }, "萃取精準關鍵字中...");
+        mktState.aiKeywords = res.keywords;
+        document.getElementById('gkpSection').classList.remove('hidden');
+        showToast('收斂完成，請將關鍵字帶入 GKP。');
+      } catch(err) {}
+    }
+
+    function copyAndOpenGKP() {
+      if (mktState.aiKeywords.length === 0) return showToast('無關鍵字可複製', 'error');
+      navigator.clipboard.writeText(mktState.aiKeywords.join('\r\n')).then(() => {
+        window.open('https://ads.google.com/aw/keywordplanner/home', '_blank');
+      });
+    }
+
+    document.getElementById('gkpPasteArea').addEventListener('input', function(e) {
+      const rawData = e.target.value.trim();
+      if (!rawData) { mktState.parsedGKPData = []; return; }
+      const expectedHeaders = ['關鍵字', '平均每月搜尋量', '三個月內的變化', '逐年變化', '競爭程度', '廣告曝光比重', '首頁頂端出價(低價)', '首頁頂端出價(高價)'];
+      let rows = [];
+      if (rawData.indexOf('\t') !== -1) {
+        let rawRows = rawData.split('\n').map(r => r.split('\t'));
+        rows = (rawRows[0][0].includes('關鍵字')) ? rawRows.slice(1) : rawRows;
+      } else {
+        let dataLines = rawData.split('\n').map(l => l.trim()).filter(l => l !== '');
+        for (let i = 0; i < dataLines.length; i += 8) {
+          let chunk = dataLines.slice(i, i + 8);
+          if (chunk.length > 0 && chunk[0] !== '關鍵字') { while(chunk.length < 8) chunk.push(''); rows.push(chunk); }
+        }
+      }
+      mktState.parsedGKPData = rows.map(row => { let obj = {}; expectedHeaders.forEach((h, i) => obj[h] = row[i] || ''); return obj; }).filter(obj => obj['關鍵字']); 
+    });
+
+    async function analyzeGKPDataFlow() {
+      if (mktState.parsedGKPData.length === 0) return showToast('請貼上 GKP 數據', 'error');
+      try {
+        const res = await apiCall('step25_analyzeGKP', { parsedGKPData: mktState.parsedGKPData }, "演算法排行運算中...");
+        mktState.globalGkpData = res.gkp_results || [];
+        
+        document.getElementById('gkpCardsContainer').innerHTML = mktState.globalGkpData.map((item, i) => {
+          let isChk = mktState.selectedKeywordsList.includes(item.keyword) ? 'checked' : '';
+          return `<label class="cursor-pointer block"><input type="checkbox" class="absolute opacity-0" value="${item.keyword}" onchange="toggleKeyword(this)" ${isChk}><div class="bg-white border-2 border-slate-100 rounded-xl p-3 flex justify-between items-center transition"><div class="flex flex-col"><span class="font-bold text-sm text-slate-800">${item.keyword}</span><span class="text-xs text-slate-400 mt-1">搜尋: ${item.metrics.volume} | 競爭: ${item.metrics.competition}</span></div></div></label>`;
+        }).join('');
+        document.getElementById('gkpAnalyzedResults').classList.remove('hidden');
+      } catch(err) {}
+    }
+
+    function toggleKeyword(checkbox) {
+      if (checkbox.checked) mktState.selectedKeywordsList.push(checkbox.value);
+      else mktState.selectedKeywordsList = mktState.selectedKeywordsList.filter(k => k !== checkbox.value);
+      document.getElementById('kwCount').innerText = mktState.selectedKeywordsList.length;
+    }
+
+    async function runStep3() {
+      if(mktState.selectedKeywordsList.length === 0) return showToast('請勾選關鍵字', 'error');
+      try {
+        const payload = { 
+          introText: document.getElementById('mkt_前導與時事').value, 
+          industry: document.getElementById('mkt_產業').value, 
+          painPoint: document.getElementById('mkt_痛點').value,
+          selectedKeywordsList: mktState.selectedKeywordsList 
+        };
+        const res = await apiCall('step3_Proposals', payload, "生成流量提案中...");
+        mktState.proposalsList = res.proposals; 
+        
+        document.getElementById('proposalsResult').innerHTML = mktState.proposalsList.map((p, i) => `
+          <div class="border border-slate-200 p-4 rounded-xl bg-slate-50 cursor-pointer hover:border-blue-400 transition" onclick="selectProposal(${i})">
+            <h4 class="font-bold text-slate-800 text-sm mb-1">${p.title}</h4>
+            <p class="text-xs text-slate-600 line-clamp-2">${p.summary}</p>
+          </div>
+        `).join('');
+        document.getElementById('proposalsResult').classList.remove('hidden');
+      } catch (err) {}
+    }
+
+    async function selectProposal(index) {
+      mktState.proposal = mktState.proposalsList[index];
+      document.getElementById('mkt_提案標題').value = mktState.proposal.title;
+      try {
+        const res = await apiCall('step4_Socratic', { proposal: mktState.proposal }, "哈佛教授引導生成中...");
+        document.getElementById('socraticQuestions').innerHTML = `
+          <ul class="text-sm text-slate-700 space-y-2 font-medium">
+            <li><span class="text-blue-500">Q1:</span> ${res.questions.q_saw}</li>
+            <li><span class="text-green-500">Q2:</span> ${res.questions.q_thought}</li>
+            <li><span class="text-purple-500">Q3:</span> ${res.questions.q_exp}</li>
+            <li><span class="text-orange-500">Q4:</span> ${res.questions.q_realization}</li>
+          </ul>
+        `;
+        goStep(4);
+      } catch (err) {}
+    }
+
+    async function runStep5() {
+      const payload = {
+        mySaw: document.getElementById('knw_所見所聞').value,
+        myThought: document.getElementById('knw_所思所想').value,
+        myExp: document.getElementById('knw_親身經歷').value,
+        myRealization: document.getElementById('knw_感觸體認').value
+      };
+      try {
+        const res = await apiCall('step5_CTA', payload, "撰寫結尾中...");
+        document.getElementById('mkt_結語').value = res.conclusion;
+        document.getElementById('mkt_CTA').value = res.cta;
+        showToast('結語生成成功');
+      } catch (err) {}
+    }
+
+    async function runStep6() {
+      const payload = {
+        proposal: mktState.proposal,
+        introText: document.getElementById('mkt_前導與時事').value,
+        mySaw: document.getElementById('knw_所見所聞').value,
+        myThought: document.getElementById('knw_所思所想').value,
+        myExp: document.getElementById('knw_親身經歷').value,
+        myRealization: document.getElementById('knw_感觸體認').value,
+        conclusion: document.getElementById('mkt_結語').value,
+        cta: document.getElementById('mkt_CTA').value,
+        selectedKeywordsList: mktState.selectedKeywordsList
+      };
+      try {
+        const res = await apiCall('step6_FinalBlog', payload, "阿岳語氣長文生成中...");
+        document.getElementById('mkt_產出長文HTML').value = res.html;
+        goStep(6);
+      } catch (err) {}
+    }
+
+    async function runStep7() {
+      const htmlText = document.getElementById('mkt_產出長文HTML').value;
+      if (!htmlText) return showToast('請先產生 HTML 文章', 'error');
+      
+      let tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlText;
+      const plainText = tempDiv.innerText;
+
+      try {
+        const res = await apiCall('step7_SocialMedia', { finalArticleText: plainText }, "社群圖文生成中...");
+        document.getElementById('mkt_社群圖文').value = res.social_post + "\n\n=== 以下為製圖 Prompts ===\n\n" + res.image_prompts;
+        document.getElementById('socialResult').classList.remove('hidden');
+        showToast('社群圖文生成成功！');
+      } catch (err) {}
+    }
+
+    function copyContent(elementId) {
+      let el = document.getElementById(elementId);
+      el.select();
+      document.execCommand('copy');
+      showToast('已複製成功！');
+    }
+
+    // === UI Nav ===
     function renderNav() {
       const dNav = document.getElementById('desktop-nav');
       const mNav = document.getElementById('mobile-nav');
