@@ -297,22 +297,20 @@
                 <h3 class="text-lg font-bold text-indigo-900 flex items-center"><span class="material-icons mr-2 text-indigo-500">folder_open</span> 讀取知識庫</h3>
                 <button type="button" onclick="toggleSearchBlock()" class="text-gray-400 hover:text-gray-800 transition"><span class="material-icons">close</span></button>
               </div>
-              <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row flex-wrap gap-4 items-end bg-white">
-                <div class="flex-1 w-full sm:min-w-[200px]">
+              <div class="p-5 border-b border-gray-100 flex flex-col gap-4 bg-white">
+                <div class="w-full">
                   <label class="block text-xs font-semibold mb-1 text-gray-500">關鍵字 (標題/產業/痛點)</label>
                   <input type="text" id="searchKw" class="input-ios p-2.5" placeholder="搜尋...">
                 </div>
-                <div class="w-full sm:w-auto flex gap-4">
-                  <div class="flex-1 sm:flex-none">
-                    <label class="block text-xs font-semibold mb-1 text-gray-500">開始日期</label>
-                    <input type="date" id="searchStart" class="input-ios p-2.5 text-sm w-full">
-                  </div>
-                  <div class="flex-1 sm:flex-none">
-                    <label class="block text-xs font-semibold mb-1 text-gray-500">結束日期</label>
-                    <input type="date" id="searchEnd" class="input-ios p-2.5 text-sm w-full">
-                  </div>
+                <div class="w-full">
+                  <label class="block text-xs font-semibold mb-1 text-gray-500">開始日期</label>
+                  <input type="date" id="searchStart" class="input-ios p-2.5 text-sm w-full">
                 </div>
-                <button type="button" onclick="executeSearch(this)" class="btn-ios px-6 py-2.5 h-[46px] w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700">搜尋</button>
+                <div class="w-full">
+                  <label class="block text-xs font-semibold mb-1 text-gray-500">結束日期</label>
+                  <input type="date" id="searchEnd" class="input-ios p-2.5 text-sm w-full">
+                </div>
+                <button type="button" onclick="executeSearch(this)" class="btn-ios px-6 py-2.5 w-full bg-indigo-600 hover:bg-indigo-700">搜尋</button>
               </div>
               <div class="p-5 max-h-[300px] overflow-y-auto no-scrollbar bg-slate-50">
                 <div id="searchResults" class="space-y-3 text-sm">
@@ -338,16 +336,16 @@
                     <input type="text" id="visualStyle" class="input-ios" placeholder="例：日系極簡風、2D向量插畫">
                   </div>
                 </div>
-                <div class="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:gap-4">
-                  <div class="flex-1">
+                <div class="flex flex-col space-y-4">
+                  <div class="w-full">
                     <label class="block font-semibold mb-2 text-xs text-slate-600">前導文章字數</label>
                     <input type="text" id="introLength" class="input-ios" placeholder="例：300-500字">
                   </div>
-                  <div class="flex-1">
+                  <div class="w-full">
                     <label class="block font-semibold mb-2 text-xs text-slate-600">部落格文章字數</label>
                     <input type="text" id="blogLength" class="input-ios" placeholder="例：2000-3000字">
                   </div>
-                  <div class="flex-1">
+                  <div class="w-full">
                     <label class="block font-semibold mb-2 text-xs text-slate-600">社群文章字數</label>
                     <input type="text" id="socialLength" class="input-ios" placeholder="例：300-600字">
                   </div>
@@ -406,12 +404,12 @@
               <button type="button" onclick="runStep2(this)" class="btn-ios text-lg"><span class="material-icons text-[20px] mr-2">search</span> 萃取推薦關鍵字</button>
               
               <div id="gkpSection" class="hidden mt-10 pt-8 border-t border-gray-100">
-                <div class="bg-gray-50 p-6 rounded-2xl mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="bg-gray-50 p-6 rounded-2xl mb-6 flex flex-col gap-4">
                   <div>
                     <h3 class="font-bold text-gray-900 text-lg flex items-center"><span class="material-icons text-[20px] mr-1 text-gray-500">analytics</span> GKP 數據對校</h3>
                     <p class="text-sm text-gray-500 mt-1">點擊複製 AI 關鍵字並前往 Google Keyword Planner。</p>
                   </div>
-                  <button type="button" id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition flex items-center w-full sm:w-auto justify-center">
+                  <button type="button" id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition flex items-center w-full justify-center">
                     <span class="material-icons text-[18px] mr-1">content_copy</span> 複製並開啟
                   </button>
                 </div>
@@ -481,7 +479,7 @@
                 <h2 class="text-2xl font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_6</span> 專屬文章</h2>
                 <button type="button" onclick="copyContent('finalContent')" class="text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center"><span class="material-icons text-[18px] mr-1">copy_all</span> 一鍵複製</button>
               </div>
-              <div id="finalContent" class="prose prose-lg max-w-none text-gray-800 bg-slate-50 p-8 rounded-2xl border border-gray-200 vocus-reading"></div>
+              <div id="finalContent" contenteditable="true" class="prose prose-lg max-w-none text-gray-800 bg-slate-50 p-8 rounded-2xl border border-gray-200 vocus-reading outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"></div>
               <button type="button" id="nextTo7" onclick="goStep(7)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">確認文章，進入 Step 7 產出社群圖文 <span class="material-icons text-[18px] ml-1">arrow_forward</span></button>
             </div>
 
@@ -507,19 +505,28 @@
                     <h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-blue-500">article</span> 社群貼文</h3>
                     <button type="button" onclick="copyContent('socialPostContent')" class="text-xs bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center"><span class="material-icons text-[16px] mr-1">content_copy</span> 複製貼文</button>
                   </div>
-                  <div id="socialPostContent" class="prose max-w-none text-gray-800 bg-slate-50 p-6 rounded-xl border border-gray-200 vocus-reading"></div>
+                  <div id="socialPostContent" contenteditable="true" class="prose max-w-none text-gray-800 bg-slate-50 p-6 rounded-xl border border-gray-200 vocus-reading outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"></div>
                 </div>
                 <div>
                   <div class="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
                     <h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-green-500">image</span> 10頁輪播圖 Prompts</h3>
                     <button type="button" onclick="copyContent('imagePromptsContent')" class="text-xs bg-gray-100 text-gray-800 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center"><span class="material-icons text-[16px] mr-1">content_copy</span> 複製 Prompts</button>
                   </div>
-                  <textarea id="imagePromptsContent" class="input-ios h-80 text-sm leading-relaxed" readonly></textarea>
+                  <textarea id="imagePromptsContent" class="input-ios h-80 text-sm leading-relaxed"></textarea>
                 </div>
               </div>
             </div>
           </div>
 
+        </div>
+      </section>
+
+      <section id="tab-ecard" class="tab-content ios-card p-6 md:p-8 flex flex-col h-[85vh]">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2 tracking-tight">
+          <i data-lucide="credit-card" class="text-pink-600"></i> 電子名片系統
+        </h2>
+        <div class="flex-1 w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100 relative">
+          <iframe src="https://rubybranddesign-cloud.github.io/e-line-card-backer/" class="absolute inset-0 w-full h-full border-0"></iframe>
         </div>
       </section>
 
@@ -582,7 +589,8 @@
       { id: 'profile', name: '會員專區', icon: 'user' },
       { id: 'settings', name: '智能設定', icon: 'bot' },
       { id: 'knowledge', name: '老闆智庫', icon: 'database' },
-      { id: 'marketing', name: '營銷文章', icon: 'pen-tool' }
+      { id: 'marketing', name: '營銷文章', icon: 'pen-tool' },
+      { id: 'ecard', name: '電子名片', icon: 'credit-card' }
     ];
 
     if (currentUser) enterSystem();
@@ -954,36 +962,36 @@
     }
 
     function processChunk(blob, mimeType, cIndex) {
-  addSysLog(`[處理中] 正在上傳第 ${cIndex} 分鐘影音區塊...`);
-  
-  const task = new Promise(resolve => {
-    const reader = new FileReader();
-    reader.readAsDataURL(blob);
-    reader.onloadend = async () => {
-      const b64 = reader.result.split(',')[1];
-      try {
-        // 完全比照陪跑系統的寫法，使用 Promise.all 統一發送與等待
-        const results = await Promise.all([
-          apiCall("saveBossChunk", { base64Data: b64, mimeType: mimeType, folderId: recordData.folderId, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null),
-          apiCall("recognizeBossChunk", { base64Data: b64, mimeType: mimeType, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null)
-        ]);
-        
-        // 印出後端回傳的成功訊息與測速時間
-        addSysLog(results[0]);
-        addSysLog(results[1]);
-        
-      } catch(err) { 
-        // 比照陪跑系統，統一捕捉錯誤
-        addSysLog(`[錯誤] 切片 ${cIndex} 上傳或辨識錯誤: ${err.message}`, "error"); 
-      } finally { 
-        resolve(); 
-      }
-    };
-  });
-  
-  activeProcessingTasks.add(task);
-  task.then(() => activeProcessingTasks.delete(task));
-}
+      addSysLog(`[處理中] 正在上傳第 ${cIndex} 分鐘影音區塊...`);
+      
+      const task = new Promise(resolve => {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+          const b64 = reader.result.split(',')[1];
+          try {
+            // 完全比照陪跑系統的寫法，使用 Promise.all 統一發送與等待
+            const results = await Promise.all([
+              apiCall("saveBossChunk", { base64Data: b64, mimeType: mimeType, folderId: recordData.folderId, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null),
+              apiCall("recognizeBossChunk", { base64Data: b64, mimeType: mimeType, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null)
+            ]);
+            
+            // 印出後端回傳的成功訊息與測速時間
+            addSysLog(results[0]);
+            addSysLog(results[1]);
+            
+          } catch(err) { 
+            // 比照陪跑系統，統一捕捉錯誤
+            addSysLog(`[錯誤] 切片 ${cIndex} 上傳或辨識錯誤: ${err.message}`, "error"); 
+          } finally { 
+            resolve(); 
+          }
+        };
+      });
+      
+      activeProcessingTasks.add(task);
+      task.then(() => activeProcessingTasks.delete(task));
+    }
 
     async function stopMeeting() {
       isRecording = false; isPaused = false; clearTimeout(chunkInterval);
@@ -1302,6 +1310,16 @@
       ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength', 'aspectRatio'].forEach(id => {
         let el = document.getElementById(id); if(el) state[id] = el.value;
       });
+      
+      let finalHtmlEl = document.getElementById('finalContent');
+      if(finalHtmlEl) state.finalHtml = finalHtmlEl.innerHTML;
+      
+      let socialEl = document.getElementById('socialPostContent');
+      if(socialEl) state.socialPost = socialEl.innerHTML;
+
+      let imgPromptsEl = document.getElementById('imagePromptsContent');
+      if(imgPromptsEl) state.imagePrompts = imgPromptsEl.value;
+
       updateUrlState();
       localStorage.setItem('troy_eeat_system', JSON.stringify(state));
     }
