@@ -4,13 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>GrowthX｜超級營銷智能系統</title>
-  
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  
   <style>
     /* === 主系統樣式 === */
     :root { --app-bg: #F5F5F7; --primary: #0f172a; }
@@ -26,7 +24,7 @@
     #system-toast { transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 
     /* === 營銷系統獨立樣式 (一字不漏保留) === */
-    .mkt-glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); }
+    .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .progress-red { background: linear-gradient(90deg, #ff4d4d, #b30000); }
     .progress-green { background: linear-gradient(90deg, #4ade80, #166534); }
@@ -63,6 +61,7 @@
         <input type="text" id="authIndustry" class="input-ios" placeholder="專業或產業別 (例：精緻搬家)">
         <input type="text" id="authTitle" class="input-ios" placeholder="職稱 (例：創辦人)">
         <input type="text" id="authPurpose" class="input-ios" placeholder="系統用途 (例：管理客服)">
+        <input type="text" id="authReferral" class="input-ios" placeholder="推薦人會員ID (選填)">
         <button onclick="login()" class="btn-ios mt-6">
           <i data-lucide="log-in" class="w-4 h-4"></i> 登入或送出註冊
         </button>
@@ -530,7 +529,8 @@
         phone: document.getElementById('authPhone').value,
         industry: document.getElementById('authIndustry').value,
         title: document.getElementById('authTitle').value,
-        purpose: document.getElementById('authPurpose').value
+        purpose: document.getElementById('authPurpose').value,
+        referral: document.getElementById('authReferral').value // 推薦人ID
       };
       if (!payload.email) return showSysToast("請輸入工作信箱", "error");
       
@@ -652,7 +652,7 @@
     function logout() { localStorage.clear(); location.reload(); }
 
     // =========================================================================
-    // ★ 營銷系統獨立核心邏輯 (完全一字不漏保留) ★
+    // ★ 營銷系統獨立核心邏輯 (一字不漏保留，負責與知識庫連動) ★
     // =========================================================================
     let state = {
       recordId: "", urls: [""], transcript: "", introText: "", industry: "", painPoint: "", 
@@ -665,7 +665,7 @@
 
     async function runGasFunction(actionName, payload) {
       try {
-        payload.geminiKey = document.getElementById('set_GEMINI_API_KEY').value || ''; // Ensure key passed
+        payload.geminiKey = document.getElementById('set_GEMINI_API_KEY').value || '';
         let response = await fetch(GAS_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
