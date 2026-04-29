@@ -143,11 +143,26 @@
         <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
           <i data-lucide="user" class="text-blue-600"></i> 會員專區
         </h2>
-        <div class="bg-slate-50 p-5 rounded-xl mb-6 border border-slate-100 flex flex-col">
+        
+        <!-- 這是原本的 會員 ID 區塊 -->
+        <div class="bg-slate-50 p-5 rounded-xl mb-4 border border-slate-100 flex flex-col">
           <p class="text-sm text-slate-500 mb-1 font-medium">系統配發會員 ID</p>
           <p class="font-mono font-bold text-lg text-slate-800" id="ui-mid">-</p>
         </div>
+
+        <!-- 🌟 [新增] 這是全新的 會員代碼 區塊與複製按鈕 -->
+        <div class="bg-slate-50 p-5 rounded-xl mb-6 border border-slate-100 flex flex-col">
+          <p class="text-sm text-slate-500 mb-1 font-medium">專屬會員代碼</p>
+          <div class="flex items-center justify-between">
+            <p class="font-mono font-bold text-lg text-slate-800" id="ui-mcode">-</p>
+            <button type="button" onclick="copyMemberCode()" class="text-slate-500 hover:text-blue-600 bg-white border border-slate-200 hover:border-blue-200 shadow-sm px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5">
+              <i data-lucide="copy" class="w-4 h-4"></i> 複製代碼
+            </button>
+          </div>
+        </div>
+
         <h3 class="font-bold text-slate-800 mb-4 text-sm tracking-wide">個人資料設定</h3>
+        <!-- 下方保留原本的 input 區塊... -->
         <div class="grid grid-cols-1 gap-4 mb-6">
           <input type="text" id="prf_姓名" class="input-ios cacheable" placeholder="姓名">
           <input type="tel" id="prf_電話" class="input-ios cacheable" placeholder="電話">
@@ -770,9 +785,13 @@
       document.getElementById('view-auth').style.display = 'none';
       document.getElementById('view-main').style.display = 'block';
       
-      // 填入本地快取資料... (保留你原本的程式碼)
       document.getElementById('ui-mid').innerText = currentUser.memberId;
+      // 🌟 [新增] 將會員代碼填入畫面
+      document.getElementById('ui-mcode').innerText = currentUser.memberCode || "-";
+      
       document.getElementById('ui-webhook').innerText = `${GAS_API_URL}?mid=${currentUser.memberId}`;
+      
+      
       if(!document.getElementById('prf_姓名').value) document.getElementById('prf_姓名').value = currentUser.name || "";
       if(!document.getElementById('prf_電話').value) document.getElementById('prf_電話').value = currentUser.phone || "";
       if(!document.getElementById('prf_專業/產業別').value) document.getElementById('prf_專業/產業別').value = currentUser.industry || "";
@@ -786,6 +805,22 @@
 
       // [新增] 進入系統後，觸發背景同步，撈取最新雲端資料
       syncCurrentUserData();
+    }
+
+    // 🌟 [新增] 複製會員代碼的函式
+    function copyMemberCode() {
+      const codeText = document.getElementById('ui-mcode').innerText;
+      
+      // 確保有代碼才可以複製
+      if (codeText && codeText !== "-") {
+        navigator.clipboard.writeText(codeText).then(() => {
+          // 利用你原本寫好的漂亮 Toast 元件顯示成功訊息
+          showSysToast("會員代碼已成功複製到剪貼簿！", "success");
+        }).catch(err => {
+          console.error('複製失敗:', err);
+          showSysToast("複製失敗，請手動選取複製", "error");
+        });
+      }
     }
 
     // [新增] 背景同步函式
