@@ -954,38 +954,36 @@
     }
 
     function processChunk(blob, mimeType, cIndex) {
-      addSysLog(`[處理中] 正在上傳第 ${cIndex} 分鐘影音區塊並啟動雙軌平行處理...`);
-      
-      const task = new Promise(resolve => {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = async () => {
-          const b64 = reader.result.split(',')[1];
-          
-          const driveTask = apiCall("saveBossChunk", { base64Data: b64, mimeType: mimeType, folderId: recordData.folderId, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null)
-            .then(() => {
-              addSysLog(`[成功] 第 ${cIndex} 分鐘影音已安全儲存！雲端連結寫入成功。`);
-            })
-            .catch((err) => {
-              addSysLog(`[錯誤] 切片 ${cIndex} 雲端儲存發生錯誤: ` + err.message, "error");
-            });
-
-          const aiTask = apiCall("recognizeBossChunk", { base64Data: b64, mimeType: mimeType, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null)
-            .then(() => {
-              addSysLog(`[AI分析] 第 ${cIndex} 分鐘 AI 畫面描述與語音逐字稿同步寫入成功！`);
-            })
-            .catch((err) => {
-              addSysLog(`[錯誤] 切片 ${cIndex} AI辨識發生錯誤: ` + err.message, "error");
-            });
-
-          await Promise.all([driveTask, aiTask]);
-          resolve();
-        };
-      });
-      
-      activeProcessingTasks.add(task);
-      task.then(() => activeProcessingTasks.delete(task));
-    }
+  addSysLog(`[處理中] 正在上傳第 ${cIndex} 分鐘影音區塊...`);
+  
+  const task = new Promise(resolve => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = async () => {
+      const b64 = reader.result.split(',')[1];
+      try {
+        // 完全比照陪跑系統的寫法，使用 Promise.all 統一發送與等待
+        const results = await Promise.all([
+          apiCall("saveBossChunk", { base64Data: b64, mimeType: mimeType, folderId: recordData.folderId, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null),
+          apiCall("recognizeBossChunk", { base64Data: b64, mimeType: mimeType, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null)
+        ]);
+        
+        // 印出後端回傳的成功訊息與測速時間
+        addSysLog(results[0]);
+        addSysLog(results[1]);
+        
+      } catch(err) { 
+        // 比照陪跑系統，統一捕捉錯誤
+        addSysLog(`[錯誤] 切片 ${cIndex} 上傳或辨識錯誤: ${err.message}`, "error"); 
+      } finally { 
+        resolve(); 
+      }
+    };
+  });
+  
+  activeProcessingTasks.add(task);
+  task.then(() => activeProcessingTasks.delete(task));
+}
 
     async function stopMeeting() {
       isRecording = false; isPaused = false; clearTimeout(chunkInterval);
