@@ -799,11 +799,11 @@
       let tempStream;
 
       if (isMobile) {
-        constraints.video = { facingMode: mobileFacingMode, width: { ideal: 854 }, height: { ideal: 480 } };
+        constraints.video = { facingMode: mobileFacingMode, width: { max: 640 }, height: { max: 360 } };
         tempStream = await navigator.mediaDevices.getUserMedia(constraints);
       } else {
         if (desktopSource === "camera") {
-          constraints.video = { width: { ideal: 854 }, height: { ideal: 480 } };
+          constraints.video = { width: { max: 640 }, height: { max: 360 } };
           tempStream = await navigator.mediaDevices.getUserMedia(constraints);
         } else {
           tempStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
@@ -864,7 +864,7 @@
     function toggleRecordUI(forceOpen = false) {
       const el = document.getElementById('recordUI');
       if (isRecording && !forceOpen && el.style.display === 'block') {
-         showSysToast("⚠️ 錄製正在進行中，請先完成錄製再關閉面板。", "error"); return;
+         showSysToast("警告：錄製正在進行中，請先完成錄製再關閉面板。", "error"); return;
       }
       
       el.style.display = (forceOpen || el.style.display === 'none') ? 'block' : 'none';
@@ -889,8 +889,8 @@
       try {
         const res = await apiCall("initBossRecord", { memberId: currentUser.memberId, folderIds: currentUser.folderIds }, null);
         recordData = res;
-        addSysLog(`✅ 智庫專屬資料夾建檔成功！ (ID: ${res.recordId})`);
-        addSysLog(`✅ 試算表寫入初始化連線成功 (Row: ${res.rowIndex})`);
+        addSysLog(`[系統] 智庫專屬資料夾建檔成功！ (ID: ${res.recordId})`);
+        addSysLog(`[系統] 試算表寫入初始化連線成功 (Row: ${res.rowIndex})`);
 
         document.getElementById('recordDivider').style.display = 'block';
         document.getElementById('btnPause').style.display = 'flex';
@@ -902,7 +902,7 @@
         document.getElementById('recBadge').style.display = 'flex';
         document.getElementById('recordStatus').innerText = "錄製進行中... (背景安全同步中)";
         
-        addSysLog("▶️ 錄製開始，啟動每分鐘雙軌切片傳輸引擎...");
+        addSysLog("[系統] 錄製開始，啟動每分鐘雙軌切片傳輸引擎...");
         startChunkRecording();
       } catch(e) { 
         document.getElementById('recordStatus').innerText = "啟動失敗，請確認網路連線"; 
@@ -919,7 +919,7 @@
         document.getElementById('recBadge').style.background = "#f59e0b";
         document.getElementById('recText').innerText = "PAUSED";
         document.getElementById('recordStatus').innerText = "錄製已暫停";
-        addSysLog("⏸️ 錄製已暫停。", "warn");
+        addSysLog("[暫停] 錄製已暫停。", "warn");
       }
     }
     
@@ -931,7 +931,7 @@
         document.getElementById('recBadge').style.background = "rgba(220, 38, 38, 0.9)";
         document.getElementById('recText').innerText = "REC";
         document.getElementById('recordStatus').innerText = "錄製進行中...";
-        addSysLog("▶️ 錄製已恢復，繼續進行切片傳輸。");
+        addSysLog("[恢復] 錄製已恢復，繼續進行切片傳輸。");
       }
     }
 
@@ -954,24 +954,35 @@
     }
 
     function processChunk(blob, mimeType, cIndex) {
-      addSysLog(`⏳ 正在上傳第 ${cIndex} 分鐘影音區塊並啟動 AI 辨識...`);
+      addSysLog(`[處理中] 正在上傳第 ${cIndex} 分鐘影音區塊並啟動雙軌平行處理...`);
+      
       const task = new Promise(resolve => {
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
           const b64 = reader.result.split(',')[1];
-          try {
-            await Promise.all([
-              apiCall("saveBossChunk", { base64Data: b64, mimeType: mimeType, folderId: recordData.folderId, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null),
-              apiCall("recognizeBossChunk", { base64Data: b64, mimeType: mimeType, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null)
-            ]);
-            addSysLog(`✅ 第 ${cIndex} 分鐘影音已安全儲存！雲端連結寫入成功。`);
-            addSysLog(`🧠 第 ${cIndex} 分鐘 AI 畫面描述與語音逐字稿同步寫入成功！`);
-          } catch(err) { 
-            addSysLog(`❌ 切片 ${cIndex} 處理發生錯誤: ` + err.message, "error"); 
-          } finally { resolve(); }
+          
+          const driveTask = apiCall("saveBossChunk", { base64Data: b64, mimeType: mimeType, folderId: recordData.folderId, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null)
+            .then(() => {
+              addSysLog(`[成功] 第 ${cIndex} 分鐘影音已安全儲存！雲端連結寫入成功。`);
+            })
+            .catch((err) => {
+              addSysLog(`[錯誤] 切片 ${cIndex} 雲端儲存發生錯誤: ` + err.message, "error");
+            });
+
+          const aiTask = apiCall("recognizeBossChunk", { base64Data: b64, mimeType: mimeType, rowIndex: recordData.rowIndex, chunkIndex: cIndex }, null)
+            .then(() => {
+              addSysLog(`[AI分析] 第 ${cIndex} 分鐘 AI 畫面描述與語音逐字稿同步寫入成功！`);
+            })
+            .catch((err) => {
+              addSysLog(`[錯誤] 切片 ${cIndex} AI辨識發生錯誤: ` + err.message, "error");
+            });
+
+          await Promise.all([driveTask, aiTask]);
+          resolve();
         };
       });
+      
       activeProcessingTasks.add(task);
       task.then(() => activeProcessingTasks.delete(task));
     }
@@ -983,7 +994,7 @@
       document.getElementById('recordStatus').innerHTML = '<i data-lucide="loader" class="pulse-dot bg-transparent me-2 d-inline-block"></i> 正在安全封裝檔案並產出智能分析...';
       lucide.createIcons();
       
-      addSysLog("⏹️ 錄製結束。正在等待所有切片上傳完成並生成最終摘要報告...", "warn");
+      addSysLog("[停止] 錄製結束。正在等待所有切片上傳完成並生成最終摘要報告...", "warn");
 
       const onStopPromise = new Promise(resolve => {
         if (mediaRecorder && (mediaRecorder.state === "recording" || mediaRecorder.state === "paused")) {
@@ -999,7 +1010,7 @@
 
       await apiCall("finalizeBossRecord", { rowIndex: recordData.rowIndex, memberId: currentUser.memberId }, null);
       
-      addSysLog("✨ 系統封裝與 AI 分析全數完成！最新紀錄已更新至歷史清單。");
+      addSysLog("[完成] 系統封裝與 AI 分析全數完成！最新紀錄已更新至歷史清單。");
       document.getElementById('recordStatus').innerText = "智庫分析完成！可以往下捲動查看或編輯紀錄。";
       
       setTimeout(() => {
@@ -1080,7 +1091,7 @@
             <div class="flex justify-between items-center cursor-pointer select-none" onclick="toggleBossCard(${post.rowIndex})">
               <div class="flex flex-col gap-1">
                 <div class="font-bold text-slate-800 text-base flex items-center gap-2">
-                   📝 智庫紀錄：${post['智庫ID'] || '新紀錄'}
+                    <i data-lucide="file-text" class="w-4 h-4 text-slate-500"></i> 智庫紀錄：${post['智庫ID'] || '新紀錄'}
                 </div>
                 <div class="text-xs text-slate-500 flex items-center gap-1.5">
                    <i data-lucide="calendar-clock" class="w-3.5 h-3.5"></i>
