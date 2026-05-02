@@ -167,6 +167,72 @@
           <input type="text" id="prf_註冊系統用途" class="input-ios cacheable" placeholder="註冊系統用途">
         </div>
 
+        <h3 class="font-bold text-slate-800 mb-4 text-sm tracking-wide mt-6 border-t border-slate-100 pt-6">經營資訊設定</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <input type="text" id="prf_公司抬頭/姓名" class="input-ios cacheable" placeholder="公司抬頭 / 姓名">
+          <input type="text" id="prf_統一編號/身分證號" class="input-ios cacheable" placeholder="統一編號 / 身分證號">
+          <input type="text" id="prf_代表人" class="input-ios cacheable" placeholder="代表人">
+          <input type="text" id="prf_聯繫人" class="input-ios cacheable" placeholder="聯繫人">
+          <input type="tel" id="prf_聯繫電話" class="input-ios cacheable" placeholder="聯繫電話">
+          <input type="text" id="prf_聯絡地址" class="input-ios cacheable md:col-span-2" placeholder="聯絡地址">
+        </div>
+
+        <h4 class="font-bold text-slate-700 mb-3 text-xs tracking-wide">公司印章與圖示 (支援上傳預覽)</h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex flex-col items-center gap-2">
+            <span class="text-xs font-bold text-slate-600">公司LOGO</span>
+            <div class="w-full aspect-square bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden relative group">
+              <img id="preview_公司LOGO" src="" class="hidden object-contain w-full h-full z-10 bg-white">
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 group-hover:text-blue-500 bg-white/80 transition-colors cursor-pointer z-20" onclick="document.getElementById('file_公司LOGO').click()" id="upload_ui_公司LOGO">
+                <i data-lucide="upload-cloud" class="w-5 h-5 mb-1"></i>
+                <span class="text-[10px] font-bold">上傳圖片</span>
+              </div>
+            </div>
+            <input type="file" id="file_公司LOGO" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'preview_公司LOGO', 'prf_公司LOGO', 'upload_ui_公司LOGO')">
+            <input type="hidden" id="prf_公司LOGO" class="cacheable">
+            <button type="button" class="text-[10px] text-red-500 hover:text-red-600 font-semibold mt-1" onclick="clearImage('preview_公司LOGO', 'prf_公司LOGO', 'upload_ui_公司LOGO')">清除圖片</button>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex flex-col items-center gap-2">
+            <span class="text-xs font-bold text-slate-600">發票章(去背)</span>
+            <div class="w-full aspect-square bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden relative group">
+              <img id="preview_公司發票章（請去背）" src="" class="hidden object-contain w-full h-full z-10 bg-white">
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 group-hover:text-blue-500 bg-white/80 transition-colors cursor-pointer z-20" onclick="document.getElementById('file_公司發票章（請去背）').click()" id="upload_ui_公司發票章（請去背）">
+                <i data-lucide="upload-cloud" class="w-5 h-5 mb-1"></i>
+                <span class="text-[10px] font-bold">上傳圖片</span>
+              </div>
+            </div>
+            <input type="file" id="file_公司發票章（請去背）" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'preview_公司發票章（請去背）', 'prf_公司發票章（請去背）', 'upload_ui_公司發票章（請去背）')">
+            <input type="hidden" id="prf_公司發票章（請去背）" class="cacheable">
+            <button type="button" class="text-[10px] text-red-500 hover:text-red-600 font-semibold mt-1" onclick="clearImage('preview_公司發票章（請去背）', 'prf_公司發票章（請去背）', 'upload_ui_公司發票章（請去背）')">清除圖片</button>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex flex-col items-center gap-2">
+            <span class="text-xs font-bold text-slate-600">公司大章(去背)</span>
+            <div class="w-full aspect-square bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden relative group">
+              <img id="preview_公司大章（請去背）" src="" class="hidden object-contain w-full h-full z-10 bg-white">
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 group-hover:text-blue-500 bg-white/80 transition-colors cursor-pointer z-20" onclick="document.getElementById('file_公司大章（請去背）').click()" id="upload_ui_公司大章（請去背）">
+                <i data-lucide="upload-cloud" class="w-5 h-5 mb-1"></i>
+                <span class="text-[10px] font-bold">上傳圖片</span>
+              </div>
+            </div>
+            <input type="file" id="file_公司大章（請去背）" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'preview_公司大章（請去背）', 'prf_公司大章（請去背）', 'upload_ui_公司大章（請去背）')">
+            <input type="hidden" id="prf_公司大章（請去背）" class="cacheable">
+            <button type="button" class="text-[10px] text-red-500 hover:text-red-600 font-semibold mt-1" onclick="clearImage('preview_公司大章（請去背）', 'prf_公司大章（請去背）', 'upload_ui_公司大章（請去背）')">清除圖片</button>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex flex-col items-center gap-2">
+            <span class="text-xs font-bold text-slate-600">公司小章(去背)</span>
+            <div class="w-full aspect-square bg-white border-2 border-dashed border-slate-300 rounded-lg flex items-center justify-center overflow-hidden relative group">
+              <img id="preview_公司小章（請去背）" src="" class="hidden object-contain w-full h-full z-10 bg-white">
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 group-hover:text-blue-500 bg-white/80 transition-colors cursor-pointer z-20" onclick="document.getElementById('file_公司小章（請去背）').click()" id="upload_ui_公司小章（請去背）">
+                <i data-lucide="upload-cloud" class="w-5 h-5 mb-1"></i>
+                <span class="text-[10px] font-bold">上傳圖片</span>
+              </div>
+            </div>
+            <input type="file" id="file_公司小章（請去背）" accept="image/*" class="hidden" onchange="handleImageUpload(this, 'preview_公司小章（請去背）', 'prf_公司小章（請去背）', 'upload_ui_公司小章（請去背）')">
+            <input type="hidden" id="prf_公司小章（請去背）" class="cacheable">
+            <button type="button" class="text-[10px] text-red-500 hover:text-red-600 font-semibold mt-1" onclick="clearImage('preview_公司小章（請去背）', 'prf_公司小章（請去背）', 'upload_ui_公司小章（請去背）')">清除圖片</button>
+          </div>
+        </div>
+
         <h3 class="font-bold text-slate-800 mb-4 text-sm tracking-wide mt-6 border-t border-slate-100 pt-6">API KEY 智能負載均衡管理 (至多 10 組)</h3>
         <div id="apiKeyContainer" class="grid grid-cols-1 gap-3 mb-4"></div>
         <button type="button" onclick="addApiKeyField()" class="btn-ios bg-slate-100 text-slate-700 hover:bg-slate-200 mb-8 w-full shadow-sm" title="新增一組 API KEY">
@@ -686,11 +752,62 @@
       btn.disabled = false;
     }
 
+    // 處理圖片上傳預覽
+    function handleImageUpload(input, previewId, hiddenId, uiId) {
+      const file = input.files[0];
+      if (file) {
+        if (file.size > 2 * 1024 * 1024) {
+          showSysToast("圖片檔案過大，請上傳小於 2MB 的圖片", "error");
+          input.value = "";
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const base64 = e.target.result;
+          document.getElementById(hiddenId).value = base64;
+          localStorage.setItem('cache_' + hiddenId, base64);
+          const img = document.getElementById(previewId);
+          img.src = base64;
+          img.classList.remove('hidden');
+          document.getElementById(uiId).style.opacity = '0';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // 清除上傳的圖片
+    function clearImage(previewId, hiddenId, uiId) {
+      document.getElementById(hiddenId).value = '';
+      localStorage.removeItem('cache_' + hiddenId);
+      document.getElementById(previewId).src = '';
+      document.getElementById(previewId).classList.add('hidden');
+      document.getElementById(uiId).style.opacity = '1';
+      document.getElementById('file_' + hiddenId.replace('prf_', '')).value = '';
+    }
+
+    // 還原快取的圖片
+    function restoreImages() {
+      ['公司LOGO', '公司發票章（請去背）', '公司大章（請去背）', '公司小章（請去背）'].forEach(name => {
+        const hiddenId = 'prf_' + name;
+        const previewId = 'preview_' + name;
+        const uiId = 'upload_ui_' + name;
+        const val = document.getElementById(hiddenId).value;
+        if(val) {
+          document.getElementById(previewId).src = val;
+          document.getElementById(previewId).classList.remove('hidden');
+          document.getElementById(uiId).style.opacity = '0';
+        }
+      });
+    }
+
     document.querySelectorAll('.cacheable').forEach(el => {
       const cached = localStorage.getItem('cache_' + el.id);
       if (cached) el.value = cached;
       el.addEventListener('input', (e) => localStorage.setItem('cache_' + el.id, e.target.value));
     });
+    
+    // 初始化時還原圖片預覽
+    restoreImages();
 
     const tabs = [
       { id: 'profile', name: '會員專區', icon: 'user' },
