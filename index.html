@@ -435,7 +435,7 @@
 
         <div id="bossFeedContainer" class="flex flex-col space-y-6">
           <div class="text-center py-12 text-slate-400 text-sm flex flex-col items-center">
-            <i data-lucide="inbox" class="w-10 h-10 mb-3 opacity-50"></i>
+            <i data-lucide="inbox" class="w-10 h-10 mb-3 opacity-50 animate-pulse"></i>
             載入中...
           </div>
         </div>
@@ -754,6 +754,7 @@
     lucide.createIcons();
     marked.setOptions({ breaks: true, gfm: true });
     
+    // 【重要】：這是最新的優化版後端網址
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycby2W9-S9P8m7Kz9-wqepyu2_BCEVd4cQso4P-8TGYDtoWX9OC34bphiJoqNF1dcLCUq/exec';
     
     let currentUser = JSON.parse(localStorage.getItem('sys_user') || 'null');
@@ -815,13 +816,15 @@
       document.getElementById(uiId).style.opacity = '1'; document.getElementById('file_' + hiddenId.replace('prf_', '')).value = '';
     }
 
+    // 🌟 [防破圖核心修復] 自動過濾純 ID，強制轉換成正確的 Google Drive 圖片連結
     function getViewableUrl(url) {
       if(!url) return "";
-      if(url.includes('drive.google.com/file/d/')) {
-        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if(match) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      let str = String(url).trim();
+      if(str.startsWith('http')) return str; 
+      if(/^[a-zA-Z0-9_-]{25,}$/.test(str)) {
+        return `https://drive.google.com/uc?export=view&id=${str}`;
       }
-      return url;
+      return str;
     }
 
     function restoreImages() {
@@ -871,6 +874,9 @@
         const json = await res.json();
         console.log(`[📥 伺服器回應] 動作: ${action}`, json);
         if (json.status === 'success') return json.data || json;
+        if (json.success) return json; 
+        if (json.introText || json.html || json.proposals || json.questions || json.conclusion || json.social_post || json.items || json.terms || json.subject || json.gkp_results) return json;
+        
         throw new Error(json.message || json.error || "未知錯誤");
       } catch (err) { throw err; }
     }
@@ -1085,60 +1091,603 @@
       } catch(e) { showSysToast("儲存失敗：" + (e.message || "系統錯誤"), "error"); } finally { restoreBtnLoading(btn); }
     }
 
-    // -- 智庫錄製邏輯省略細節保持原貌 --
+    // ==========================================
+    // 🌟🌟 老闆智庫 完整前端邏輯還原 (不再省略) 🌟🌟
+    // ==========================================
     let currentStream = null, mediaRecorder = null; let chunkInterval, chunkIndex = 1; let recordData = { folderId: '', rowIndex: 0, recordId: '' };
     let isRecording = false, isPaused = false; let isVideoEnabled = true; let isSwitchingSource = false; let activeProcessingTasks = new Set();
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     let mobileFacingMode = "user", desktopSource = "camera"; const mediaPlayer = document.getElementById('mediaPlayer');
-    function addSysLog(msg, type = 'info') { const logDiv = document.getElementById('recordingLogText'); if(!logDiv) return; const time = new Date().toLocaleTimeString('zh-TW', {hour12:false}); let colorClass = 'text-emerald-400'; if (type === 'error') colorClass = 'text-red-400'; if (type === 'warn') colorClass = 'text-yellow-400'; logDiv.innerHTML += `<div class="${colorClass} flex gap-3 w-full"><span class="text-slate-500 opacity-60 flex-shrink-0">[${time}]</span> <span class="break-words w-full">${msg}</span></div>`; logDiv.scrollTop = logDiv.scrollHeight; }
-    async function acquireStream() { /*...省略保留...*/ }
-    async function switchSourceAction() { /*...省略保留...*/ }
-    function toggleVideo() { /*...省略保留...*/ }
-    function toggleRecordUI(forceOpen = false) { /*...省略保留...*/ }
-    async function startRecord() { /*...省略保留...*/ }
-    function pauseMeeting() { /*...省略保留...*/ }
-    function resumeMeeting() { /*...省略保留...*/ }
-    function startChunkRecording() { /*...省略保留...*/ }
-    function processChunk(blob, mimeType, cIndex) { /*...省略保留...*/ }
-    async function stopMeeting() { /*...省略保留...*/ }
     
-    let globalBossRecords = []; let bossCurrentPage = 1; const bossPageSize = 5;
-    async function fetchBossFeed(autoEditFirst = false, btn = null) { /*...省略保留...*/ }
-    function renderBossFeed(autoEditFirst = false) { /*...省略保留...*/ }
-    function loadMoreBossFeed(btn) { /*...省略保留...*/ }
-    function toggleBossCard(idx) { /*...省略保留...*/ }
-    function enableBossEdit(idx) { /*...省略保留...*/ }
-    function cancelBossEdit(idx) { /*...省略保留...*/ }
-    async function saveBossEdit(recordId, idx, btn) { /*...省略保留...*/ }
+    function addSysLog(msg, type = 'info') { 
+      const logDiv = document.getElementById('recordingLogText'); if(!logDiv) return; 
+      const time = new Date().toLocaleTimeString('zh-TW', {hour12:false}); 
+      let colorClass = 'text-emerald-400'; if (type === 'error') colorClass = 'text-red-400'; if (type === 'warn') colorClass = 'text-yellow-400'; 
+      logDiv.innerHTML += `<div class="${colorClass} flex gap-3 w-full"><span class="text-slate-500 opacity-60 flex-shrink-0">[${time}]</span> <span class="break-words w-full">${msg}</span></div>`; 
+      logDiv.scrollTop = logDiv.scrollHeight; 
+    }
 
-    // -- 營銷文章邏輯 --
+    async function acquireStream() {
+      if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
+      try {
+        let constraints = { audio: true, video: isVideoEnabled ? (isMobile ? { facingMode: mobileFacingMode } : true) : false };
+        if (desktopSource === "screen" && isVideoEnabled && !isMobile) {
+          currentStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        } else {
+          currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+        }
+        mediaPlayer.srcObject = currentStream;
+        if (isVideoEnabled) mediaPlayer.style.display = 'block'; else mediaPlayer.style.display = 'none';
+        return true;
+      } catch (err) {
+        showSysToast("無法取得攝影機或麥克風權限", "error");
+        return false;
+      }
+    }
+
+    async function switchSourceAction() {
+      if (isRecording) return showSysToast("錄影中無法切換鏡頭", "warn");
+      if (isMobile) mobileFacingMode = mobileFacingMode === "user" ? "environment" : "user";
+      else desktopSource = desktopSource === "camera" ? "screen" : "camera";
+      isSwitchingSource = true; await acquireStream(); isSwitchingSource = false;
+    }
+
+    function toggleVideo() {
+      if (isRecording) return showSysToast("錄影中無法關閉畫面", "warn");
+      isVideoEnabled = !isVideoEnabled;
+      document.getElementById('icon-video').setAttribute('data-lucide', isVideoEnabled ? 'video' : 'video-off');
+      lucide.createIcons();
+      acquireStream();
+    }
+
+    async function toggleRecordUI(forceOpen = false) {
+      const ui = document.getElementById('recordUI');
+      if (ui.style.display === 'none' || forceOpen) {
+        ui.style.display = 'flex';
+        document.getElementById('videoContainer').style.display = 'block';
+        await acquireStream();
+      } else {
+        ui.style.display = 'none';
+        if (currentStream && !isRecording) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
+      }
+    }
+
+    async function startRecord() {
+      if (isRecording) return;
+      if (!currentStream) await acquireStream();
+      if (!currentStream) return;
+
+      document.getElementById('btnStartPost').style.display = 'none';
+      document.getElementById('recordingLogConsole').classList.remove('hidden');
+      document.getElementById('recordingLogConsole').classList.add('flex');
+      document.getElementById('recordDivider').style.display = 'block';
+      document.getElementById('btnPause').style.display = 'flex';
+      document.getElementById('btnStop').style.display = 'flex';
+      document.getElementById('recBadge').style.display = 'flex';
+      
+      addSysLog("Initializing system and verifying identity...", "info");
+      
+      try {
+        recordData = await apiCall('initBossRecord', { folderIds: currentUser.folderIds });
+        addSysLog("System initialized. Folder allocated. Ready to record.", "success");
+        isRecording = true; chunkIndex = 1;
+        startChunkRecording();
+      } catch(e) {
+        addSysLog("System initialization failed: " + e.message, "error");
+        stopMeeting(true);
+      }
+    }
+
+    function pauseMeeting() {
+      if(!isRecording || isPaused) return;
+      isPaused = true;
+      if(mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.pause();
+      document.getElementById('recText').innerText = "PAUSED";
+      document.getElementById('btnPause').style.display = 'none';
+      document.getElementById('btnResume').style.display = 'flex';
+      addSysLog("Recording paused.", "warn");
+    }
+
+    function resumeMeeting() {
+      if(!isRecording || !isPaused) return;
+      isPaused = false;
+      if(mediaRecorder && mediaRecorder.state === 'paused') mediaRecorder.resume();
+      document.getElementById('recText').innerText = "REC";
+      document.getElementById('btnPause').style.display = 'flex';
+      document.getElementById('btnResume').style.display = 'none';
+      addSysLog("Recording resumed.", "success");
+    }
+
+    function startChunkRecording() {
+      if (!isRecording) return;
+      addSysLog(`Starting chunk ${chunkIndex} (60 seconds)...`, "info");
+      
+      let options = { mimeType: 'video/webm;codecs=vp9,opus' };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'video/webm' };
+      
+      mediaRecorder = new MediaRecorder(currentStream, options);
+      let chunks = [];
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        if (chunks.length > 0) processChunk(new Blob(chunks, { type: options.mimeType }), options.mimeType, chunkIndex);
+        if (isRecording) { chunkIndex++; startChunkRecording(); }
+      };
+      
+      mediaRecorder.start();
+      chunkInterval = setTimeout(() => { if (isRecording && mediaRecorder.state !== 'inactive') mediaRecorder.stop(); }, 60000);
+    }
+
+    async function processChunk(blob, mimeType, cIndex) {
+      addSysLog(`Chunk ${cIndex} captured. Size: ${(blob.size/1024/1024).toFixed(2)} MB. Uploading...`, "info");
+      activeProcessingTasks.add(cIndex);
+      
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Data = reader.result.split(',')[1];
+        try {
+          addSysLog(`Syncing chunk ${cIndex} to Cloud Drive...`, "info");
+          const msg1 = await apiCall('saveBossChunk', { folderId: recordData.folderId, rowIndex: recordData.rowIndex, chunkIndex: cIndex, base64Data: base64Data, mimeType: mimeType });
+          addSysLog(msg1, "success");
+          
+          addSysLog(`Analyzing chunk ${cIndex} with AI Engine...`, "info");
+          const msg2 = await apiCall('recognizeBossChunk', { rowIndex: recordData.rowIndex, chunkIndex: cIndex, base64Data: base64Data, mimeType: mimeType });
+          addSysLog(msg2, "success");
+        } catch (err) {
+          addSysLog(`Chunk ${cIndex} failed: ` + err.message, "error");
+        } finally {
+          activeProcessingTasks.delete(cIndex);
+        }
+      };
+      reader.readAsDataURL(blob);
+    }
+
+    async function stopMeeting(force = false) {
+      if (!isRecording && !force) return;
+      isRecording = false; isPaused = false;
+      clearTimeout(chunkInterval);
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+      if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); currentStream = null; }
+      
+      document.getElementById('recBadge').style.display = 'none';
+      document.getElementById('recordDivider').style.display = 'none';
+      document.getElementById('btnPause').style.display = 'none';
+      document.getElementById('btnResume').style.display = 'none';
+      document.getElementById('btnStop').style.display = 'none';
+      
+      addSysLog("Recording stopped. Awaiting pending chunks...", "warn");
+      
+      const checkPending = setInterval(async () => {
+        if (activeProcessingTasks.size === 0) {
+          clearInterval(checkPending);
+          addSysLog("All chunks processed. Finalizing transcript and generating summary...", "info");
+          try {
+            const finalData = await apiCall('finalizeBossRecord', { rowIndex: recordData.rowIndex });
+            addSysLog("Session complete. Summary generated.", "success");
+            setTimeout(() => {
+               document.getElementById('recordUI').style.display = 'none';
+               document.getElementById('btnStartPost').style.display = 'flex';
+               document.getElementById('recordingLogConsole').classList.add('hidden');
+               document.getElementById('recordingLogConsole').classList.remove('flex');
+               document.getElementById('recordingLogText').innerHTML = '';
+               fetchBossFeed(false); 
+            }, 3000);
+          } catch(e) {
+            addSysLog("Finalization failed: " + e.message, "error");
+            document.getElementById('btnStartPost').style.display = 'flex';
+          }
+        }
+      }, 1000);
+    }
+
+    let globalBossRecords = []; let bossCurrentPage = 1; const bossPageSize = 5;
+    
+    // 🌟 [核心修復] 將空殼函式替換為完整呼叫邏輯
+    async function fetchBossFeed(autoEditFirst = false, btn = null) {
+      if (!currentUser) return;
+      if (btn) setBtnLoading(btn);
+      const container = document.getElementById('bossFeedContainer');
+      if (bossCurrentPage === 1 && !btn) {
+        container.innerHTML = '<div class="text-center py-12 text-slate-400 text-sm flex flex-col items-center"><i data-lucide="inbox" class="w-10 h-10 mb-3 opacity-50 animate-pulse"></i>載入紀錄中...</div>';
+        lucide.createIcons();
+      }
+
+      try {
+        const res = await apiCall('getBossFeed', { memberId: currentUser.memberId });
+        let records = Array.isArray(res) ? res : (res.data || []);
+        
+        const start = document.getElementById('bossFilterStart').value;
+        const end = document.getElementById('bossFilterEnd').value;
+        
+        if(start) records = records.filter(r => new Date(r['建立日期時間'] || r['更新時間']) >= new Date(start));
+        if(end) records = records.filter(r => new Date(r['建立日期時間'] || r['更新時間']) <= new Date(end + 'T23:59:59'));
+
+        globalBossRecords = records;
+        bossCurrentPage = 1;
+        renderBossFeed(autoEditFirst);
+      } catch(e) {
+        container.innerHTML = `<div class="text-center py-12 text-red-500 text-sm font-bold">載入失敗，請重試: ${e.message}</div>`;
+      } finally {
+        if (btn) restoreBtnLoading(btn);
+      }
+    }
+
+    function renderBossFeed(autoEditFirst = false) {
+      const container = document.getElementById('bossFeedContainer');
+      container.innerHTML = '';
+      if(globalBossRecords.length === 0) {
+        container.innerHTML = '<div class="text-center py-12 text-slate-400 text-sm">目前沒有智庫紀錄</div>';
+        document.getElementById('bossLoadMoreContainer').classList.add('hidden');
+        return;
+      }
+
+      const paginated = globalBossRecords.slice(0, bossCurrentPage * bossPageSize);
+      paginated.forEach((r, idx) => {
+        const date = new Date(r['建立日期時間'] || r['更新時間']).toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit' });
+        const title = r['摘要重點'] ? (r['摘要重點'].substring(0, 20) + '...') : '未命名紀錄';
+        const html = `
+          <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <div class="flex justify-between items-center cursor-pointer" onclick="toggleBossCard(${idx})">
+              <div class="flex items-center gap-3">
+                <span class="bg-indigo-100 text-indigo-600 p-2 rounded-lg"><i data-lucide="file-text" class="w-4 h-4"></i></span>
+                <div>
+                  <h4 class="font-bold text-slate-800 text-sm">${title}</h4>
+                  <p class="text-xs text-slate-400">${date}</p>
+                </div>
+              </div>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+            </div>
+            <div id="boss-card-${idx}" class="hidden mt-4 pt-4 border-t border-slate-100 flex-col gap-3">
+              <div class="text-sm text-slate-600"><strong>逐字稿：</strong><br><textarea id="boss-transcript-${idx}" class="input-ios h-32 mt-2" readonly>${r['逐字稿內容'] || ''}</textarea></div>
+              <div class="text-sm text-slate-600 mt-2"><strong>AI 摘要：</strong><br><textarea id="boss-summary-${idx}" class="input-ios h-32 mt-2" readonly>${r['摘要重點'] || ''}</textarea></div>
+              <div class="flex gap-2 mt-2">
+                <button type="button" onclick="enableBossEdit(${idx})" id="btn-edit-${idx}" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg font-bold text-slate-700">編輯</button>
+                <button type="button" onclick="saveBossEdit('${r['記錄ID']}', ${idx}, this)" id="btn-save-${idx}" class="hidden text-xs bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg font-bold text-white">儲存</button>
+                <button type="button" onclick="cancelBossEdit(${idx})" id="btn-cancel-${idx}" class="hidden text-xs text-slate-500 hover:text-slate-700 px-3 py-2 font-bold">取消</button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+      });
+
+      if(globalBossRecords.length > paginated.length) document.getElementById('bossLoadMoreContainer').classList.remove('hidden');
+      else document.getElementById('bossLoadMoreContainer').classList.add('hidden');
+      lucide.createIcons();
+    }
+
+    function loadMoreBossFeed(btn) {
+      bossCurrentPage++;
+      renderBossFeed();
+    }
+
+    function toggleBossCard(idx) {
+      const card = document.getElementById(`boss-card-${idx}`);
+      card.classList.toggle('hidden');
+      card.classList.toggle('flex');
+    }
+
+    function enableBossEdit(idx) {
+      document.getElementById(`boss-transcript-${idx}`).readOnly = false;
+      document.getElementById(`boss-summary-${idx}`).readOnly = false;
+      document.getElementById(`boss-transcript-${idx}`).classList.add('border-indigo-300', 'bg-white');
+      document.getElementById(`boss-summary-${idx}`).classList.add('border-indigo-300', 'bg-white');
+      document.getElementById(`btn-edit-${idx}`).classList.add('hidden');
+      document.getElementById(`btn-save-${idx}`).classList.remove('hidden');
+      document.getElementById(`btn-cancel-${idx}`).classList.remove('hidden');
+    }
+
+    function cancelBossEdit(idx) {
+      document.getElementById(`boss-transcript-${idx}`).readOnly = true;
+      document.getElementById(`boss-summary-${idx}`).readOnly = true;
+      document.getElementById(`boss-transcript-${idx}`).classList.remove('border-indigo-300', 'bg-white');
+      document.getElementById(`boss-summary-${idx}`).classList.remove('border-indigo-300', 'bg-white');
+      document.getElementById(`btn-edit-${idx}`).classList.remove('hidden');
+      document.getElementById(`btn-save-${idx}`).classList.add('hidden');
+      document.getElementById(`btn-cancel-${idx}`).classList.add('hidden');
+      renderBossFeed(); 
+    }
+
+    async function saveBossEdit(recordId, idx, btn) {
+      setBtnLoading(btn);
+      try {
+        const transcript = document.getElementById(`boss-transcript-${idx}`).value;
+        const summary = document.getElementById(`boss-summary-${idx}`).value;
+        await apiCall('saveKnowledge', { '智庫ID': recordId, '會員ID': currentUser.memberId, '逐字稿內容': transcript, '摘要重點': summary });
+        globalBossRecords[idx]['逐字稿內容'] = transcript;
+        globalBossRecords[idx]['摘要重點'] = summary;
+        showSysToast('更新成功');
+        cancelBossEdit(idx);
+      } catch(e) {
+        showSysToast('更新失敗: ' + e.message, 'error');
+      } finally {
+        restoreBtnLoading(btn);
+      }
+    }
+
+
+    // ==========================================
+    // 🌟🌟 AI 營銷經理 完整前端邏輯還原 (不再省略) 🌟🌟
+    // ==========================================
     let state = { recordId: "", mktId: "", urls: [""], transcript: "", industry: "", painPoint: "", targetAudience: "", visualStyle: "", introLength: "", blogLength: "", socialLength: "", aiKeywords: [], gkpPasteArea: "", parsedGKPData: [], globalGkpData: [], selectedKeywordsList: [], introText: "", proposalsList: [], proposal: null, mySaw: "", myThought: "", myExp: "", myRealization: "", conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: "", aspectRatio: "1:1 (適合 IG 貼文、FB 貼文)" };
     let currentSearchResults = [];
-    async function runGasFunction(actionName, payload) { try { payload.memberId = currentUser.memberId; let response = await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: actionName, params: payload }) }); if (!response.ok) throw new Error('伺服器連線失敗'); let data = await response.json(); if (data.error) throw new Error(data.error); return data; } catch (err) { throw err; } }
-    function loadLocal() { let saved = localStorage.getItem('troy_eeat_system'); if(saved) { try { let parsed = JSON.parse(saved); state = Object.assign(state, parsed); ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength', 'aspectRatio'].forEach(id => { let el = document.getElementById(id); if(el && state[id]) el.value = state[id]; }); if(state.introText) document.getElementById('introResult').classList.remove('hidden'); if(state.finalHtml) document.getElementById('finalContent').innerHTML = state.finalHtml; if(state.urls && state.urls.length > 0) renderUrlInputs(); if(state.socialPost && state.imagePrompts) { document.getElementById('socialPostContent').innerHTML = state.socialPost; document.getElementById('imagePromptsContent').value = state.imagePrompts; document.getElementById('socialResult').classList.remove('hidden'); } } catch(e) { console.error("快取讀取失敗", e); } } }
+    
+    function loadLocal() { 
+      let saved = localStorage.getItem('troy_eeat_system'); 
+      if(saved) { 
+        try { 
+          let parsed = JSON.parse(saved); 
+          state = Object.assign(state, parsed); 
+          ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength', 'aspectRatio'].forEach(id => { let el = document.getElementById(id); if(el && state[id]) el.value = state[id]; }); 
+          if(state.introText) document.getElementById('introResult').classList.remove('hidden'); 
+          if(state.finalHtml) document.getElementById('finalContent').innerHTML = state.finalHtml; 
+          if(state.urls && state.urls.length > 0) renderUrlInputs(); 
+          if(state.socialPost && state.imagePrompts) { 
+            document.getElementById('socialPostContent').innerHTML = state.socialPost; 
+            document.getElementById('imagePromptsContent').value = state.imagePrompts; 
+            document.getElementById('socialResult').classList.remove('hidden'); 
+          } 
+        } catch(e) { console.error("快取讀取失敗", e); } 
+      } 
+    }
+    
     function renderUrlInputs() { const container = document.getElementById('urlContainer'); if (state.urls.length === 0) state.urls = [""]; container.innerHTML = state.urls.map((u, i) => `<div class="flex flex-col space-y-2 w-full"><input type="text" class="url-input input-ios w-full" placeholder="https://..." value="${u}" oninput="updateUrlState()">${state.urls.length > 1 ? `<button type="button" onclick="removeUrlInput(${i})" class="text-gray-400 hover:text-red-500 bg-white border border-gray-200 px-3 py-2 rounded-xl transition shadow-sm flex w-full items-center justify-center"><span class="material-icons text-[20px] mr-1">delete_outline</span> 移除</button>` : ``}</div>`).join(''); }
     function addUrlInput() { state.urls.push(""); renderUrlInputs(); } function removeUrlInput(index) { state.urls.splice(index, 1); renderUrlInputs(); } function updateUrlState() { state.urls = Array.from(document.querySelectorAll('.url-input')).map(inp => inp.value); }
-    function saveLocal() { ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength', 'aspectRatio'].forEach(id => { let el = document.getElementById(id); if(el) state[id] = el.value; }); let finalHtmlEl = document.getElementById('finalContent'); if(finalHtmlEl) state.finalHtml = finalHtmlEl.innerHTML; let socialEl = document.getElementById('socialPostContent'); if(socialEl) state.socialPost = socialEl.innerHTML; let imgPromptsEl = document.getElementById('imagePromptsContent'); if(imgPromptsEl) state.imagePrompts = imgPromptsEl.value; updateUrlState(); localStorage.setItem('troy_eeat_system', JSON.stringify(state)); }
-    function resetApp(btn) { /*...省略保留...*/ }
-    async function saveToDatabase(btn) { /*...省略保留...*/ }
+    
+    function saveLocal() { 
+      ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength', 'aspectRatio'].forEach(id => { let el = document.getElementById(id); if(el) state[id] = el.value; }); 
+      let finalHtmlEl = document.getElementById('finalContent'); if(finalHtmlEl) state.finalHtml = finalHtmlEl.innerHTML; 
+      let socialEl = document.getElementById('socialPostContent'); if(socialEl) state.socialPost = socialEl.innerHTML; 
+      let imgPromptsEl = document.getElementById('imagePromptsContent'); if(imgPromptsEl) state.imagePrompts = imgPromptsEl.value; 
+      updateUrlState(); 
+      localStorage.setItem('troy_eeat_system', JSON.stringify(state)); 
+    }
+    
+    function resetApp(btn) { 
+      if(confirm('確定要清空所有資料嗎？這將無法復原。')) {
+        localStorage.removeItem('troy_eeat_system');
+        location.reload();
+      }
+    }
+    
+    async function saveToDatabase(btn) { 
+      saveLocal(); setBtnLoading(btn);
+      try {
+        const res = await apiCall('syncDatabase', state);
+        if(res.recordId) state.recordId = res.recordId;
+        if(res.mktId) state.mktId = res.mktId;
+        saveLocal();
+        showSysToast('資料已成功寫入知識庫！', 'success');
+      } catch(e) {
+        showSysToast('儲存失敗：' + e.message, 'error');
+      } finally {
+        restoreBtnLoading(btn);
+      }
+    }
+    
     function toggleSearchBlock() { document.getElementById('inlineSearchBlock').classList.toggle('hidden'); }
-    async function executeSearch(btn) { /*...省略保留...*/ }
-    function loadRecordToUI(index) { /*...省略保留...*/ }
+    
+    async function executeSearch(btn) { 
+      setBtnLoading(btn);
+      try {
+        const res = await apiCall('searchDatabase', {
+           keyword: document.getElementById('searchKw').value,
+           startDate: document.getElementById('searchStart').value,
+           endDate: document.getElementById('searchEnd').value
+        });
+        currentSearchResults = res.results || [];
+        const container = document.getElementById('searchResults');
+        container.innerHTML = '';
+        if(currentSearchResults.length === 0) {
+          container.innerHTML = '<p class="text-gray-400 text-center py-6 font-medium">找不到符合的紀錄</p>';
+          return;
+        }
+        currentSearchResults.forEach((item, index) => {
+          container.insertAdjacentHTML('beforeend', `
+            <div class="bg-white p-3 rounded-lg border border-gray-100 hover:border-indigo-300 cursor-pointer transition flex justify-between items-center shadow-sm" onclick="loadRecordToUI(${index})">
+              <div class="flex flex-col"><span class="font-bold text-gray-800">${item['提案標題'] || '無標題'}</span><span class="text-xs text-gray-500">${new Date(item['更新時間']).toLocaleDateString('zh-TW')} | ${item['產業'] || ''}</span></div>
+              <span class="material-icons text-indigo-400">arrow_forward_ios</span>
+            </div>
+          `);
+        });
+      } catch(e) {
+         document.getElementById('searchResults').innerHTML = `<p class="text-red-400 text-center py-6">${e.message}</p>`;
+      } finally {
+        restoreBtnLoading(btn);
+      }
+    }
+    
+    function loadRecordToUI(index) { 
+      const item = currentSearchResults[index];
+      if(!item) return;
+      state.recordId = item['記錄ID'];
+      state.industry = item['產業']; document.getElementById('industry').value = state.industry;
+      state.painPoint = item['痛點']; document.getElementById('painPoint').value = state.painPoint;
+      state.introText = item['前導文章']; document.getElementById('introText').value = state.introText;
+      if(state.introText) document.getElementById('introResult').classList.remove('hidden');
+      state.mySaw = item['所見所聞']; document.getElementById('mySaw').value = state.mySaw;
+      state.myThought = item['所思所想']; document.getElementById('myThought').value = state.myThought;
+      state.myExp = item['親身經歷']; document.getElementById('myExp').value = state.myExp;
+      state.myRealization = item['感觸體認']; document.getElementById('myRealization').value = state.myRealization;
+      state.conclusion = item['結語']; document.getElementById('conclusion').value = state.conclusion;
+      state.cta = item['CTA']; document.getElementById('cta').value = state.cta;
+      state.finalHtml = item['最終文章HTML']; document.getElementById('finalContent').innerHTML = state.finalHtml;
+      
+      saveLocal(); toggleSearchBlock(); showSysToast('歷史紀錄已成功載入！', 'success'); window.scrollTo(0,0);
+    }
+    
     function showMktToast(msg, isErr=false) { let t = document.getElementById('mktSystemToast'); t.innerText = msg; t.className = `fixed top-24 left-1/2 transform -translate-x-1/2 z-[200] px-6 py-3 rounded-full shadow-lg font-semibold text-sm transition-opacity duration-300 w-11/12 max-w-md text-center text-white ${isErr?'bg-red-500':'bg-gray-900'}`; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); }
     function goStep(num) { const target = document.getElementById('step' + num); target.classList.add('active'); window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' }); }
-    async function runStep1(btn) { /*...省略保留...*/ }
-    async function runStep2(btn) { /*...省略保留...*/ }
-    function copyAndOpenGKP() { /*...省略保留...*/ }
-    document.getElementById('gkpPasteArea')?.addEventListener('input', function(e) { /*...省略保留...*/ });
-    async function analyzeGKPDataFlow(btn) { /*...省略保留...*/ }
-    function renderGkpCards() { /*...省略保留...*/ }
-    function toggleKeyword(checkbox) { /*...省略保留...*/ }
-    async function runStep3(btn) { /*...省略保留...*/ }
-    async function selectProposal(index, element) { /*...省略保留...*/ }
-    async function runStep5(btn) { /*...省略保留...*/ }
-    async function runStep6(btn) { /*...省略保留...*/ }
-    async function runStep7(btn) { /*...省略保留...*/ }
-    function copyContent(elementId) { /*...省略保留...*/ }
+    
+    async function runStep1(btn) { 
+      saveLocal(); setBtnLoading(btn);
+      try {
+        const res = await apiCall('step1_GenerateIntro', state);
+        document.getElementById('introText').value = res.introText || res;
+        document.getElementById('introResult').classList.remove('hidden');
+        saveLocal(); showSysToast("產出成功");
+      } catch(e) { showSysToast(e.message, 'error'); } finally { restoreBtnLoading(btn); }
+    }
+    
+    async function runStep2(btn) { 
+      saveLocal(); setBtnLoading(btn);
+      try {
+        const res = await apiCall('step2_GenerateKeywords', state);
+        state.aiKeywords = res.keywords || res;
+        showSysToast("關鍵字萃取成功，請複製並前往 GKP");
+        document.getElementById('gkpSection').classList.remove('hidden');
+      } catch(e) { showSysToast(e.message, 'error'); } finally { restoreBtnLoading(btn); }
+    }
+    
+    function copyAndOpenGKP() { 
+      if(!state.aiKeywords || state.aiKeywords.length === 0) return showSysToast("沒有關鍵字可複製", "warn");
+      navigator.clipboard.writeText(state.aiKeywords.join('\n')).then(() => {
+        showSysToast("已複製關鍵字");
+        window.open('https://ads.google.com/aw/keywordplanner/ideas/new', '_blank');
+      });
+    }
+
+    document.getElementById('gkpPasteArea')?.addEventListener('input', function(e) { 
+      const txt = e.target.value.trim();
+      if(!txt) { document.getElementById('gkpPreviewWrapper').classList.add('hidden'); return; }
+      const rows = txt.split('\n').map(r => r.split('\t'));
+      if(rows.length < 2) return;
+      
+      const headers = rows[0];
+      const h_kw = headers.findIndex(h => h.includes('Keyword') || h.includes('關鍵字'));
+      const h_vol = headers.findIndex(h => h.includes('Avg') || h.includes('平均每月搜尋量'));
+      const h_comp = headers.findIndex(h => h.includes('Competition') || h.includes('競爭程度'));
+      
+      if(h_kw === -1 || h_vol === -1 || h_comp === -1) { showSysToast("表格格式不符，請確認複製了包含標題列的 GKP 數據", "warn"); return; }
+      
+      let parsed = [];
+      let headHtml = `<tr><th class="p-3 font-semibold text-gray-600">關鍵字</th><th class="p-3 font-semibold text-gray-600">搜尋量</th><th class="p-3 font-semibold text-gray-600">競爭度</th></tr>`;
+      document.getElementById('gkpPreviewHeaders').innerHTML = headHtml;
+      
+      let bodyHtml = '';
+      for(let i=1; i<rows.length; i++) {
+        if(!rows[i][h_kw]) continue;
+        parsed.push({'關鍵字': rows[i][h_kw], '平均每月搜尋量': rows[i][h_vol], '競爭程度': rows[i][h_comp]});
+        if(i <= 5) bodyHtml += `<tr class="bg-white"><td class="p-3 text-gray-800 font-medium">${rows[i][h_kw]}</td><td class="p-3 text-gray-600">${rows[i][h_vol]}</td><td class="p-3 text-gray-600">${rows[i][h_comp]}</td></tr>`;
+      }
+      if(rows.length > 6) bodyHtml += `<tr><td colspan="3" class="p-2 text-center text-gray-400 bg-white">... 及其他 ${rows.length - 6} 筆</td></tr>`;
+      
+      document.getElementById('gkpPreviewBody').innerHTML = bodyHtml;
+      document.getElementById('gkpPreviewWrapper').classList.remove('hidden');
+      state.parsedGKPData = parsed; saveLocal();
+    });
+
+    async function analyzeGKPDataFlow(btn) { 
+      if(!state.parsedGKPData || state.parsedGKPData.length === 0) return showSysToast("請先貼上 GKP 數據", "warn");
+      setBtnLoading(btn);
+      try {
+        const res = await apiCall('step25_analyzeGKP', { parsedGKPData: state.parsedGKPData });
+        state.globalGkpData = res.gkp_results;
+        renderGkpCards();
+        document.getElementById('gkpAnalyzedResults').classList.remove('hidden');
+        showSysToast("演算完成！請勾選關鍵字");
+      } catch(e) { showSysToast(e.message, 'error'); } finally { restoreBtnLoading(btn); }
+    }
+    
+    function renderGkpCards() { 
+      const container = document.getElementById('gkpCardsContainer');
+      container.innerHTML = state.globalGkpData.map((item, i) => {
+        let isChecked = state.selectedKeywordsList.includes(item.keyword);
+        let compBadge = item.metrics.competition === '低' || item.metrics.competition === 'Low' ? '<span class="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-bold border border-green-200">低競爭</span>' : '<span class="text-orange-600 bg-orange-50 px-2 py-0.5 rounded text-xs font-bold border border-orange-200">中/高競爭</span>';
+        return `
+          <label class="flex items-center p-4 border rounded-xl cursor-pointer transition-all hover:bg-blue-50/50 ${isChecked ? 'bg-blue-50 border-blue-400 shadow-sm' : 'bg-white border-gray-200'}">
+            <input type="checkbox" value="${item.keyword}" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300" ${isChecked ? 'checked' : ''} onchange="toggleKeyword(this)">
+            <div class="ml-4 flex-1 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <span class="text-[15px] font-bold text-gray-900">${item.keyword}</span>
+              <div class="flex gap-3 text-sm items-center"><span class="text-gray-500 font-semibold"><i class="material-icons text-[14px] align-middle mr-0.5">trending_up</i> ${item.metrics.volume}</span> ${compBadge}</div>
+            </div>
+          </label>`;
+      }).join('');
+      document.getElementById('kwCount').innerText = state.selectedKeywordsList.length;
+      if(state.selectedKeywordsList.length > 0) document.getElementById('nextTo3').classList.remove('hidden'); else document.getElementById('nextTo3').classList.add('hidden');
+    }
+    
+    function toggleKeyword(checkbox) { 
+      if(checkbox.checked) { if(!state.selectedKeywordsList.includes(checkbox.value)) state.selectedKeywordsList.push(checkbox.value); }
+      else { state.selectedKeywordsList = state.selectedKeywordsList.filter(k => k !== checkbox.value); }
+      saveLocal(); renderGkpCards();
+    }
+    
+    async function runStep3(btn) { 
+      saveLocal(); setBtnLoading(btn);
+      try {
+        const res = await apiCall('step3_Proposals', state);
+        state.proposalsList = res.proposals || res;
+        const container = document.getElementById('proposalsResult');
+        container.innerHTML = state.proposalsList.map((p, i) => `
+          <div class="p-5 border border-gray-200 bg-white rounded-xl shadow-sm hover:border-blue-400 transition cursor-pointer flex flex-col gap-3" onclick="selectProposal(${i}, this)">
+             <h3 class="font-bold text-gray-900 text-lg leading-snug">${p.title}</h3>
+             <p class="text-sm text-gray-600 leading-relaxed">${p.summary}</p>
+             <button class="text-blue-600 font-bold text-sm bg-blue-50 self-start px-4 py-2 rounded-lg hover:bg-blue-100 transition mt-2">選擇此提案 <i class="material-icons text-[14px] align-middle">arrow_forward</i></button>
+          </div>
+        `).join('');
+        container.classList.remove('hidden');
+        showSysToast("提案生成成功");
+      } catch(e) { showSysToast(e.message, 'error'); } finally { restoreBtnLoading(btn); }
+    }
+    
+    async function selectProposal(index, element) { 
+      state.proposal = state.proposalsList[index]; saveLocal();
+      const allCards = document.getElementById('proposalsResult').children;
+      for(let card of allCards) { card.classList.remove('border-blue-500', 'ring-2', 'ring-blue-200', 'bg-blue-50/30'); }
+      element.classList.add('border-blue-500', 'ring-2', 'ring-blue-200', 'bg-blue-50/30');
+      
+      goStep(4);
+      document.getElementById('q_saw').innerHTML = '<span class="material-icons text-blue-500 mr-2 mt-0.5 text-[20px]">visibility</span> <span class="leading-relaxed animate-pulse">載入中...</span>';
+      try {
+        const res = await apiCall('step4_Socratic', state);
+        const q = res.questions || res;
+        document.getElementById('q_saw').innerHTML = `<span class="material-icons text-blue-500 mr-2 mt-0.5 text-[20px]">visibility</span> <span class="leading-relaxed">${q.q_saw}</span>`;
+        document.getElementById('q_thought').innerHTML = `<span class="material-icons text-green-500 mr-2 mt-0.5 text-[20px]">psychology</span> <span class="leading-relaxed">${q.q_thought}</span>`;
+        document.getElementById('q_exp').innerHTML = `<span class="material-icons text-purple-500 mr-2 mt-0.5 text-[20px]">menu_book</span> <span class="leading-relaxed">${q.q_exp}</span>`;
+        document.getElementById('q_realization').innerHTML = `<span class="material-icons text-orange-500 mr-2 mt-0.5 text-[20px]">lightbulb</span> <span class="leading-relaxed">${q.q_realization}</span>`;
+      } catch(e) { showSysToast("獲取引導失敗: " + e.message, 'error'); }
+    }
+    
+    async function runStep5(btn) { 
+      saveLocal(); setBtnLoading(btn);
+      try {
+        const res = await apiCall('step5_CTA', state);
+        document.getElementById('conclusion').value = res.conclusion || "";
+        document.getElementById('cta').value = res.cta || "";
+        saveLocal(); showSysToast("產出成功");
+      } catch(e) { showSysToast(e.message, 'error'); } finally { restoreBtnLoading(btn); }
+    }
+    
+    async function runStep6(btn) { 
+      saveLocal(); setBtnLoading(btn);
+      try {
+        const res = await apiCall('step6_FinalBlog', state);
+        state.finalHtml = res.html || res;
+        document.getElementById('finalContent').innerHTML = state.finalHtml;
+        document.getElementById('finalArticleText').value = document.getElementById('finalContent').innerText; // Feed Step 7
+        document.getElementById('nextTo7').classList.remove('hidden');
+        saveLocal(); goStep(6); showSysToast("文章生成成功");
+      } catch(e) { showSysToast(e.message, 'error'); } finally { restoreBtnLoading(btn); }
+    }
+    
+    async function runStep7(btn) { 
+      saveLocal(); setBtnLoading(btn);
+      try {
+        const res = await apiCall('step7_SocialMedia', state);
+        state.socialPost = res.social_post || res;
+        state.imagePrompts = res.image_prompts || res;
+        document.getElementById('socialPostContent').innerHTML = state.socialPost;
+        document.getElementById('imagePromptsContent').value = state.imagePrompts;
+        document.getElementById('socialResult').classList.remove('hidden');
+        saveLocal(); showSysToast("社群素材生成成功");
+      } catch(e) { showSysToast(e.message, 'error'); } finally { restoreBtnLoading(btn); }
+    }
+    
+    function copyContent(elementId) { 
+      const el = document.getElementById(elementId);
+      let text = el.tagName === 'TEXTAREA' || el.tagName === 'INPUT' ? el.value : el.innerText;
+      navigator.clipboard.writeText(text).then(() => showSysToast("複製成功"));
+    }
 
     // ==========================================
     // 🌟🌟 報價特助 核心邏輯 (與後端 API 完美串聯) 🌟🌟
@@ -1178,7 +1727,6 @@
     async function loadQuoteData() {
       if(!currentUser) return;
       try {
-        // 從後端拉取最新的設定檔
         const resSettings = await apiCall('getQuoteSettings');
         if(resSettings && resSettings['設定ID']) {
            quoteState.settingsId = resSettings['設定ID'];
@@ -1187,7 +1735,6 @@
            if(resSettings['條款設定JSON']) quoteState.settings.terms = JSON.parse(resSettings['條款設定JSON']);
         }
         
-        // 嘗試讀取本地草稿
         const saved = localStorage.getItem('growthx_quote_state');
         if (saved) {
           let parsed = JSON.parse(saved);
@@ -1409,7 +1956,7 @@
       setBtnLoading(btn);
       try {
         const res = await apiCall('quote_step1_Needs', { notes: notes });
-        document.getElementById('qt_needs').value = res.needs;
+        document.getElementById('qt_needs').value = res.needs || res;
         saveQuoteLocal(); showSysToast("需求梳理成功", "success");
       } catch(e) { showSysToast("分析失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
     }
@@ -1423,8 +1970,9 @@
         const selectedProdData = quoteState.leftFlow.selectedProducts.map(i => quoteState.settings.products[i]);
         const res = await apiCall('quote_step2_Items', { needs: needs, selectedProductsData: selectedProdData });
         
-        if (res.items && Array.isArray(res.items)) {
-          res.items.forEach(item => addQuoteItemRow(item.name, item.desc, parseFloat(item.price)||0, parseInt(item.qty)||1));
+        let items = res.items || res;
+        if (items && Array.isArray(items)) {
+          items.forEach(item => addQuoteItemRow(item.name, item.desc, parseFloat(item.price)||0, parseInt(item.qty)||1));
         }
         showSysToast("已匯入明細，請核對金額", "success");
       } catch(e) { showSysToast("生成失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
@@ -1440,7 +1988,7 @@
         const selectedTermsData = quoteState.leftFlow.selectedTerms.map(i => quoteState.settings.terms[i]);
         const res = await apiCall('quote_step3_Terms', { clientName: clientName, needs: needs, selectedTermsData: selectedTermsData });
         
-        document.getElementById('qt_finalTerms').value = res.terms;
+        document.getElementById('qt_finalTerms').value = res.terms || res;
         saveQuoteLocal(); showSysToast("條款生成成功", "success");
       } catch(e) { showSysToast("生成失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
     }
@@ -1526,9 +2074,12 @@
            totalPrice: document.getElementById('qt_total').innerText 
         });
         
-        document.getElementById('qt_emailSubject').value = res.subject;
+        let subject = res.subject || "";
+        let body = res.body || res;
+
+        document.getElementById('qt_emailSubject').value = subject;
         let pdfLinkText = quoteState.leftFlow.pdfUrl ? `\n報價單 PDF 下載連結：\n${quoteState.leftFlow.pdfUrl}\n` : `\n[雲端 PDF 連結請在此手動貼上]\n`;
-        document.getElementById('qt_emailBody').value = res.body.replace("[雲端 PDF 連結將自動帶入]", pdfLinkText);
+        document.getElementById('qt_emailBody').value = body.replace("[雲端 PDF 連結將自動帶入]", pdfLinkText);
         
         saveQuoteLocal(); showSysToast("信件草稿已產生", "success");
       } catch(e) { showSysToast("寫信失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
