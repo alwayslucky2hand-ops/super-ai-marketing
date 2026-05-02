@@ -763,7 +763,7 @@
     let currentUser = JSON.parse(localStorage.getItem('sys_user') || 'null');
     let currentRecordIds = JSON.parse(localStorage.getItem('sys_ids') || '{}');
 
-    // 🌟 [總監核心優化] 強制清空表單快取，避免新舊資料交錯（緩存中毒）
+    // 🌟 [總監核心優化 1] 強制清空表單快取，避免新舊資料交錯（緩存中毒）
     function clearFormCache() {
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -943,7 +943,7 @@
         if(res) {
           currentUser = res; 
           localStorage.setItem('sys_user', JSON.stringify(currentUser));
-          clearFormCache(); // 🌟 登入成功時，強制清空舊表單資料
+          clearFormCache(); // 🌟 [總監核心優化 2] 登入成功時，強制清空舊表單資料
           processLoginData(currentUser); 
           showSysToast("登入成功，已載入雲端資料。", "success"); 
           enterSystem(); 
@@ -994,11 +994,20 @@
       document.getElementById('ui-webhook').innerText = webhookUrl;
       document.getElementById('set_LINE_Webhook網址').value = webhookUrl;
       
-      let fields = ['姓名', '電話', '專業/產業別', '職稱', '註冊系統用途', '公司抬頭/姓名', '統一編號/身分證號', '代表人', '聯繫人', '聯繫電話', '聯絡地址'];
-      fields.forEach(f => { if(document.getElementById('prf_' + f) && !document.getElementById('prf_' + f).value && currentUser[f]) document.getElementById('prf_' + f).value = currentUser[f]; });
+      // 🌟 [總監核心優化 3] 拔除 if(!...) 判斷，無條件用雲端最新資料覆蓋前端！相容 name 與 姓名 兩種 JSON key
+      if(document.getElementById('prf_姓名')) document.getElementById('prf_姓名').value = currentUser.name || currentUser['姓名'] || "";
+      if(document.getElementById('prf_電話')) document.getElementById('prf_電話').value = currentUser.phone || currentUser['電話'] || "";
+      if(document.getElementById('prf_專業/產業別')) document.getElementById('prf_專業/產業別').value = currentUser.industry || currentUser['專業/產業別'] || "";
+      if(document.getElementById('prf_職稱')) document.getElementById('prf_職稱').value = currentUser.title || currentUser['職稱'] || "";
+      if(document.getElementById('prf_註冊系統用途')) document.getElementById('prf_註冊系統用途').value = currentUser.purpose || currentUser['註冊系統用途'] || "";
+      
+      let companyFields = ['公司抬頭/姓名', '統一編號/身分證號', '代表人', '聯繫人', '聯繫電話', '聯絡地址'];
+      companyFields.forEach(f => {
+         if(document.getElementById('prf_' + f)) document.getElementById('prf_' + f).value = currentUser[f] || "";
+      });
 
       ['公司LOGO', '公司發票章（請去背）', '公司大章（請去背）', '公司小章（請去背）'].forEach(f => {
-         if (currentUser[f] && document.getElementById('prf_' + f)) document.getElementById('prf_' + f).value = currentUser[f];
+         if (document.getElementById('prf_' + f)) document.getElementById('prf_' + f).value = currentUser[f] || "";
       });
 
       if(currentUser.ecardUrl) document.getElementById('ecard_WebhookUrl').value = currentUser.ecardUrl;
@@ -1037,10 +1046,21 @@
         if (freshData) {
           currentUser = freshData; 
           localStorage.setItem('sys_user', JSON.stringify(currentUser)); 
-          clearFormCache(); // 🌟 取回新資料時，無條件清空髒快取
+          clearFormCache(); // 🌟 [總監核心優化 4] 取回新資料時，無條件清空髒快取
           processLoginData(currentUser);
-          let fields = ['姓名', '電話', '專業/產業別', '職稱', '註冊系統用途', '公司抬頭/姓名', '統一編號/身分證號', '代表人', '聯繫人', '聯繫電話', '聯絡地址'];
-          fields.forEach(f => { if(document.getElementById('prf_' + f)) document.getElementById('prf_' + f).value = currentUser[f] || ""; });
+          
+          // 重新填入，無條件覆蓋
+          if(document.getElementById('prf_姓名')) document.getElementById('prf_姓名').value = currentUser.name || currentUser['姓名'] || "";
+          if(document.getElementById('prf_電話')) document.getElementById('prf_電話').value = currentUser.phone || currentUser['電話'] || "";
+          if(document.getElementById('prf_專業/產業別')) document.getElementById('prf_專業/產業別').value = currentUser.industry || currentUser['專業/產業別'] || "";
+          if(document.getElementById('prf_職稱')) document.getElementById('prf_職稱').value = currentUser.title || currentUser['職稱'] || "";
+          if(document.getElementById('prf_註冊系統用途')) document.getElementById('prf_註冊系統用途').value = currentUser.purpose || currentUser['註冊系統用途'] || "";
+
+          let companyFields = ['公司抬頭/姓名', '統一編號/身分證號', '代表人', '聯繫人', '聯繫電話', '聯絡地址'];
+          companyFields.forEach(f => {
+             if(document.getElementById('prf_' + f)) document.getElementById('prf_' + f).value = currentUser[f] || "";
+          });
+          
           if(currentUser.ecardUrl) document.getElementById('ecard_WebhookUrl').value = currentUser.ecardUrl;
           renderApiKeys(currentUser.apiKeys || []); restoreImages();
         }
@@ -1604,443 +1624,432 @@
       }
     }
 
-    // ==========================================
-    // 🌟🌟 報價特助 核心邏輯 (與後端 API 完美串聯) 🌟🌟
-    // ==========================================
-    let quoteState = {
-      recordId: "",
-      settingsId: "",
-      settings: { payments: [], products: [], terms: [] },
-      leftFlow: {
-         clientName: "", clientId: "", clientRep: "", clientContact: "", clientPhone: "", clientEmail: "", clientAddress: "",
-         notes: "", needs: "",
-         selectedProducts: [],
-         quoteItems: [],
-         selectedTerms: [], finalTerms: "",
-         emailSubject: "", emailBody: ""
-      }
+    let state = {
+      recordId: "", mktId: "", urls: [""], transcript: "", industry: "", painPoint: "", 
+      targetAudience: "", visualStyle: "", introLength: "", blogLength: "", socialLength: "",
+      aiKeywords: [], gkpPasteArea: "", parsedGKPData: [], globalGkpData: [], selectedKeywordsList: [],
+      introText: "", proposalsList: [], proposal: null, mySaw: "", myThought: "", myExp: "", myRealization: "",
+      conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: "",
+      aspectRatio: "1:1 (適合 IG 貼文、FB 貼文)"
     };
+    
+    let currentSearchResults = [];
 
-    function switchQuoteSubTab(tab) {
-      if (tab === 'flow') {
-        document.getElementById('qt-flow-container').classList.remove('hidden');
-        document.getElementById('qt-flow-container').classList.add('flex');
-        document.getElementById('qt-db-container').classList.add('hidden');
-        document.getElementById('qt-db-container').classList.remove('flex');
-        document.getElementById('qt-tab-flow').className = "flex-1 py-3 text-center font-bold text-blue-600 border-b-2 border-blue-600 transition-colors bg-blue-50/30";
-        document.getElementById('qt-tab-db').className = "flex-1 py-3 text-center font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-700 hover:bg-slate-50 transition-colors";
-      } else {
-        document.getElementById('qt-db-container').classList.remove('hidden');
-        document.getElementById('qt-db-container').classList.add('flex');
-        document.getElementById('qt-flow-container').classList.add('hidden');
-        document.getElementById('qt-flow-container').classList.remove('flex');
-        document.getElementById('qt-tab-db').className = "flex-1 py-3 text-center font-bold text-blue-600 border-b-2 border-blue-600 transition-colors bg-blue-50/30";
-        document.getElementById('qt-tab-flow').className = "flex-1 py-3 text-center font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-700 hover:bg-slate-50 transition-colors";
-      }
+    async function runGasFunction(actionName, payload) {
+      try {
+        payload.memberId = currentUser.memberId; 
+        let response = await fetch(GAS_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: actionName, params: payload })
+        });
+        if (!response.ok) throw new Error('伺服器連線失敗');
+        let data = await response.json();
+        if (data.error) throw new Error(data.error);
+        return data;
+      } catch (err) { throw err; }
     }
 
-    async function loadQuoteData() {
-      if(!currentUser) return;
-      try {
-        const resSettings = await apiCall('getQuoteSettings');
-        if(resSettings && resSettings['設定ID']) {
-           quoteState.settingsId = resSettings['設定ID'];
-           if(resSettings['收款資訊JSON']) quoteState.settings.payments = JSON.parse(resSettings['收款資訊JSON']);
-           if(resSettings['商品資訊JSON']) quoteState.settings.products = JSON.parse(resSettings['商品資訊JSON']);
-           if(resSettings['條款設定JSON']) quoteState.settings.terms = JSON.parse(resSettings['條款設定JSON']);
-        }
-        
-        const saved = localStorage.getItem('growthx_quote_state');
-        if (saved) {
+    function loadLocal() {
+      let saved = localStorage.getItem('troy_eeat_system');
+      if(saved) {
+        try {
           let parsed = JSON.parse(saved);
-          quoteState.leftFlow = parsed.leftFlow || quoteState.leftFlow;
-          ['clientName', 'clientId', 'clientRep', 'clientContact', 'clientPhone', 'clientEmail', 'clientAddress', 'notes', 'needs', 'finalTerms', 'emailSubject', 'emailBody'].forEach(id => {
-            if(document.getElementById('qt_' + id)) document.getElementById('qt_' + id).value = quoteState.leftFlow[id] || "";
+          state = Object.assign(state, parsed);
+          ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength', 'aspectRatio'].forEach(id => {
+            let el = document.getElementById(id); if(el && state[id]) el.value = state[id];
           });
-        }
-        
-        renderQuoteSettings();
-        renderQuoteItems();
-      } catch(e) { console.error("讀取報價資料失敗", e); }
+          if(state.introText) document.getElementById('introResult').classList.remove('hidden');
+          if(state.finalHtml) document.getElementById('finalContent').innerHTML = state.finalHtml;
+          if(state.urls && state.urls.length > 0) renderUrlInputs();
+          if(state.socialPost && state.imagePrompts) {
+            document.getElementById('socialPostContent').innerHTML = state.socialPost;
+            document.getElementById('imagePromptsContent').value = state.imagePrompts;
+            document.getElementById('socialResult').classList.remove('hidden');
+          }
+        } catch(e) { console.error("快取讀取失敗", e); }
+      }
     }
 
-    function saveQuoteLocal() {
-      ['clientName', 'clientId', 'clientRep', 'clientContact', 'clientPhone', 'clientEmail', 'clientAddress', 'notes', 'needs', 'finalTerms', 'emailSubject', 'emailBody'].forEach(id => {
-        if(document.getElementById('qt_' + id)) quoteState.leftFlow[id] = document.getElementById('qt_' + id).value;
+    function renderUrlInputs() {
+      const container = document.getElementById('urlContainer');
+      if (state.urls.length === 0) state.urls = [""];
+      container.innerHTML = state.urls.map((u, i) => `
+        <div class="flex flex-col space-y-2 w-full">
+          <input type="text" class="url-input input-ios w-full" placeholder="https://..." value="${u}" oninput="updateUrlState()">
+          ${state.urls.length > 1 ? `<button type="button" onclick="removeUrlInput(${i})" class="text-gray-400 hover:text-red-500 bg-white border border-gray-200 px-3 py-2 rounded-xl transition shadow-sm flex w-full items-center justify-center"><span class="material-icons text-[20px] mr-1">delete_outline</span> 移除此網址</button>` : ``}
+        </div>
+      `).join('');
+    }
+
+    function addUrlInput() { state.urls.push(""); renderUrlInputs(); }
+    function removeUrlInput(index) { state.urls.splice(index, 1); renderUrlInputs(); }
+    function updateUrlState() { state.urls = Array.from(document.querySelectorAll('.url-input')).map(inp => inp.value); }
+
+    function saveLocal() {
+      ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength', 'aspectRatio'].forEach(id => {
+        let el = document.getElementById(id); if(el) state[id] = el.value;
       });
-      localStorage.setItem('growthx_quote_state', JSON.stringify(quoteState));
-    }
-
-    function addQuoteSetting(type) {
-      if (type === 'payment') quoteState.settings.payments.push({ type: '銀行帳戶', bankCode: '', branchCode: '', account: '', name: '', image: '', amount: '', url: '' });
-      else if (type === 'product') quoteState.settings.products.push({ category: '', name: '', desc: '', note: '', unit: '', price: 0, image: '' });
-      else if (type === 'term') quoteState.settings.terms.push({ category: '', direction: '', detail: '' });
-      renderQuoteSettings(); saveQuoteLocal();
-    }
-
-    function updateQuoteSetting(type, idx, field, value) {
-      if (type === 'payment') quoteState.settings.payments[idx][field] = value;
-      else if (type === 'product') quoteState.settings.products[idx][field] = value;
-      else if (type === 'term') quoteState.settings.terms[idx][field] = value;
-      saveQuoteLocal();
-      if (type === 'payment' && field === 'url') generateQRCode(idx, value);
-      if (type !== 'payment') renderQuoteSelectionOptions();
-    }
-
-    function removeQuoteSetting(type, idx) {
-      if (type === 'payment') quoteState.settings.payments.splice(idx, 1);
-      else if (type === 'product') quoteState.settings.products.splice(idx, 1);
-      else if (type === 'term') quoteState.settings.terms.splice(idx, 1);
-      renderQuoteSettings(); saveQuoteLocal();
-    }
-
-    function handleQuoteSettingImageUpload(input, type, idx) {
-      const file = input.files[0];
-      if (file) {
-        if (file.size > 2 * 1024 * 1024) return showSysToast("圖片過大", "error");
-        const reader = new FileReader();
-        reader.onload = e => {
-          updateQuoteSetting(type, idx, 'image', e.target.result);
-          renderQuoteSettings();
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    function generateQRCode(idx, text) {
-      const qrDiv = document.getElementById(`qr-code-payment-${idx}`);
-      if (!qrDiv) return;
-      qrDiv.innerHTML = "";
-      if (text) new QRCode(qrDiv, { text: text, width: 90, height: 90 });
-    }
-
-    function renderQuoteSettings() {
-      const pContainer = document.getElementById('qt_payment_list');
-      pContainer.innerHTML = quoteState.settings.payments.map((p, i) => `
-        <div class="border border-slate-200 p-4 rounded-xl relative bg-slate-50 flex flex-col gap-3">
-          <button type="button" onclick="removeQuoteSetting('payment', ${i})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
-          <div class="flex flex-col"><label class="text-xs font-bold text-slate-500 mb-1">收款類型</label><select class="input-ios p-2 text-sm bg-white" onchange="updateQuoteSetting('payment', ${i}, 'type', this.value); renderQuoteSettings();"><option value="銀行帳戶" ${p.type==='銀行帳戶'?'selected':''}>銀行帳戶</option><option value="金流連結" ${p.type==='金流連結'?'selected':''}>金流連結 (生成QR Code)</option></select></div>
-          ${p.type === '銀行帳戶' ? `
-            <div class="grid grid-cols-2 gap-2">
-              <div><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="銀行代碼" value="${p.bankCode}" oninput="updateQuoteSetting('payment', ${i}, 'bankCode', this.value)"></div>
-              <div><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="分行代碼" value="${p.branchCode}" oninput="updateQuoteSetting('payment', ${i}, 'branchCode', this.value)"></div>
-              <div class="col-span-2"><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="匯款帳戶" value="${p.account}" oninput="updateQuoteSetting('payment', ${i}, 'account', this.value)"></div>
-              <div class="col-span-2"><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="戶名" value="${p.name}" oninput="updateQuoteSetting('payment', ${i}, 'name', this.value)"></div>
-            </div>
-            <div class="flex items-center gap-2 mt-1">
-              ${p.image ? `<img src="${getViewableUrl(p.image)}" class="w-16 h-16 object-cover rounded-lg border border-slate-200">` : `<div class="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-[10px]">無存摺預覽</div>`}
-              <button type="button" onclick="document.getElementById('quote-img-pay-${i}').click()" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition">上傳存摺圖片</button>
-              <input type="file" id="quote-img-pay-${i}" accept="image/*" class="hidden" onchange="handleQuoteSettingImageUpload(this, 'payment', ${i})">
-            </div>
-          ` : `
-            <div class="flex flex-col gap-2">
-              <input type="number" class="input-ios p-2 text-sm bg-white" placeholder="預設金額 (選填)" value="${p.amount}" oninput="updateQuoteSetting('payment', ${i}, 'amount', this.value)">
-              <input type="text" class="input-ios p-2 text-sm bg-white" placeholder="付款網址 (將轉為QR Code)" value="${p.url}" oninput="updateQuoteSetting('payment', ${i}, 'url', this.value)">
-              <div class="bg-white border border-slate-200 p-2 rounded-lg inline-block self-start mt-1"><div id="qr-code-payment-${i}"></div></div>
-            </div>
-          `}
-        </div>
-      `).join('');
       
-      const prodContainer = document.getElementById('qt_product_list');
-      prodContainer.innerHTML = quoteState.settings.products.map((p, i) => `
-        <div class="border border-slate-200 p-4 rounded-xl relative bg-slate-50 flex flex-col gap-2">
-          <button type="button" onclick="removeQuoteSetting('product', ${i})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <div><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="商品類別" value="${p.category}" oninput="updateQuoteSetting('product', ${i}, 'category', this.value)"></div>
-            <div><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="商品名稱" value="${p.name}" oninput="updateQuoteSetting('product', ${i}, 'name', this.value)"></div>
-            <div class="col-span-2"><textarea class="input-ios p-2 text-sm h-16 bg-white" placeholder="商品介紹" oninput="updateQuoteSetting('product', ${i}, 'desc', this.value)">${p.desc}</textarea></div>
-            <div><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="單位 (例: 式/個)" value="${p.unit}" oninput="updateQuoteSetting('product', ${i}, 'unit', this.value)"></div>
-            <div><input type="number" class="input-ios p-2 text-sm bg-white" placeholder="單價" value="${p.price}" oninput="updateQuoteSetting('product', ${i}, 'price', this.value)"></div>
-            <div class="col-span-2"><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="備註事項" value="${p.note}" oninput="updateQuoteSetting('product', ${i}, 'note', this.value)"></div>
-          </div>
-          <div class="flex items-center gap-2 mt-1">
-              ${p.image ? `<img src="${getViewableUrl(p.image)}" class="w-16 h-16 object-cover rounded-lg border border-slate-200">` : `<div class="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-[10px]">無商品圖片</div>`}
-              <button type="button" onclick="document.getElementById('quote-img-prod-${i}').click()" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition">上傳商品圖片</button>
-              <input type="file" id="quote-img-prod-${i}" accept="image/*" class="hidden" onchange="handleQuoteSettingImageUpload(this, 'product', ${i})">
-          </div>
-        </div>
-      `).join('');
-
-      const termContainer = document.getElementById('qt_term_list');
-      termContainer.innerHTML = quoteState.settings.terms.map((t, i) => `
-        <div class="border border-slate-200 p-4 rounded-xl relative bg-slate-50 flex flex-col gap-2">
-          <button type="button" onclick="removeQuoteSetting('term', ${i})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500"><i data-lucide="x" class="w-5 h-5"></i></button>
-          <div class="mt-2"><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="條款類別 (例: 智財權保障)" value="${t.category}" oninput="updateQuoteSetting('term', ${i}, 'category', this.value)"></div>
-          <div><textarea class="input-ios p-2 text-sm h-16 bg-white" placeholder="編撰方向 (讓AI律師發揮的方向)" oninput="updateQuoteSetting('term', ${i}, 'direction', this.value)">${t.direction}</textarea></div>
-          <div><textarea class="input-ios p-2 text-sm h-16 bg-white" placeholder="詳細條約內容 (選填，若有填將強制帶入)" oninput="updateQuoteSetting('term', ${i}, 'detail', this.value)">${t.detail}</textarea></div>
-        </div>
-      `).join('');
-
-      lucide.createIcons();
-      quoteState.settings.payments.forEach((p, i) => { if (p.type === '金流連結' && p.url) generateQRCode(i, p.url); });
-      renderQuoteSelectionOptions();
-    }
-
-    function renderQuoteSelectionOptions() {
-      const prodSel = document.getElementById('quote-select-products');
-      if(prodSel) {
-        prodSel.innerHTML = quoteState.settings.products.map((p, i) => `
-          <label class="flex items-center gap-2 text-sm text-slate-700 bg-white p-2 rounded border border-slate-100 cursor-pointer hover:bg-blue-50 transition">
-            <input type="checkbox" ${quoteState.leftFlow.selectedProducts.includes(i) ? 'checked' : ''} onchange="toggleQuoteSelection('product', ${i}, this.checked)" class="w-4 h-4 text-blue-600 rounded border-gray-300">
-            <span class="font-bold truncate w-full">${p.name || '未命名商品'}</span> <span class="text-xs text-slate-400 shrink-0">($${p.price})</span>
-          </label>
-        `).join('');
-      }
+      let finalHtmlEl = document.getElementById('finalContent');
+      if(finalHtmlEl) state.finalHtml = finalHtmlEl.innerHTML;
       
-      const termSel = document.getElementById('quote-select-terms');
-      if(termSel) {
-        termSel.innerHTML = quoteState.settings.terms.map((t, i) => `
-          <label class="flex items-center gap-2 text-sm text-slate-700 bg-white p-2 rounded border border-slate-100 cursor-pointer hover:bg-purple-50 transition">
-            <input type="checkbox" ${quoteState.leftFlow.selectedTerms.includes(i) ? 'checked' : ''} onchange="toggleQuoteSelection('term', ${i}, this.checked)" class="w-4 h-4 text-purple-600 rounded border-gray-300">
-            <span class="font-bold truncate w-full">${t.category || '未命名條款'}</span>
-          </label>
-        `).join('');
-      }
+      let socialEl = document.getElementById('socialPostContent');
+      if(socialEl) state.socialPost = socialEl.innerHTML;
+
+      let imgPromptsEl = document.getElementById('imagePromptsContent');
+      if(imgPromptsEl) state.imagePrompts = imgPromptsEl.value;
+
+      updateUrlState();
+      localStorage.setItem('troy_eeat_system', JSON.stringify(state));
     }
 
-    function toggleQuoteSelection(type, idx, isChecked) {
-      const arr = type === 'product' ? quoteState.leftFlow.selectedProducts : quoteState.leftFlow.selectedTerms;
-      if (isChecked && !arr.includes(idx)) arr.push(idx);
-      else if (!isChecked && arr.includes(idx)) arr.splice(arr.indexOf(idx), 1);
-      saveQuoteLocal();
+    function resetApp(btn) {
+      localStorage.removeItem('troy_eeat_system');
+      state = {
+        recordId: "", mktId: "", urls: [""], transcript: "", introText: "", industry: "", painPoint: "", 
+        targetAudience: "", visualStyle: "", introLength: "", blogLength: "", socialLength: "",
+        aiKeywords: [], gkpPasteArea: "", parsedGKPData: [], globalGkpData: [], selectedKeywordsList: [],
+        proposalsList: [], proposal: null, mySaw: "", myThought: "", myExp: "", myRealization: "",
+        conclusion: "", cta: "", finalHtml: "", finalArticleText: "", socialPost: "", imagePrompts: "",
+        aspectRatio: "1:1 (適合 IG 貼文、FB 貼文)"
+      };
+      ['transcript', 'introText', 'industry', 'painPoint', 'gkpPasteArea', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'finalArticleText', 'imagePromptsContent', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength'].forEach(id => {
+        let el = document.getElementById(id); if(el) el.value = "";
+      });
+      let arEl = document.getElementById('aspectRatio');
+      if (arEl) arEl.value = state.aspectRatio;
+
+      document.getElementById('searchKw').value = "";
+      document.getElementById('searchStart').value = "";
+      document.getElementById('searchEnd').value = "";
+
+      document.getElementById('introResult').classList.add('hidden');
+      document.getElementById('gkpSection').classList.add('hidden');
+      document.getElementById('gkpAnalyzedResults').classList.add('hidden');
+      document.getElementById('nextTo3').classList.add('hidden');
+      document.getElementById('gkpPreviewWrapper').classList.add('hidden');
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step3').classList.remove('active');
+      document.getElementById('step4').classList.remove('active');
+      document.getElementById('step5').classList.remove('active');
+      document.getElementById('step6').classList.remove('active');
+      document.getElementById('step7').classList.remove('active');
+      
+      document.getElementById('socialResult').classList.add('hidden');
+      document.getElementById('nextTo7').classList.add('hidden');
+      document.getElementById('inlineSearchBlock').classList.add('hidden');
+
+      document.getElementById('finalContent').innerHTML = "";
+      document.getElementById('proposalsResult').innerHTML = "";
+      document.getElementById('gkpCardsContainer').innerHTML = "";
+      document.getElementById('socialPostContent').innerHTML = "";
+      document.getElementById('kwCount').innerText = "0";
+      renderUrlInputs();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showMktToast('系統已完全重置');
     }
 
-    function addQuoteItemRow(name='', desc='', price=0, qty=1) {
-      quoteState.leftFlow.quoteItems.push({ name, desc, price, qty });
-      renderQuoteItems(); saveQuoteLocal();
+    async function saveToDatabase(btn) {
+      saveLocal(); 
+      setBtnLoading(btn, '');
+      try {
+        state.memberId = currentUser.memberId;
+        let res = await runGasFunction('syncDatabase', state);
+        state.recordId = res.recordId; 
+        if (res.mktId) state.mktId = res.mktId;
+        saveLocal();
+        showMktToast('儲存成功');
+      } catch(err) { showMktToast('儲存失敗：' + err.message, true); } 
+      finally { restoreBtnLoading(btn); }
+    }
+
+    function toggleSearchBlock() { 
+      document.getElementById('inlineSearchBlock').classList.toggle('hidden'); 
     }
     
-    function removeQuoteItemRow(idx) {
-      quoteState.leftFlow.quoteItems.splice(idx, 1);
-      renderQuoteItems(); saveQuoteLocal();
-    }
-
-    function updateQuoteItemRow(idx, field, val) {
-      quoteState.leftFlow.quoteItems[idx][field] = val;
-      if (field === 'price' || field === 'qty') calcQuoteTotals();
-      saveQuoteLocal();
-    }
-
-    function renderQuoteItems() {
-      const tbody = document.getElementById('quote-items-tbody');
-      tbody.innerHTML = quoteState.leftFlow.quoteItems.map((item, i) => `
-        <tr class="bg-white hover:bg-slate-50 transition">
-          <td class="p-2"><input type="text" class="w-full bg-transparent border-b border-dashed border-slate-300 p-1 text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-500" value="${item.name}" oninput="updateQuoteItemRow(${i}, 'name', this.value)"></td>
-          <td class="p-2"><textarea class="w-full bg-transparent border-b border-dashed border-slate-300 p-1 text-xs text-slate-600 h-10 focus:outline-none focus:border-blue-500 resize-none" oninput="updateQuoteItemRow(${i}, 'desc', this.value)">${item.desc}</textarea></td>
-          <td class="p-2"><input type="number" class="w-full bg-transparent border-b border-dashed border-slate-300 p-1 text-sm font-mono text-slate-700 focus:outline-none focus:border-blue-500" value="${item.price}" oninput="updateQuoteItemRow(${i}, 'price', parseFloat(this.value)||0)"></td>
-          <td class="p-2"><input type="number" class="w-full bg-transparent border-b border-dashed border-slate-300 p-1 text-sm text-center font-mono text-slate-700 focus:outline-none focus:border-blue-500" value="${item.qty}" min="1" oninput="updateQuoteItemRow(${i}, 'qty', parseInt(this.value)||1)"></td>
-          <td class="p-2 font-mono font-bold text-slate-800 text-sm">$${(item.price * item.qty).toLocaleString()}</td>
-          <td class="p-2 text-center"><button type="button" onclick="removeQuoteItemRow(${i})" class="text-slate-400 hover:text-red-500 transition p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button></td>
-        </tr>
-      `).join('');
-      lucide.createIcons();
-      calcQuoteTotals();
-    }
-
-    function calcQuoteTotals() {
-      let sub = 0;
-      quoteState.leftFlow.quoteItems.forEach(item => sub += (item.price * item.qty));
-      const tax = Math.round(sub * 0.05);
-      const total = sub + tax;
-      document.getElementById('qt_subtotal').innerText = `$${sub.toLocaleString()}`;
-      document.getElementById('qt_tax').innerText = `$${tax.toLocaleString()}`;
-      document.getElementById('qt_total').innerText = `$${total.toLocaleString()}`;
+    async function executeSearch(btn) {
+      let keyword = document.getElementById('searchKw').value;
+      let startDate = document.getElementById('searchStart').value;
+      let endDate = document.getElementById('searchEnd').value;
       
-      const tbody = document.getElementById('quote-items-tbody');
-      quoteState.leftFlow.quoteItems.forEach((item, i) => {
-        if(tbody.children[i]) {
-          const subtotalTd = tbody.children[i].cells[4];
-          if(subtotalTd) subtotalTd.innerText = `$${(item.price * item.qty).toLocaleString()}`;
+      setBtnLoading(btn, '');
+      document.getElementById('searchResults').innerHTML = '<p class="text-blue-600 text-center py-10 font-semibold animate-pulse w-full">連線搜尋中...</p>';
+      
+      try {
+        let res = await runGasFunction('searchDatabase', { keyword, startDate, endDate, memberId: currentUser.memberId });
+        currentSearchResults = res.results;
+        if (currentSearchResults.length === 0) {
+          document.getElementById('searchResults').innerHTML = '<p class="text-gray-400 text-center py-10 w-full">無符合紀錄。</p>';
+          return;
         }
+        document.getElementById('searchResults').innerHTML = currentSearchResults.map((row, i) => `
+          <div class="border border-gray-200 rounded-xl p-4 bg-white shadow-sm flex flex-col gap-3 w-full">
+            <div class="flex flex-col w-full">
+              <div class="font-bold text-gray-900 text-base mb-1">${row['提案標題'] || '未命名草稿'}</div>
+              <div class="text-xs text-gray-500 mb-1">更新：${row['更新時間']} | 產業：${row['產業']}</div>
+              <div class="text-xs text-blue-600 font-medium truncate w-full">標籤：${row['選定關鍵字']}</div>
+            </div>
+            <button type="button" onclick="loadRecordToUI(${i})" class="bg-gray-100 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-indigo-50 hover:text-indigo-600 transition w-full flex justify-center">載入紀錄</button>
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('searchResults').innerHTML = `<p class="text-red-500 text-center py-10 w-full">發生錯誤：${err.message}</p>`;
+      } finally {
+        restoreBtnLoading(btn);
+      }
+    }
+
+    function loadRecordToUI(index) {
+      let record = currentSearchResults[index];
+      state.recordId = record['記錄ID'];
+      state.industry = record['產業'];
+      state.painPoint = record['痛點'];
+      
+      state.targetAudience = record['目標受眾'] || "";
+      state.visualStyle = record['視覺風格'] || "";
+      state.introLength = record['前導字數'] || "";
+      state.blogLength = record['部落格字數'] || "";
+      state.socialLength = record['社群字數'] || "";
+
+      state.introText = record['前導文章'];
+      state.mySaw = record['所見所聞'];
+      state.myThought = record['所思所想'];
+      state.myExp = record['親身經歷'];
+      state.myRealization = record['感觸體認'];
+      state.conclusion = record['結語'];
+      state.cta = record['CTA'];
+      state.finalHtml = record['最終文章HTML'];
+      state.selectedKeywordsList = record['選定關鍵字'] ? record['選定關鍵字'].split(', ') : [];
+      state.proposal = { title: record['提案標題'], summary: "已從歷史紀錄載入" };
+
+      ['industry', 'painPoint', 'introText', 'mySaw', 'myThought', 'myExp', 'myRealization', 'conclusion', 'cta', 'targetAudience', 'visualStyle', 'introLength', 'blogLength', 'socialLength'].forEach(id => {
+        let el = document.getElementById(id);
+        if (el) el.value = state[id];
+      });
+      
+      document.getElementById('introResult').classList.remove('hidden');
+      if (state.finalHtml) {
+        document.getElementById('finalContent').innerHTML = state.finalHtml;
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = state.finalHtml;
+        state.finalArticleText = tempDiv.innerText;
+        document.getElementById('finalArticleText').value = state.finalArticleText;
+        
+        goStep(6);
+        document.getElementById('nextTo7').classList.remove('hidden');
+      } else {
+        goStep(1); 
+      }
+      saveLocal(); 
+      document.getElementById('inlineSearchBlock').classList.add('hidden');
+      showMktToast('紀錄已載入成功');
+    }
+
+    function showMktToast(msg, isErr=false) {
+      let t = document.getElementById('mktSystemToast'); t.innerText = msg;
+      t.className = `fixed top-24 left-1/2 transform -translate-x-1/2 z-[200] px-6 py-3 rounded-full shadow-lg font-semibold text-sm transition-opacity duration-300 w-11/12 max-w-md text-center text-white ${isErr?'bg-red-500':'bg-gray-900'}`;
+      t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000);
+    }
+    
+    function goStep(num) {
+      const target = document.getElementById('step' + num);
+      target.classList.add('active'); 
+      window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
+    }
+
+    async function runStep1(btn) {
+      saveLocal(); 
+      setBtnLoading(btn, "AI 產出中...");
+      try {
+        let res = await runGasFunction('step1_GenerateIntro', state);
+        document.getElementById('introText').value = res.introText;
+        document.getElementById('introResult').classList.remove('hidden');
+        saveLocal();
+      } catch(err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
+    }
+
+    async function runStep2(btn) {
+      saveLocal(); 
+      if(!state.industry || !state.painPoint || !state.introText) return showMktToast('請填寫產業與痛點', true);
+      
+      setBtnLoading(btn, "萃取關鍵字中...");
+      try {
+        let res = await runGasFunction('step2_GenerateKeywords', state);
+        state.aiKeywords = res.keywords;
+        const target = document.getElementById('gkpSection');
+        target.classList.remove('hidden');
+        saveLocal();
+        showMktToast('收斂完成');
+        window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
+      } catch(err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
+    }
+
+    function copyAndOpenGKP() {
+      if (!state.aiKeywords || state.aiKeywords.length === 0) return showMktToast('無關鍵字', true);
+      navigator.clipboard.writeText(state.aiKeywords.join('\r\n')).then(() => {
+        showMktToast('複製成功，前往 GKP');
+        window.open('https://ads.google.com/aw/keywordplanner/home', '_blank');
       });
     }
 
-    async function runQuoteStep1(btn) {
-      saveQuoteLocal();
-      const notes = document.getElementById('qt_notes').value;
-      if(!notes) return showSysToast("請先輸入筆記或逐字稿", "warn");
-      setBtnLoading(btn);
-      try {
-        const res = await apiCall('quote_step1_Needs', { notes: notes });
-        document.getElementById('qt_needs').value = res.needs;
-        saveQuoteLocal(); showSysToast("需求梳理成功", "success");
-      } catch(e) { showSysToast("分析失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
-    }
-
-    async function runQuoteStep2(btn) {
-      saveQuoteLocal();
-      const needs = document.getElementById('qt_needs').value;
-      if(!needs) return showSysToast("請先產出或填寫需求說明", "warn");
-      setBtnLoading(btn);
-      try {
-        const selectedProdData = quoteState.leftFlow.selectedProducts.map(i => quoteState.settings.products[i]);
-        const res = await apiCall('quote_step2_Items', { needs: needs, selectedProductsData: selectedProdData });
-        
-        if (res.items && Array.isArray(res.items)) {
-          res.items.forEach(item => addQuoteItemRow(item.name, item.desc, parseFloat(item.price)||0, parseInt(item.qty)||1));
+    document.getElementById('gkpPasteArea').addEventListener('input', function(e) {
+      saveLocal();
+      const rawData = e.target.value.trim();
+      const container = document.getElementById('gkpPreviewWrapper');
+      if (!rawData) { container.classList.add('hidden'); state.parsedGKPData = []; return; }
+      const expectedHeaders = ['關鍵字', '平均每月搜尋量', '三個月內的變化', '逐年變化', '競爭程度', '廣告曝光比重', '首頁頂端出價(低價)', '首頁頂端出價(高價)'];
+      let rows = [];
+      if (rawData.indexOf('\t') !== -1) {
+        let rawRows = rawData.split('\n').map(r => r.split('\t'));
+        rows = (rawRows[0][0].includes('關鍵字')) ? rawRows.slice(1) : rawRows;
+      } else {
+        let dataLines = rawData.split('\n').map(l => l.trim()).filter(l => l !== '');
+        for (let i = 0; i < dataLines.length; i += 8) {
+          let chunk = dataLines.slice(i, i + 8);
+          if (chunk.length > 0 && chunk[0] !== '關鍵字') { while(chunk.length < 8) chunk.push(''); rows.push(chunk); }
         }
-        showSysToast("已匯入明細，請核對金額", "success");
-      } catch(e) { showSysToast("生成失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
-    }
+      }
+      if (rows.length === 0) return;
+      document.getElementById('gkpPreviewHeaders').innerHTML = expectedHeaders.map(h => `<th class="px-4 py-3 font-semibold border-b border-gray-200 text-gray-600">${h}</th>`).join('');
+      document.getElementById('gkpPreviewBody').innerHTML = rows.slice(0, 5).map(row => `<tr class="bg-white">` + expectedHeaders.map((_, i) => `<td class="px-4 py-3 whitespace-nowrap border-b border-gray-100 text-gray-700">${row[i] || '-'}</td>`).join('') + `</tr>`).join('');
+      container.classList.remove('hidden');
+      state.parsedGKPData = rows.map(row => { let obj = {}; expectedHeaders.forEach((h, i) => obj[h] = row[i] || ''); return obj; }).filter(obj => obj['關鍵字']); 
+    });
 
-    async function runQuoteStep3(btn) {
-      saveQuoteLocal();
-      const needs = document.getElementById('qt_needs').value;
-      const clientName = document.getElementById('qt_clientName').value || '未填寫甲方名稱';
-      if(!needs) return showSysToast("請確認已填寫需求與甲方資訊", "warn");
-      setBtnLoading(btn);
-      try {
-        const selectedTermsData = quoteState.leftFlow.selectedTerms.map(i => quoteState.settings.terms[i]);
-        const res = await apiCall('quote_step3_Terms', { clientName: clientName, needs: needs, selectedTermsData: selectedTermsData });
-        
-        document.getElementById('qt_finalTerms').value = res.terms;
-        saveQuoteLocal(); showSysToast("條款生成成功", "success");
-      } catch(e) { showSysToast("生成失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
-    }
-
-    async function runQuoteStep4(btn) {
-      saveQuoteLocal();
-      setBtnLoading(btn);
-      try {
-        const getElVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
-        const logoUrl = getElVal('prf_公司LOGO');
-        const bigSealUrl = getElVal('prf_公司大章（請去背）');
-        const smallSealUrl = getElVal('prf_公司小章（請去背）');
-        const myCompany = getElVal('prf_公司抬頭/姓名') || '我方公司名稱';
-        
-        const html = `
-          <div style="text-align:center; margin-bottom: 30px;">
-             ${logoUrl ? `<img src="${getViewableUrl(logoUrl)}" style="height:60px; margin-bottom:10px;">` : ''}
-             <h1 style="font-size:24px; margin:0;">${myCompany} 報價單</h1>
-          </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom: 20px; font-size:12px; color:#475569;">
-            <div>
-              <strong>致：</strong> ${quoteState.leftFlow.clientName || '甲方抬頭'}<br>
-              <strong>統編：</strong> ${quoteState.leftFlow.clientId || '無'}<br>
-              <strong>聯絡人：</strong> ${quoteState.leftFlow.clientContact || '無'}
-            </div>
-            <div style="text-align:right;">
-              <strong>報價日期：</strong> ${new Date().toLocaleDateString('zh-TW')}<br>
-              <strong>報價單號：</strong> Q-${Date.now().toString().slice(-6)}
-            </div>
-          </div>
-          <table style="width:100%; border-collapse:collapse; margin-bottom:20px; font-size:13px;">
-            <thead><tr style="background:#f1f5f9;"><th style="border:1px solid #cbd5e1; padding:8px;">項目名稱</th><th style="border:1px solid #cbd5e1; padding:8px;">單價</th><th style="border:1px solid #cbd5e1; padding:8px;">數量</th><th style="border:1px solid #cbd5e1; padding:8px;">小計</th></tr></thead>
-            <tbody>
-              ${quoteState.leftFlow.quoteItems.map(i => `<tr><td style="border:1px solid #cbd5e1; padding:8px;"><strong>${i.name}</strong><br><span style="color:#64748b; font-size:11px;">${i.desc}</span></td><td style="border:1px solid #cbd5e1; padding:8px; text-align:right;">$${i.price.toLocaleString()}</td><td style="border:1px solid #cbd5e1; padding:8px; text-align:center;">${i.qty}</td><td style="border:1px solid #cbd5e1; padding:8px; text-align:right;">$${(i.price*i.qty).toLocaleString()}</td></tr>`).join('')}
-            </tbody>
-          </table>
-          <div style="text-align:right; font-size:14px; margin-bottom:30px;">
-             總計未稅： <span style="font-weight:bold;">${document.getElementById('qt_subtotal').innerText}</span><br>
-             營業稅(5%)： <span style="font-weight:bold;">${document.getElementById('qt_tax').innerText}</span><br>
-             <div style="font-size:18px; margin-top:8px;">總計金額： <strong style="color:#2563eb;">${document.getElementById('qt_total').innerText}</strong></div>
-          </div>
-          <div style="font-size:12px; line-height:1.6; color:#475569; background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:30px;">
-            <strong>【約定條款】</strong><br>
-            ${(quoteState.leftFlow.finalTerms || '').replace(/\n/g, '<br>')}
-          </div>
-          <div style="display:flex; justify-content:flex-end; gap:20px; text-align:center; padding-top:20px;">
-            ${bigSealUrl ? `<div><img src="${getViewableUrl(bigSealUrl)}" style="width:90px; height:90px; object-fit:contain; opacity:0.9;"><div style="font-size:11px; margin-top:4px;">公司大章</div></div>` : ''}
-            ${smallSealUrl ? `<div><img src="${getViewableUrl(smallSealUrl)}" style="width:90px; height:90px; object-fit:contain; opacity:0.9;"><div style="font-size:11px; margin-top:4px;">負責人小章</div></div>` : ''}
-          </div>
-        `;
-        document.getElementById('qt_a4_preview').innerHTML = html;
-        showSysToast("預覽生成成功", "success");
-      } catch(e) { showSysToast("預覽失敗", "error"); } finally { restoreBtnLoading(btn); }
-    }
-
-    async function runQuoteStep5(btn) {
-      const htmlContent = document.getElementById('qt_a4_preview').innerHTML;
-      if(htmlContent.includes("請先點擊上方按鈕生成預覽")) return showSysToast("請先生成 A4 預覽", "warn");
+    async function analyzeGKPDataFlow(btn) {
+      if (state.parsedGKPData.length === 0) return showMktToast('請貼上數據', true);
       
-      setBtnLoading(btn);
+      setBtnLoading(btn, "演算分析中...");
       try {
-        const res = await apiCall('quote_generatePDF', { 
-          html: htmlContent, 
-          clientName: quoteState.leftFlow.clientName 
-        });
-        showSysToast("已儲存為雲端 PDF！", "success");
-        quoteState.leftFlow.pdfUrl = res.pdfUrl;
-        quoteState.leftFlow.pdfId = res.pdfId;
-        saveQuoteLocal();
-        window.open(res.pdfUrl, '_blank'); 
-      } catch(e) { showSysToast("PDF產出失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
+        let res = await runGasFunction('step25_analyzeGKP', state);
+        state.globalGkpData = res.gkp_results || [];
+        renderGkpCards();
+        document.getElementById('gkpAnalyzedResults').classList.remove('hidden');
+        document.getElementById('nextTo3').classList.remove('hidden');
+        saveLocal();
+      } catch(err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
-    async function runQuoteStep6(btn) {
-      saveQuoteLocal();
-      const clientName = document.getElementById('qt_clientName').value;
-      if(!clientName) return showSysToast("請填寫甲方名稱", "warn");
-      setBtnLoading(btn);
+    function renderGkpCards() {
+      document.getElementById('gkpCardsContainer').innerHTML = state.globalGkpData.map((item, i) => {
+        let isChk = state.selectedKeywordsList.includes(item.keyword) ? 'checked' : '';
+        return `<label class="relative cursor-pointer block w-full"><input type="checkbox" class="checkbox-custom absolute opacity-0" value="${item.keyword}" onchange="toggleKeyword(this)" ${isChk}><div class="bg-white border-2 border-gray-200 hover:border-blue-400 rounded-xl p-4 flex flex-col justify-between items-start transition shadow-sm w-full"><div class="absolute top-4 right-4 check-icon hidden text-blue-600"><span class="material-icons">check_circle</span></div><div class="flex flex-col w-full"><h3 class="text-base font-bold text-gray-900 flex flex-col gap-2">${item.keyword} <span class="text-xs bg-gray-100 text-gray-500 font-semibold px-2 py-1 rounded self-start">Top ${i+1}</span></h3><p class="text-xs text-gray-500 mt-2">搜尋量: ${item.metrics.volume} | 競爭: ${item.metrics.competition}</p></div></div></label>`;
+      }).join('');
+    }
+
+    function toggleKeyword(checkbox) {
+      if (checkbox.checked) state.selectedKeywordsList.push(checkbox.value);
+      else state.selectedKeywordsList = state.selectedKeywordsList.filter(k => k !== checkbox.value);
+      document.getElementById('kwCount').innerText = state.selectedKeywordsList.length;
+      saveLocal();
+    }
+
+    async function runStep3(btn) {
+      saveLocal(); 
+      if(state.selectedKeywordsList.length === 0) return showMktToast('請勾選關鍵字', true);
+      
+      setBtnLoading(btn, "提案生成中...");
       try {
-        const res = await apiCall('quote_step6_Email', { 
-           clientName: clientName, 
-           clientContact: quoteState.leftFlow.clientContact || '窗口', 
-           totalPrice: document.getElementById('qt_total').innerText 
-        });
+        let data = await runGasFunction('step3_Proposals', state);
+        state.proposalsList = data.proposals; 
+        document.getElementById('proposalsResult').innerHTML = state.proposalsList.map((p, i) => `
+          <div class="border border-gray-200 p-5 rounded-xl bg-gray-50 hover:border-blue-400 cursor-pointer transition flex flex-col w-full" onclick="selectProposal(${i}, this)">
+            <h4 class="font-bold text-gray-900 text-lg mb-2">${p.title}</h4>
+            <p class="text-sm text-gray-600 mb-3 flex-1"><strong class="text-gray-800">內容方向：</strong>${p.summary}</p>
+            <button type="button" class="mt-2 text-sm bg-white border border-gray-200 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center justify-center w-full">選擇提案 <span class="material-icons text-[16px] ml-1">arrow_forward</span></button>
+          </div>
+        `).join('');
+        document.getElementById('proposalsResult').classList.remove('hidden');
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
+    }
+
+    async function selectProposal(index, element) {
+      state.proposal = state.proposalsList[index]; saveLocal();
+      const btnInDiv = element.querySelector('button');
+      setBtnLoading(btnInDiv, "");
+      try {
+        let data = await runGasFunction('step4_Socratic', state);
+        document.getElementById('q_saw').innerHTML = `<span class="material-icons text-blue-500 mr-2 mt-0.5 text-[20px]">visibility</span> <span class="leading-relaxed">${data.questions.q_saw}</span>`;
+        document.getElementById('q_thought').innerHTML = `<span class="material-icons text-green-500 mr-2 mt-0.5 text-[20px]">psychology</span> <span class="leading-relaxed">${data.questions.q_thought}</span>`;
+        document.getElementById('q_exp').innerHTML = `<span class="material-icons text-purple-500 mr-2 mt-0.5 text-[20px]">menu_book</span> <span class="leading-relaxed">${data.questions.q_exp}</span>`;
+        document.getElementById('q_realization').innerHTML = `<span class="material-icons text-orange-500 mr-2 mt-0.5 text-[20px]">lightbulb</span> <span class="leading-relaxed">${data.questions.q_realization}</span>`;
+        goStep(4);
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btnInDiv); }
+    }
+
+    async function runStep5(btn) {
+      saveLocal(); 
+      setBtnLoading(btn, "撰寫 CTA 中...");
+      try {
+        let data = await runGasFunction('step5_CTA', state);
+        document.getElementById('conclusion').value = data.conclusion;
+        document.getElementById('cta').value = data.cta;
+        saveLocal(); showMktToast('結語生成成功');
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
+    }
+
+    async function runStep6(btn) {
+      saveLocal(); 
+      setBtnLoading(btn, "組裝排版文章中...");
+      try {
+        let data = await runGasFunction('step6_FinalBlog', state);
+        state.finalHtml = data.html; 
+        document.getElementById('finalContent').innerHTML = data.html;
         
-        document.getElementById('qt_emailSubject').value = res.subject;
-        let pdfLinkText = quoteState.leftFlow.pdfUrl ? `\n報價單 PDF 下載連結：\n${quoteState.leftFlow.pdfUrl}\n` : `\n[雲端 PDF 連結請在此手動貼上]\n`;
-        document.getElementById('qt_emailBody').value = res.body.replace("[雲端 PDF 連結將自動帶入]", pdfLinkText);
-        
-        saveQuoteLocal(); showSysToast("信件草稿已產生", "success");
-      } catch(e) { showSysToast("寫信失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data.html;
+        state.finalArticleText = tempDiv.innerText;
+        document.getElementById('finalArticleText').value = state.finalArticleText;
+
+        goStep(6); 
+        document.getElementById('nextTo7').classList.remove('hidden');
+        await runGasFunction('syncDatabase', state); 
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
-    async function saveQuoteData(btn) { 
-      saveQuoteLocal(); 
-      setBtnLoading(btn);
+    async function runStep7(btn) {
+      saveLocal();
+      if (!state.finalArticleText) return showMktToast('請先確認有文章內容', true);
+      
+      setBtnLoading(btn, "生成社群圖文中...");
       try {
-         const payloadSettings = {
-           '設定ID': quoteState.settingsId || '',
-           '收款資訊JSON': JSON.stringify(quoteState.settings.payments),
-           '商品資訊JSON': JSON.stringify(quoteState.settings.products),
-           '條款設定JSON': JSON.stringify(quoteState.settings.terms)
-         };
-         let resSettings = await apiCall('syncQuoteSettings', payloadSettings);
-         if(resSettings && resSettings.id) quoteState.settingsId = resSettings.id;
-
-         const payloadRecord = {
-           '記錄ID': quoteState.recordId || '',
-           '甲方抬頭': quoteState.leftFlow.clientName,
-           '統一編號': quoteState.leftFlow.clientId,
-           '代表人': quoteState.leftFlow.clientRep,
-           '聯繫人': quoteState.leftFlow.clientContact,
-           '聯繫電話': quoteState.leftFlow.clientPhone,
-           '聯絡地址': quoteState.leftFlow.clientAddress,
-           'EMAIL': quoteState.leftFlow.clientEmail,
-           '逐字稿': quoteState.leftFlow.notes,
-           '需求內容': quoteState.leftFlow.needs,
-           '選定商品JSON': JSON.stringify(quoteState.leftFlow.selectedProducts),
-           '報價項目JSON': JSON.stringify(quoteState.leftFlow.quoteItems),
-           '總計未稅': document.getElementById('qt_subtotal').innerText,
-           '稅額': document.getElementById('qt_tax').innerText,
-           '總金額含稅': document.getElementById('qt_total').innerText,
-           '選定條款JSON': JSON.stringify(quoteState.leftFlow.selectedTerms),
-           '約定條款': quoteState.leftFlow.finalTerms,
-           '最終報價單HTML': document.getElementById('qt_a4_preview').innerHTML,
-           '雲端PDF_ID': quoteState.leftFlow.pdfId || ''
-         };
-         let resRecord = await apiCall('syncQuoteRecord', payloadRecord);
-         if(resRecord && resRecord.id) quoteState.recordId = resRecord.id;
-
-         showSysToast("報價資料已安全儲存至雲端", "success");
-      } catch(e) { showSysToast("儲存失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
+        let data = await runGasFunction('step7_SocialMedia', state);
+        state.socialPost = data.social_post;
+        state.imagePrompts = data.image_prompts;
+        document.getElementById('socialPostContent').innerHTML = data.social_post;
+        document.getElementById('imagePromptsContent').value = data.image_prompts;
+        
+        const target = document.getElementById('socialResult');
+        target.classList.remove('hidden');
+        saveLocal();
+        showMktToast('社群圖文生成成功！');
+        window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
+      } catch (err) { showMktToast(err.message, true); } finally { restoreBtnLoading(btn); }
     }
 
-    function toggleQuoteSearchBlock() { showSysToast("正在開發中，可至試算表查看歷史紀錄", "info"); }
-    
-    function resetQuoteApp(btn) {
-      localStorage.removeItem('growthx_quote_state');
-      quoteState = { recordId: "", settingsId: quoteState.settingsId, settings: quoteState.settings, leftFlow: { clientName: "", clientId: "", clientRep: "", clientContact: "", clientPhone: "", clientEmail: "", clientAddress: "", notes: "", needs: "", selectedProducts: [], quoteItems: [], selectedTerms: [], finalTerms: "", emailSubject: "", emailBody: "" } };
-      ['clientName', 'clientId', 'clientRep', 'clientContact', 'clientPhone', 'clientEmail', 'clientAddress', 'notes', 'needs', 'finalTerms', 'emailSubject', 'emailBody'].forEach(id => { if(document.getElementById('qt_' + id)) document.getElementById('qt_' + id).value = ""; });
-      document.getElementById('quote-items-tbody').innerHTML = "";
-      document.getElementById('qt_a4_preview').innerHTML = '<div class="text-center text-slate-400 mt-20">請先點擊上方按鈕生成預覽...</div>';
-      calcQuoteTotals(); renderQuoteSelectionOptions(); window.scrollTo(0,0); showSysToast("報價特助已重置", "success");
+    function copyContent(elementId) {
+      let el = document.getElementById(elementId);
+      if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+        el.select();
+        document.execCommand('copy');
+      } else {
+        let range = document.createRange();
+        range.selectNodeContents(el);
+        let sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('copy');
+        sel.removeAllRanges();
+      }
+      showMktToast('已複製成功！');
     }
 
-    document.addEventListener('DOMContentLoaded', () => { loadLocal(); if(state.urls.length === 0) renderUrlInputs(); });
+    document.addEventListener('DOMContentLoaded', () => { 
+      loadLocal(); 
+      if(state.urls.length === 0) renderUrlInputs(); 
+    });
   </script>
+
 </body>
 </html>
