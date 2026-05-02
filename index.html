@@ -845,9 +845,6 @@
 
       renderNav();
       restoreCsJSON();
-      fetchBossFeed();
-
-      syncCurrentUserData();
     }
 
     function renderApiKeys(keysArray) {
@@ -858,7 +855,6 @@
           addApiKeyField(key);
         }
       });
-      // 如果完全沒有金鑰，預設給一個空的輸入框
       if (container.querySelectorAll('.api-key-item').length === 0) addApiKeyField();
     }
 
@@ -911,7 +907,6 @@
           if(currentUser.ecardUrl) document.getElementById('ecard_WebhookUrl').value = currentUser.ecardUrl;
           
           renderApiKeys(currentUser.apiKeys || []);
-          console.log("背景資料同步完成");
         }
       } catch(e) { console.warn("背景同步資料失敗", e); }
     }
@@ -951,7 +946,10 @@
         if(btnM) btnM.className = `flex items-center gap-3 px-4 py-3 rounded-xl w-full text-left font-semibold transition-colors ${t.id===id?'bg-slate-900 text-white':'text-slate-500 hover:bg-slate-50'}`;
       });
       window.scrollTo(0,0);
-      if(id === 'knowledge') fetchBossFeed();
+      
+      if(id === 'knowledge' && globalBossRecords.length === 0) {
+        fetchBossFeed();
+      }
     }
 
     function logout() { localStorage.clear(); location.reload(); }
@@ -1010,13 +1008,11 @@
       try {
         let payload = { 會員ID: currentUser.memberId };
         
-        // 1. 處理常規的個人設定欄位
         document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => {
           const fieldName = el.id.replace(prefix, ''); 
           payload[fieldName] = el.value;
         });
 
-        // 2. [新增邏輯] 專門攔截處理 API_KEY 的陣列收集
         if (action === 'saveProfile') {
           let keys = [];
           document.querySelectorAll('.api-key-input').forEach(input => {
@@ -1037,7 +1033,6 @@
         }
         showSysToast("資料已安全寫入資料庫。", "success");
         
-        // 重新同步前端快取狀態以維持最新
         if (action === 'saveProfile') syncCurrentUserData();
 
       } catch(e) {
