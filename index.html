@@ -259,7 +259,7 @@
         </button>
 
         <button type="button" onclick="saveData('saveProfile', 'prf_', this)" class="btn-ios w-full">
-          <i data-lucide="save" class="w-4 h-4"></i> 更新會員資料
+          更新會員資料
         </button>
       </section>
 
@@ -363,7 +363,7 @@
 
           <div class="pt-6">
             <button type="button" onclick="saveData('saveSettings', 'set_', this)" class="btn-ios w-full bg-indigo-600 hover:bg-indigo-700">
-              <i data-lucide="cloud-upload" class="w-4 h-4"></i> 儲存智能大腦設定
+              儲存智能大腦設定
             </button>
           </div>
         </div>
@@ -398,7 +398,7 @@
             </div>
 
             <button type="button" class="btn-ios w-full mt-4 bg-slate-900 hover:bg-slate-800 py-3.5 flex justify-center items-center gap-2 shadow-lg shadow-slate-900/20" id="btnStartPost" onclick="startRecord()">
-              <i data-lucide="mic" class="w-5 h-5 text-amber-400"></i> 開始錄製並由 AI 產出紀錄
+              開始錄製並由 AI 產出紀錄
             </button>
             <p id="recordStatus" class="mt-4 text-center text-slate-500 font-medium text-sm tracking-wide"></p>
 
@@ -428,7 +428,7 @@
               </div>
             </div>
             <button type="button" onclick="fetchBossFeed(false, this)" class="bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 font-semibold px-4 py-2 rounded-lg shadow-sm transition flex justify-center items-center gap-1.5 text-sm w-full mt-2">
-              <i data-lucide="search" class="w-4 h-4"></i> 查詢
+              查詢
             </button>
           </div>
         </div>
@@ -520,7 +520,7 @@
                  <div class="flex flex-col mb-2 gap-2"><label class="block font-semibold text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1">link</span> 相關文章對標網址</label><button type="button" onclick="addUrlInput()" class="text-xs font-semibold bg-gray-50 text-gray-600 border px-3 py-2 rounded-lg hover:bg-gray-100 transition flex items-center justify-center"><span class="material-icons text-[16px] mr-1">add</span> 新增對標網址</button></div>
                  <div id="urlContainer" class="flex flex-col space-y-3"></div>
                </div>
-               <button type="button" onclick="runStep1(this)" class="btn-ios text-lg w-full"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出時事共鳴與前導文章</button>
+               <button type="button" onclick="runStep1(this)" class="btn-ios text-lg w-full">產出時事共鳴與前導文章</button>
                <div id="introResult" class="hidden mt-8 pt-6 border-t border-gray-100 flex flex-col">
                  <label class="block font-semibold mb-3 text-blue-600 flex items-center"><span class="material-icons text-[18px] mr-1">check_circle</span> 前導文章內容 (可編輯)</label>
                  <textarea id="introText" class="input-ios h-64 bg-blue-50/30 border-blue-100 vocus-reading"></textarea>
@@ -528,12 +528,12 @@
                </div>
              </div>
              
-             <div id="step2" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_two</span> 產業痛點與 GKP 收斂</h2><div class="flex flex-col space-y-5 mb-8"><div class="flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1">gps_fixed</span> 產業 / 產品</label><input type="text" id="industry" class="input-ios" placeholder="例如：AI 自動化導入..."></div><div class="flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1">error_outline</span> 客戶痛點 / 情境</label><input type="text" id="painPoint" class="input-ios" placeholder="例如：營運成本高..."></div></div><button type="button" onclick="runStep2(this)" class="btn-ios text-lg w-full"><span class="material-icons text-[20px] mr-2">search</span> 萃取推薦關鍵字</button><div id="gkpSection" class="hidden mt-10 pt-8 border-t border-gray-100 flex flex-col"><div class="bg-gray-50 p-6 rounded-2xl mb-6 flex flex-col gap-4"><div class="flex flex-col"><h3 class="font-bold text-gray-900 text-lg flex items-center"><span class="material-icons text-[20px] mr-1 text-gray-500">analytics</span> GKP 數據對校</h3><p class="text-sm text-gray-500 mt-1">點擊複製 AI 關鍵字並前往 Google Keyword Planner。</p></div><button type="button" id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white py-2.5 px-5 rounded-xl shadow-sm transition flex items-center justify-center w-full" title="複製並開啟 GKP"><span class="material-icons text-[24px]">content_copy</span></button></div><div class="mb-8 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1">download</span> 貼上 GKP 數據</label><textarea id="gkpPasteArea" class="input-ios h-32 mb-4" placeholder="從 GKP 複製表格後貼於此處..."></textarea><div id="gkpPreviewWrapper" class="hidden mb-4 overflow-x-auto border border-gray-200 rounded-xl no-scrollbar flex flex-col"><table class="min-w-full text-xs text-left"><thead class="bg-gray-50"><tr id="gkpPreviewHeaders"></tr></thead><tbody id="gkpPreviewBody" class="divide-y divide-gray-100"></tbody></table></div><button type="button" onclick="analyzeGKPDataFlow(this)" class="btn-ios text-lg w-full"><span class="material-icons text-[20px] mr-2">sort</span> 產生演算法排行</button></div><div id="gkpAnalyzedResults" class="hidden mt-8 pt-8 border-t border-gray-100 flex flex-col"><div class="flex flex-col mb-4 gap-2"><h2 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons text-[20px] mr-1 text-blue-500">diamond</span> 勾選主打關鍵字</h2><span class="text-sm text-gray-500 font-semibold bg-gray-100 px-3 py-1 rounded-lg self-start">已選 <span id="kwCount" class="text-blue-600">0</span> 項</span></div><div id="gkpCardsContainer" class="grid grid-cols-1 gap-3"></div></div><button type="button" id="nextTo3" onclick="goStep(3)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">確認勾選，進入 Step 3 <span class="material-icons text-[18px] ml-1">arrow_forward</span></button></div></div>
-             <div id="step3" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_3</span> 流量密碼提案</h2><button type="button" onclick="runStep3(this)" class="btn-ios text-lg w-full"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 生成 10 大提案</button><div id="proposalsResult" class="hidden mt-8 flex flex-col space-y-4"></div></div>
+             <div id="step2" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_two</span> 產業痛點與 GKP 收斂</h2><div class="flex flex-col space-y-5 mb-8"><div class="flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1">gps_fixed</span> 產業 / 產品</label><input type="text" id="industry" class="input-ios" placeholder="例如：AI 自動化導入..."></div><div class="flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1">error_outline</span> 客戶痛點 / 情境</label><input type="text" id="painPoint" class="input-ios" placeholder="例如：營運成本高..."></div></div><button type="button" onclick="runStep2(this)" class="btn-ios text-lg w-full">萃取推薦關鍵字</button><div id="gkpSection" class="hidden mt-10 pt-8 border-t border-gray-100 flex flex-col"><div class="bg-gray-50 p-6 rounded-2xl mb-6 flex flex-col gap-4"><div class="flex flex-col"><h3 class="font-bold text-gray-900 text-lg flex items-center"><span class="material-icons text-[20px] mr-1 text-gray-500">analytics</span> GKP 數據對校</h3><p class="text-sm text-gray-500 mt-1">點擊複製 AI 關鍵字並前往 Google Keyword Planner。</p></div><button type="button" id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white py-2.5 px-5 rounded-xl shadow-sm transition flex items-center justify-center w-full" title="複製並開啟 GKP"><span class="material-icons text-[24px]">content_copy</span></button></div><div class="mb-8 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1">download</span> 貼上 GKP 數據</label><textarea id="gkpPasteArea" class="input-ios h-32 mb-4" placeholder="從 GKP 複製表格後貼於此處..."></textarea><div id="gkpPreviewWrapper" class="hidden mb-4 overflow-x-auto border border-gray-200 rounded-xl no-scrollbar flex flex-col"><table class="min-w-full text-xs text-left"><thead class="bg-gray-50"><tr id="gkpPreviewHeaders"></tr></thead><tbody id="gkpPreviewBody" class="divide-y divide-gray-100"></tbody></table></div><button type="button" onclick="analyzeGKPDataFlow(this)" class="btn-ios text-lg w-full">產生演算法排行</button></div><div id="gkpAnalyzedResults" class="hidden mt-8 pt-8 border-t border-gray-100 flex flex-col"><div class="flex flex-col mb-4 gap-2"><h2 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons text-[20px] mr-1 text-blue-500">diamond</span> 勾選主打關鍵字</h2><span class="text-sm text-gray-500 font-semibold bg-gray-100 px-3 py-1 rounded-lg self-start">已選 <span id="kwCount" class="text-blue-600">0</span> 項</span></div><div id="gkpCardsContainer" class="grid grid-cols-1 gap-3"></div></div><button type="button" id="nextTo3" onclick="goStep(3)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">確認勾選，進入 Step 3 <span class="material-icons text-[18px] ml-1">arrow_forward</span></button></div></div>
+             <div id="step3" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_3</span> 流量密碼提案</h2><button type="button" onclick="runStep3(this)" class="btn-ios text-lg w-full">生成 10 大提案</button><div id="proposalsResult" class="hidden mt-8 flex flex-col space-y-4"></div></div>
              <div id="step4" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_4</span> 蘇格拉底深度引導</h2><p class="text-sm text-gray-500 mb-8">哈佛教授 AI 已為您準備好問題，請填寫血肉內容：</p><div class="mb-6 flex flex-col"><label id="q_saw" class="block font-semibold text-gray-800 mb-2 bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start"><span class="material-icons text-blue-500 mr-2 mt-0.5 text-[20px]">visibility</span> <span class="leading-relaxed">載入中...</span></label><textarea id="mySaw" class="input-ios h-24 vocus-reading" placeholder="我的所見所聞..."></textarea></div><div class="mb-6 flex flex-col"><label id="q_thought" class="block font-semibold text-gray-800 mb-2 bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start"><span class="material-icons text-green-500 mr-2 mt-0.5 text-[20px]">psychology</span> <span class="leading-relaxed">載入中...</span></label><textarea id="myThought" class="input-ios h-24 vocus-reading" placeholder="我的所思所想..."></textarea></div><div class="mb-6 flex flex-col"><label id="q_exp" class="block font-semibold text-gray-800 mb-2 bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start"><span class="material-icons text-purple-500 mr-2 mt-0.5 text-[20px]">menu_book</span> <span class="leading-relaxed">載入中...</span></label><textarea id="myExp" class="input-ios h-24 vocus-reading" placeholder="我的親身經歷案例..."></textarea></div><div class="mb-8 flex flex-col"><label id="q_realization" class="block font-semibold text-gray-800 mb-2 bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start"><span class="material-icons text-orange-500 mr-2 mt-0.5 text-[20px]">lightbulb</span> <span class="leading-relaxed">載入中...</span></label><textarea id="myRealization" class="input-ios h-24 vocus-reading" placeholder="我的感觸體認..."></textarea></div><button type="button" onclick="goStep(5)" class="w-full bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">完成作答，進入 Step 5 <span class="material-icons text-[18px] ml-1">arrow_forward</span></button></div>
-             <div id="step5" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_5</span> 結尾與導購產生</h2><button type="button" onclick="runStep5(this)" class="btn-ios text-lg mb-8 w-full"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出祝福與 CTA</button><div class="mb-5 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">card_giftcard</span> 真摯推薦與祝福 (Conclusion)</label><textarea id="conclusion" class="input-ios h-32 vocus-reading"></textarea></div><div class="mb-8 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">ads_click</span> 導購行動呼籲 (CTA)</label><textarea id="cta" class="input-ios h-32 vocus-reading"></textarea></div><button type="button" onclick="runStep6(this)" class="btn-ios bg-blue-600 hover:bg-blue-700 text-lg w-full"><span class="material-icons mr-2">send</span> 套用專屬人設，產出爆款長文</button></div>
+             <div id="step5" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_5</span> 結尾與導購產生</h2><button type="button" onclick="runStep5(this)" class="btn-ios text-lg mb-8 w-full">產出祝福與 CTA</button><div class="mb-5 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">card_giftcard</span> 真摯推薦與祝福 (Conclusion)</label><textarea id="conclusion" class="input-ios h-32 vocus-reading"></textarea></div><div class="mb-8 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">ads_click</span> 導購行動呼籲 (CTA)</label><textarea id="cta" class="input-ios h-32 vocus-reading"></textarea></div><button type="button" onclick="runStep6(this)" class="btn-ios bg-blue-600 hover:bg-blue-700 text-lg w-full">套用專屬人設，產出爆款長文</button></div>
              <div id="step6" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><div class="flex flex-col border-b border-gray-100 pb-4 mb-6 gap-3"><h2 class="text-2xl font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_6</span> 專屬文章</h2><button type="button" onclick="copyContent('finalContent')" class="text-sm bg-gray-100 text-gray-800 p-3 rounded-lg hover:bg-gray-200 transition flex items-center justify-center w-full" title="一鍵複製"><span class="material-icons text-[24px]">copy_all</span></button></div><div id="finalContent" contenteditable="true" class="prose prose-lg max-w-none text-gray-800 bg-slate-50 p-8 rounded-2xl border border-gray-200 vocus-reading outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"></div><button type="button" id="nextTo7" onclick="goStep(7)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">確認文章，進入 Step 7 產出社群圖文 <span class="material-icons text-[18px] ml-1">arrow_forward</span></button></div>
-             <div id="step7" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_7</span> 產出社群圖文</h2><div class="mb-6 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">edit_document</span> 最終產出的文章 (可自由編輯)</label><textarea id="finalArticleText" class="input-ios h-64 vocus-reading" placeholder="這裡會帶入產出後的文章內容..."></textarea></div><div class="mb-6 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">aspect_ratio</span> 社群圖片比例</label><select id="aspectRatio" class="input-ios"><option value="1:1 (適合 IG 貼文、FB 貼文)">1:1 (適合 IG 貼文、FB 貼文)</option><option value="4:5 (適合 IG 貼文、直式閱讀)">4:5 (適合 IG 貼文、直式閱讀)</option><option value="16:9 (適合 FB 連結、YT 封面)">16:9 (適合 FB 連結、YT 封面)</option><option value="9:16 (適合 Reels、限時動態)">9:16 (適合 Reels、限時動態)</option></select></div><button type="button" onclick="runStep7(this)" class="btn-ios text-lg mb-8 w-full"><span class="material-icons text-[20px] mr-2">auto_awesome</span> 產出社群貼文與輪播圖 Prompts</button><div id="socialResult" class="hidden mt-8 flex flex-col space-y-8"><div class="flex flex-col"><div class="flex flex-col border-b border-gray-100 pb-3 mb-4 gap-3"><h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-blue-500">article</span> 社群貼文</h3><button type="button" onclick="copyContent('socialPostContent')" class="bg-gray-100 text-gray-800 p-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center w-full" title="複製貼文"><span class="material-icons text-[24px]">content_copy</span></button></div><div id="socialPostContent" contenteditable="true" class="prose max-w-none text-gray-800 bg-slate-50 p-6 rounded-xl border border-gray-200 vocus-reading outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"></div></div><div class="flex flex-col"><div class="flex flex-col border-b border-gray-100 pb-3 mb-4 gap-3"><h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-green-500">image</span> 10頁輪播圖 Prompts</h3><button type="button" onclick="copyContent('imagePromptsContent')" class="bg-gray-100 text-gray-800 p-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center w-full" title="複製 Prompts"><span class="material-icons text-[24px]">content_copy</span></button></div><textarea id="imagePromptsContent" class="input-ios h-80 text-sm leading-relaxed"></textarea></div></div></div>
+             <div id="step7" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col"><h2 class="text-2xl font-bold mb-6 text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_7</span> 產出社群圖文</h2><div class="mb-6 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">edit_document</span> 最終產出的文章 (可自由編輯)</label><textarea id="finalArticleText" class="input-ios h-64 vocus-reading" placeholder="這裡會帶入產出後的文章內容..."></textarea></div><div class="mb-6 flex flex-col"><label class="block font-semibold mb-2 text-sm text-gray-700 flex items-center"><span class="material-icons text-[18px] mr-1 text-gray-400">aspect_ratio</span> 社群圖片比例</label><select id="aspectRatio" class="input-ios"><option value="1:1 (適合 IG 貼文、FB 貼文)">1:1 (適合 IG 貼文、FB 貼文)</option><option value="4:5 (適合 IG 貼文、直式閱讀)">4:5 (適合 IG 貼文、直式閱讀)</option><option value="16:9 (適合 FB 連結、YT 封面)">16:9 (適合 FB 連結、YT 封面)</option><option value="9:16 (適合 Reels、限時動態)">9:16 (適合 Reels、限時動態)</option></select></div><button type="button" onclick="runStep7(this)" class="btn-ios text-lg mb-8 w-full">產出社群貼文與輪播圖 Prompts</button><div id="socialResult" class="hidden mt-8 flex flex-col space-y-8"><div class="flex flex-col"><div class="flex flex-col border-b border-gray-100 pb-3 mb-4 gap-3"><h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-blue-500">article</span> 社群貼文</h3><button type="button" onclick="copyContent('socialPostContent')" class="bg-gray-100 text-gray-800 p-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center w-full" title="複製貼文"><span class="material-icons text-[24px]">content_copy</span></button></div><div id="socialPostContent" contenteditable="true" class="prose max-w-none text-gray-800 bg-slate-50 p-6 rounded-xl border border-gray-200 vocus-reading outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"></div></div><div class="flex flex-col"><div class="flex flex-col border-b border-gray-100 pb-3 mb-4 gap-3"><h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-green-500">image</span> 10頁輪播圖 Prompts</h3><button type="button" onclick="copyContent('imagePromptsContent')" class="bg-gray-100 text-gray-800 p-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center w-full" title="複製 Prompts"><span class="material-icons text-[24px]">content_copy</span></button></div><textarea id="imagePromptsContent" class="input-ios h-80 text-sm leading-relaxed"></textarea></div></div></div>
           </div>
         </div>
       </section>
@@ -546,7 +546,7 @@
           <label class="font-bold text-slate-800 text-sm">您的電子名片 Webhook 網址</label>
           <input type="text" id="ecard_WebhookUrl" class="input-ios" placeholder="請貼上部署後的網頁應用程式網址+ID">
           <button type="button" onclick="saveEcardData(this)" class="btn-ios w-full bg-pink-600 hover:bg-pink-700">
-            <i data-lucide="save" class="w-4 h-4"></i> 儲存網址設定
+            儲存網址設定
           </button>
         </div>
         <div class="w-full bg-slate-50 rounded-xl overflow-hidden border border-slate-100">
@@ -555,7 +555,7 @@
       </section>
 
       <section id="tab-quotation" class="tab-content relative font-sans text-base">
-        <div class="pb-32 flex flex-col relative -mx-4 md:mx-0">
+        <div class="pb-32 flex flex-col relative -mx-4 md:mx-0 max-w-4xl mx-auto w-full">
           
           <nav class="sticky top-[60px] md:top-0 w-full z-40 bg-white/85 backdrop-blur-xl border-b border-gray-200 px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-center gap-3 mb-6 shadow-sm transition-all">
             <div class="font-bold text-xl tracking-tight text-gray-900 flex items-center w-full md:w-auto justify-between md:justify-start">
@@ -574,9 +574,14 @@
             </div>
           </nav>
 
-          <div class="w-full mx-auto px-4 md:px-6 flex flex-col lg:flex-row gap-6 mt-2">
+          <div class="w-full mx-auto px-4 md:px-6 flex flex-col mt-2">
             
-            <div class="lg:w-[60%] flex flex-col space-y-6">
+            <div class="flex border-b border-slate-200 mb-6 w-full">
+                <button type="button" onclick="switchQuoteSubTab('flow')" id="qt-tab-flow" class="flex-1 py-3 text-center font-bold text-blue-600 border-b-2 border-blue-600 transition-colors bg-blue-50/30">📝 報價產出流</button>
+                <button type="button" onclick="switchQuoteSubTab('db')" id="qt-tab-db" class="flex-1 py-3 text-center font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-700 hover:bg-slate-50 transition-colors">⚙️ 設定資料庫</button>
+            </div>
+
+            <div id="qt-flow-container" class="w-full flex flex-col space-y-6">
               
               <div class="ios-card p-6 md:p-8 flex flex-col">
                 <h2 class="text-xl font-bold mb-6 text-gray-900 flex items-center">
@@ -599,7 +604,7 @@
                 </h2>
                 <textarea id="qt_notes" class="input-ios h-32 vocus-reading" placeholder="貼上語音逐字稿或業務洽談筆記..."></textarea>
                 <button type="button" onclick="runQuoteStep1(this)" class="btn-ios mt-4 bg-indigo-600 hover:bg-indigo-700">
-                  <span class="material-icons text-[20px] mr-2">auto_awesome</span> AI 萃取需求說明
+                  AI 萃取需求說明
                 </button>
               </div>
 
@@ -612,11 +617,11 @@
                 
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
                   <h4 class="font-bold text-sm text-slate-700 mb-2 flex items-center"><i data-lucide="check-square" class="w-4 h-4 mr-1"></i> 請勾選本次要報價的商品庫項目</h4>
-                  <div id="quote-select-products" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2"></div>
+                  <div id="quote-select-products" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2"></div>
                 </div>
 
                 <button type="button" onclick="runQuoteStep2(this)" class="btn-ios bg-blue-600 hover:bg-blue-700">
-                  <span class="material-icons text-[20px] mr-2">calculate</span> AI 生成報價明細
+                  AI 生成報價明細
                 </button>
               </div>
 
@@ -653,11 +658,11 @@
 
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
                   <h4 class="font-bold text-sm text-slate-700 mb-2 flex items-center"><i data-lucide="check-square" class="w-4 h-4 mr-1"></i> 請勾選要載入的約定條款庫</h4>
-                  <div id="quote-select-terms" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2"></div>
+                  <div id="quote-select-terms" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2"></div>
                 </div>
 
                 <button type="button" onclick="runQuoteStep3(this)" class="btn-ios bg-purple-600 hover:bg-purple-700">
-                  <span class="material-icons text-[20px] mr-2">gavel</span> AI 律師生成專業條款
+                  AI 律師生成專業條款
                 </button>
               </div>
 
@@ -668,7 +673,7 @@
                 <textarea id="qt_finalTerms" class="input-ios h-64 vocus-reading text-sm mb-4" placeholder="AI 律師產出的詳細約定條款將顯示於此..."></textarea>
                 
                 <button type="button" onclick="runQuoteStep4(this)" class="btn-ios bg-emerald-600 hover:bg-emerald-700">
-                  <span class="material-icons text-[20px] mr-2">visibility</span> 產出 A4 報價單預覽
+                  產出 A4 報價單預覽
                 </button>
               </div>
 
@@ -692,7 +697,7 @@
                   <span class="flex items-center"><i data-lucide="mail" class="w-6 h-6 mr-2 text-blue-500"></i> AI 專業 Email 撰寫</span>
                 </h2>
                 <button type="button" onclick="runQuoteStep6(this)" class="btn-ios mb-4 bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-200 shadow-sm">
-                  <span class="material-icons text-[20px] mr-2">auto_awesome</span> AI 幫我寫信 (夾帶雲端 PDF 連結)
+                  AI 幫我寫信 (夾帶雲端 PDF 連結)
                 </button>
                 <div class="flex flex-col gap-3">
                   <div><label class="block text-xs font-semibold mb-1 text-slate-500">信件主旨</label><input type="text" id="qt_emailSubject" class="input-ios p-3 text-sm"></div>
@@ -702,9 +707,9 @@
 
             </div>
             
-            <div class="lg:w-[40%] flex flex-col space-y-6">
+            <div id="qt-db-container" class="w-full hidden flex-col space-y-6">
               
-              <details class="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm ios-card">
+              <details class="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm ios-card" open>
                 <summary class="font-bold text-lg p-5 bg-slate-50 hover:bg-slate-100 transition cursor-pointer flex justify-between items-center">
                   <span class="flex items-center gap-2"><i data-lucide="wallet" class="text-green-500 w-5 h-5"></i> 收款資訊庫</span>
                   <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 group-open:rotate-180 transition"></i>
@@ -726,7 +731,7 @@
                 </div>
               </details>
 
-              <details class="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm ios-card">
+              <details class="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm ios-card" open>
                 <summary class="font-bold text-lg p-5 bg-slate-50 hover:bg-slate-100 transition cursor-pointer flex justify-between items-center">
                   <span class="flex items-center gap-2"><i data-lucide="file-check-2" class="text-purple-500 w-5 h-5"></i> 約定條款庫</span>
                   <i data-lucide="chevron-down" class="w-5 h-5 text-slate-400 group-open:rotate-180 transition"></i>
@@ -776,10 +781,10 @@
       toastTimeout = setTimeout(() => toast.classList.add('opacity-0', '-translate-y-10', 'pointer-events-none'), 3500);
     }
 
-    function setBtnLoading(btn, text) {
+    function setBtnLoading(btn) {
       if(!btn) return;
-      btn.dataset.originalText = btn.innerHTML;
-      btn.innerHTML = text ? `<span class="material-icons animate-spin text-[20px] mr-2">sync</span> ${text}` : `<span class="material-icons animate-spin text-[20px]">sync</span>`;
+      if(!btn.dataset.originalText) btn.dataset.originalText = btn.innerHTML;
+      btn.innerHTML = `<span class="material-icons animate-spin text-[20px]">sync</span>`;
       btn.disabled = true;
     }
     
@@ -810,12 +815,26 @@
       document.getElementById(uiId).style.opacity = '1'; document.getElementById('file_' + hiddenId.replace('prf_', '')).value = '';
     }
 
+    function getViewableUrl(url) {
+      if(!url) return "";
+      if(url.includes('drive.google.com/file/d/')) {
+        const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if(match) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+      }
+      return url;
+    }
+
     function restoreImages() {
       ['公司LOGO', '公司發票章（請去背）', '公司大章（請去背）', '公司小章（請去背）'].forEach(name => {
         const hiddenId = 'prf_' + name; const previewId = 'preview_' + name; const uiId = 'upload_ui_' + name;
-        const val = document.getElementById(hiddenId) ? document.getElementById(hiddenId).value : "";
-        if(val && document.getElementById(previewId)) {
-          document.getElementById(previewId).src = val; document.getElementById(previewId).classList.remove('hidden');
+        const hiddenEl = document.getElementById(hiddenId);
+        if (!hiddenEl) return;
+        const val = hiddenEl.value;
+        const cached = localStorage.getItem('cache_' + hiddenId);
+        const finalSrc = cached || getViewableUrl(val);
+
+        if(finalSrc && document.getElementById(previewId)) {
+          document.getElementById(previewId).src = finalSrc; document.getElementById(previewId).classList.remove('hidden');
           document.getElementById(uiId).style.opacity = '0';
         }
       });
@@ -840,7 +859,10 @@
 
     async function apiCall(action, data, btnContext = null) {
       data = data || {};
-      if (!data.email && currentUser && currentUser.email) data.email = currentUser.email;
+      if (currentUser) {
+         if (!data.email) data.email = currentUser.email;
+         if (!data.memberId) data.memberId = currentUser.memberId;
+      }
       console.log(`[🚀 送出請求] 動作: ${action}`, data);
       try {
         const res = await fetch(GAS_API_URL, { 
@@ -856,7 +878,7 @@
     async function checkAuthEmail(btn) {
       const email = document.getElementById('authEmail').value.trim().toLowerCase();
       if (!email) return showSysToast("請輸入工作信箱", "error");
-      setBtnLoading(btn, "檢查中...");
+      setBtnLoading(btn);
       try {
         const res = await apiCall("checkEmail", { email: email });
         document.getElementById('auth-step-1').classList.add('hidden');
@@ -870,7 +892,7 @@
       const otp = document.getElementById('authOTP').value.trim();
       if (!otp) return showSysToast("請輸入驗證碼", "error");
       if (btn.disabled) return; 
-      setBtnLoading(btn, "驗證中...");
+      setBtnLoading(btn);
       try {
         const res = await apiCall("verifyOTP", { email: email, otp: otp });
         if(res) {
@@ -888,7 +910,7 @@
         referral: document.getElementById('authReferral').value.trim()
       };
       if (!payload.name || !payload.phone) return showSysToast("姓名與電話為必填資料", "error");
-      setBtnLoading(btn, "註冊並建立環境中...");
+      setBtnLoading(btn);
       try {
         const res = await apiCall("auth", payload);
         currentUser = res; localStorage.setItem('sys_user', JSON.stringify(currentUser));
@@ -1033,7 +1055,7 @@
     async function saveData(action, prefix, btn) {
       if (!currentUser) return showSysToast("請先登入系統", "error");
       if (action === 'saveSettings') packCsJSON(); 
-      setBtnLoading(btn, "同步更新中...");
+      setBtnLoading(btn);
       try {
         let payload = { 會員ID: currentUser.memberId };
         document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => { payload[el.id.replace(prefix, '')] = el.value; });
@@ -1055,7 +1077,7 @@
       if (!currentUser) return showSysToast("請先登入系統", "error");
       const url = document.getElementById('ecard_WebhookUrl').value;
       if(!url) return showSysToast("請輸入名片網址", "error");
-      setBtnLoading(btn, "儲存中...");
+      setBtnLoading(btn);
       try {
         await apiCall("saveEcardData", { 會員ID: currentUser.memberId, ecardUrl: url });
         showSysToast("電子名片網址已安全寫入。", "success");
@@ -1135,11 +1157,29 @@
       }
     };
 
+    function switchQuoteSubTab(tab) {
+      if (tab === 'flow') {
+        document.getElementById('qt-flow-container').classList.remove('hidden');
+        document.getElementById('qt-flow-container').classList.add('flex');
+        document.getElementById('qt-db-container').classList.add('hidden');
+        document.getElementById('qt-db-container').classList.remove('flex');
+        document.getElementById('qt-tab-flow').className = "flex-1 py-3 text-center font-bold text-blue-600 border-b-2 border-blue-600 transition-colors bg-blue-50/30";
+        document.getElementById('qt-tab-db').className = "flex-1 py-3 text-center font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-700 hover:bg-slate-50 transition-colors";
+      } else {
+        document.getElementById('qt-db-container').classList.remove('hidden');
+        document.getElementById('qt-db-container').classList.add('flex');
+        document.getElementById('qt-flow-container').classList.add('hidden');
+        document.getElementById('qt-flow-container').classList.remove('flex');
+        document.getElementById('qt-tab-db').className = "flex-1 py-3 text-center font-bold text-blue-600 border-b-2 border-blue-600 transition-colors bg-blue-50/30";
+        document.getElementById('qt-tab-flow').className = "flex-1 py-3 text-center font-bold text-slate-500 border-b-2 border-transparent hover:text-slate-700 hover:bg-slate-50 transition-colors";
+      }
+    }
+
     async function loadQuoteData() {
       if(!currentUser) return;
       try {
-        // 從後端拉取最新的設定檔與紀錄
-        const resSettings = await apiCall('getQuoteSettings', { memberId: currentUser.memberId });
+        // 從後端拉取最新的設定檔
+        const resSettings = await apiCall('getQuoteSettings');
         if(resSettings && resSettings['設定ID']) {
            quoteState.settingsId = resSettings['設定ID'];
            if(resSettings['收款資訊JSON']) quoteState.settings.payments = JSON.parse(resSettings['收款資訊JSON']);
@@ -1195,7 +1235,7 @@
       renderQuoteSettings(); saveQuoteLocal();
     }
 
-    function handleQuoteImageUpload(input, type, idx) {
+    function handleQuoteSettingImageUpload(input, type, idx) {
       const file = input.files[0];
       if (file) {
         if (file.size > 2 * 1024 * 1024) return showSysToast("圖片過大", "error");
@@ -1230,9 +1270,9 @@
               <div class="col-span-2"><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="戶名" value="${p.name}" oninput="updateQuoteSetting('payment', ${i}, 'name', this.value)"></div>
             </div>
             <div class="flex items-center gap-2 mt-1">
-              ${p.image ? `<img src="${p.image}" class="w-16 h-16 object-cover rounded-lg border border-slate-200">` : `<div class="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-[10px]">無存摺預覽</div>`}
+              ${p.image ? `<img src="${getViewableUrl(p.image)}" class="w-16 h-16 object-cover rounded-lg border border-slate-200">` : `<div class="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-[10px]">無存摺預覽</div>`}
               <button type="button" onclick="document.getElementById('quote-img-pay-${i}').click()" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition">上傳存摺圖片</button>
-              <input type="file" id="quote-img-pay-${i}" accept="image/*" class="hidden" onchange="handleQuoteImageUpload(this, 'payment', ${i})">
+              <input type="file" id="quote-img-pay-${i}" accept="image/*" class="hidden" onchange="handleQuoteSettingImageUpload(this, 'payment', ${i})">
             </div>
           ` : `
             <div class="flex flex-col gap-2">
@@ -1258,9 +1298,9 @@
             <div class="col-span-2"><input type="text" class="input-ios p-2 text-sm bg-white" placeholder="備註事項" value="${p.note}" oninput="updateQuoteSetting('product', ${i}, 'note', this.value)"></div>
           </div>
           <div class="flex items-center gap-2 mt-1">
-              ${p.image ? `<img src="${p.image}" class="w-16 h-16 object-cover rounded-lg border border-slate-200">` : `<div class="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-[10px]">無商品圖片</div>`}
+              ${p.image ? `<img src="${getViewableUrl(p.image)}" class="w-16 h-16 object-cover rounded-lg border border-slate-200">` : `<div class="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center text-slate-400 text-[10px]">無商品圖片</div>`}
               <button type="button" onclick="document.getElementById('quote-img-prod-${i}').click()" class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition">上傳商品圖片</button>
-              <input type="file" id="quote-img-prod-${i}" accept="image/*" class="hidden" onchange="handleQuoteImageUpload(this, 'product', ${i})">
+              <input type="file" id="quote-img-prod-${i}" accept="image/*" class="hidden" onchange="handleQuoteSettingImageUpload(this, 'product', ${i})">
           </div>
         </div>
       `).join('');
@@ -1366,7 +1406,7 @@
       saveQuoteLocal();
       const notes = document.getElementById('qt_notes').value;
       if(!notes) return showSysToast("請先輸入筆記或逐字稿", "warn");
-      setBtnLoading(btn, "AI 分析中...");
+      setBtnLoading(btn);
       try {
         const res = await apiCall('quote_step1_Needs', { notes: notes });
         document.getElementById('qt_needs').value = res.needs;
@@ -1378,7 +1418,7 @@
       saveQuoteLocal();
       const needs = document.getElementById('qt_needs').value;
       if(!needs) return showSysToast("請先產出或填寫需求說明", "warn");
-      setBtnLoading(btn, "生成報價明細中...");
+      setBtnLoading(btn);
       try {
         const selectedProdData = quoteState.leftFlow.selectedProducts.map(i => quoteState.settings.products[i]);
         const res = await apiCall('quote_step2_Items', { needs: needs, selectedProductsData: selectedProdData });
@@ -1395,7 +1435,7 @@
       const needs = document.getElementById('qt_needs').value;
       const clientName = document.getElementById('qt_clientName').value || '未填寫甲方名稱';
       if(!needs) return showSysToast("請確認已填寫需求與甲方資訊", "warn");
-      setBtnLoading(btn, "AI 律師編撰中...");
+      setBtnLoading(btn);
       try {
         const selectedTermsData = quoteState.leftFlow.selectedTerms.map(i => quoteState.settings.terms[i]);
         const res = await apiCall('quote_step3_Terms', { clientName: clientName, needs: needs, selectedTermsData: selectedTermsData });
@@ -1407,17 +1447,17 @@
 
     async function runQuoteStep4(btn) {
       saveQuoteLocal();
-      setBtnLoading(btn, "排版 A4 中...");
+      setBtnLoading(btn);
       try {
-        // 在前端直接套用版型預覽，快速且即時
-        const logoUrl = document.getElementById('prf_公司LOGO') ? document.getElementById('prf_公司LOGO').value : '';
-        const bigSealUrl = document.getElementById('prf_公司大章（請去背）') ? document.getElementById('prf_公司大章（請去背）').value : '';
-        const smallSealUrl = document.getElementById('prf_公司小章（請去背）') ? document.getElementById('prf_公司小章（請去背）').value : '';
-        const myCompany = document.getElementById('prf_公司抬頭/姓名') ? document.getElementById('prf_公司抬頭/姓名').value : '我方公司名稱';
+        const getElVal = (id) => document.getElementById(id) ? document.getElementById(id).value : '';
+        const logoUrl = getElVal('prf_公司LOGO');
+        const bigSealUrl = getElVal('prf_公司大章（請去背）');
+        const smallSealUrl = getElVal('prf_公司小章（請去背）');
+        const myCompany = getElVal('prf_公司抬頭/姓名') || '我方公司名稱';
         
         const html = `
           <div style="text-align:center; margin-bottom: 30px;">
-             ${logoUrl ? `<img src="${logoUrl}" style="height:60px; margin-bottom:10px;">` : ''}
+             ${logoUrl ? `<img src="${getViewableUrl(logoUrl)}" style="height:60px; margin-bottom:10px;">` : ''}
              <h1 style="font-size:24px; margin:0;">${myCompany} 報價單</h1>
           </div>
           <div style="display:flex; justify-content:space-between; margin-bottom: 20px; font-size:12px; color:#475569;">
@@ -1447,8 +1487,8 @@
             ${(quoteState.leftFlow.finalTerms || '').replace(/\n/g, '<br>')}
           </div>
           <div style="display:flex; justify-content:flex-end; gap:20px; text-align:center; padding-top:20px;">
-            ${bigSealUrl ? `<div><img src="${bigSealUrl}" style="width:90px; height:90px; object-fit:contain; opacity:0.9;"><div style="font-size:11px; margin-top:4px;">公司大章</div></div>` : ''}
-            ${smallSealUrl ? `<div><img src="${smallSealUrl}" style="width:90px; height:90px; object-fit:contain; opacity:0.9;"><div style="font-size:11px; margin-top:4px;">負責人小章</div></div>` : ''}
+            ${bigSealUrl ? `<div><img src="${getViewableUrl(bigSealUrl)}" style="width:90px; height:90px; object-fit:contain; opacity:0.9;"><div style="font-size:11px; margin-top:4px;">公司大章</div></div>` : ''}
+            ${smallSealUrl ? `<div><img src="${getViewableUrl(smallSealUrl)}" style="width:90px; height:90px; object-fit:contain; opacity:0.9;"><div style="font-size:11px; margin-top:4px;">負責人小章</div></div>` : ''}
           </div>
         `;
         document.getElementById('qt_a4_preview').innerHTML = html;
@@ -1460,18 +1500,17 @@
       const htmlContent = document.getElementById('qt_a4_preview').innerHTML;
       if(htmlContent.includes("請先點擊上方按鈕生成預覽")) return showSysToast("請先生成 A4 預覽", "warn");
       
-      setBtnLoading(btn, "PDF 上傳雲端中...");
+      setBtnLoading(btn);
       try {
         const res = await apiCall('quote_generatePDF', { 
           html: htmlContent, 
           clientName: quoteState.leftFlow.clientName 
         });
         showSysToast("已儲存為雲端 PDF！", "success");
-        // 將 PDF URL 暫存，供寫信使用
         quoteState.leftFlow.pdfUrl = res.pdfUrl;
         quoteState.leftFlow.pdfId = res.pdfId;
         saveQuoteLocal();
-        window.open(res.pdfUrl, '_blank'); // 幫使用者打開預覽
+        window.open(res.pdfUrl, '_blank'); 
       } catch(e) { showSysToast("PDF產出失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
     }
 
@@ -1479,7 +1518,7 @@
       saveQuoteLocal();
       const clientName = document.getElementById('qt_clientName').value;
       if(!clientName) return showSysToast("請填寫甲方名稱", "warn");
-      setBtnLoading(btn, "AI 撰寫信件中...");
+      setBtnLoading(btn);
       try {
         const res = await apiCall('quote_step6_Email', { 
            clientName: clientName, 
@@ -1495,12 +1534,10 @@
       } catch(e) { showSysToast("寫信失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
     }
 
-    // 真正儲存到資料庫
     async function saveQuoteData(btn) { 
       saveQuoteLocal(); 
-      setBtnLoading(btn, "儲存資料庫中...");
+      setBtnLoading(btn);
       try {
-         // 1. 儲存設定 (Settings)
          const payloadSettings = {
            '會員ID': currentUser.memberId,
            '設定ID': quoteState.settingsId || '',
@@ -1511,7 +1548,6 @@
          let resSettings = await apiCall('syncQuoteSettings', payloadSettings);
          if(resSettings && resSettings.id) quoteState.settingsId = resSettings.id;
 
-         // 2. 儲存紀錄 (Record)
          const payloadRecord = {
            '記錄ID': quoteState.recordId || '',
            '會員ID': currentUser.memberId,
@@ -1538,11 +1574,7 @@
          if(resRecord && resRecord.id) quoteState.recordId = resRecord.id;
 
          showSysToast("報價資料已安全儲存至雲端", "success");
-      } catch(e) {
-         showSysToast("儲存失敗：" + e.message, "error");
-      } finally {
-         restoreBtnLoading(btn);
-      }
+      } catch(e) { showSysToast("儲存失敗：" + e.message, "error"); } finally { restoreBtnLoading(btn); }
     }
 
     function toggleQuoteSearchBlock() { showSysToast("正在開發中，可至試算表查看歷史紀錄", "info"); }
@@ -1556,10 +1588,7 @@
       calcQuoteTotals(); renderQuoteSelectionOptions(); window.scrollTo(0,0); showSysToast("報價特助已重置", "success");
     }
 
-    document.addEventListener('DOMContentLoaded', () => { 
-      loadLocal(); 
-      if(state.urls.length === 0) renderUrlInputs(); 
-    });
+    document.addEventListener('DOMContentLoaded', () => { loadLocal(); if(state.urls.length === 0) renderUrlInputs(); });
   </script>
 </body>
 </html>
