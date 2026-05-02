@@ -248,6 +248,38 @@
           <input type="hidden" id="set_資料來源JSON" class="cacheable">
           <input type="hidden" id="set_LINE_Webhook網址" class="cacheable">
 
+          <div class="mt-6 border-t border-slate-100 pt-6 flex flex-col">
+            <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="user-check" class="w-4 h-4 text-rose-500"></i> 真人接手機制 (Human Handoff)</h3>
+            
+            <div class="p-5 bg-rose-50/50 border border-rose-100 rounded-xl flex flex-col space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-2">
+                  <label for="set_真人客服招喚語" class="text-xs font-bold text-slate-600">轉真人招喚語 <span class="text-rose-500">(客戶輸入即觸發)</span></label>
+                  <input type="text" id="set_真人客服招喚語" class="input-ios cacheable" placeholder="例: 轉真人">
+                </div>
+                <div class="flex flex-col gap-2">
+                  <label for="set_休息暫停時間_分鐘" class="text-xs font-bold text-slate-600">AI 自動休息時間 <span class="text-rose-500">(分鐘)</span></label>
+                  <input type="number" id="set_休息暫停時間_分鐘" class="input-ios cacheable" placeholder="例: 60">
+                </div>
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="set_暫停休息去回應詞" class="text-xs font-bold text-slate-600">AI 準備休息時的回覆</label>
+                <textarea id="set_暫停休息去回應詞" class="input-ios cacheable h-16" placeholder="例: 好的，為您轉接真人客服，小幫手先去休息囉！"></textarea>
+              </div>
+              
+              <div class="w-full border-t border-rose-200/50 my-2"></div>
+              
+              <div class="flex flex-col gap-2">
+                <label for="set_強制喚醒小幫手招喚語" class="text-xs font-bold text-slate-600">強制喚醒招喚語 <span class="text-rose-500">(老闆親自輸入強制結束休息)</span></label>
+                <input type="text" id="set_強制喚醒小幫手招喚語" class="input-ios cacheable" placeholder="例: 呼叫小幫手">
+              </div>
+              <div class="flex flex-col gap-2">
+                <label for="set_真人接手完回歸回應詞" class="text-xs font-bold text-slate-600">AI 重新回歸上線的回覆</label>
+                <textarea id="set_真人接手完回歸回應詞" class="input-ios cacheable h-16" placeholder="例: 小幫手回來啦！有什麼問題歡迎詢問。"></textarea>
+              </div>
+            </div>
+          </div>
+
           <div class="pt-6">
             <button type="button" onclick="saveData('saveSettings', 'set_', this)" class="btn-ios w-full bg-indigo-600 hover:bg-indigo-700">
               <i data-lucide="cloud-upload" class="w-4 h-4"></i> 儲存智能大腦設定
