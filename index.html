@@ -818,29 +818,32 @@
       syncCurrentUserData();
     }
 
-    let apiKeyCount = 0;
     function renderApiKeys(keysArray) {
       const container = document.getElementById('apiKeyContainer');
       container.innerHTML = '';
-      apiKeyCount = 0;
-      keysArray.forEach((key, idx) => {
-        if (key || idx === 0) {
+      keysArray.forEach((key) => {
+        if (key && key.trim() !== '') {
           addApiKeyField(key);
         }
       });
-      if (apiKeyCount === 0) addApiKeyField();
+      // 如果完全沒有金鑰，預設給一個空的輸入框
+      if (container.querySelectorAll('.api-key-item').length === 0) addApiKeyField();
     }
 
     function addApiKeyField(val = '') {
-      if (apiKeyCount >= 10) return showSysToast("最多只能新增10組 API KEY", "warn");
-      apiKeyCount++;
+      const container = document.getElementById('apiKeyContainer');
+      if (container.querySelectorAll('.api-key-item').length >= 10) return showSysToast("最多只能新增10組 API KEY", "warn");
+      
       const div = document.createElement('div');
-      div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-slate-100 shadow-sm";
+      div.className = "api-key-item flex gap-2 items-center bg-white p-2 rounded-xl border border-slate-100 shadow-sm transition-all";
       div.innerHTML = `
-        <span class="font-bold text-slate-400 text-xs w-6 text-center">${apiKeyCount}.</span>
-        <input type="password" id="prf_API_KEY_${apiKeyCount}" class="input-ios flex-1 !p-2 !border-none !bg-transparent" placeholder="請貼上 API Key" value="${val}">
+        <span class="material-icons text-slate-300 text-[20px] ml-1">vpn_key</span>
+        <input type="password" class="api-key-input input-ios flex-1 !p-2 !border-none !bg-transparent" placeholder="請貼上 API Key" value="${val}">
+        <button type="button" onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 p-1.5 rounded-lg transition-colors" title="移除此金鑰">
+          <span class="material-icons text-[20px]">delete_outline</span>
+        </button>
       `;
-      document.getElementById('apiKeyContainer').appendChild(div);
+      container.appendChild(div);
     }
 
     function copyMemberCode() {
@@ -974,10 +977,21 @@
       setBtnLoading(btn, "同步更新中...");
       try {
         let payload = { 會員ID: currentUser.memberId };
+        
+        // 1. 處理常規的個人設定欄位
         document.querySelectorAll(`[id^="${prefix}"]`).forEach(el => {
           const fieldName = el.id.replace(prefix, ''); 
           payload[fieldName] = el.value;
         });
+
+        // 2. [新增邏輯] 專門攔截處理 API_KEY 的陣列收集
+        if (action === 'saveProfile') {
+          let keys = [];
+          document.querySelectorAll('.api-key-input').forEach(input => {
+            if(input.value.trim() !== '') keys.push(input.value.trim());
+          });
+          payload.apiKeys = keys;
+        }
 
         const idFieldName = action === 'saveSettings' ? '設定ID' : (action === 'saveKnowledge' ? '智庫ID' : '會員ID');
         if (currentRecordIds[prefix]) payload[idFieldName] = currentRecordIds[prefix];
@@ -990,6 +1004,10 @@
           localStorage.setItem('sys_ids', JSON.stringify(currentRecordIds));
         }
         showSysToast("資料已安全寫入資料庫。", "success");
+        
+        // 重新同步前端快取狀態以維持最新
+        if (action === 'saveProfile') syncCurrentUserData();
+
       } catch(e) {
         showSysToast("儲存失敗：" + (e.message || "系統錯誤"), "error");
       } finally { 
