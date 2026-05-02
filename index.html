@@ -54,7 +54,6 @@
     .details-content { background: #fafafa; padding: 20px; border-radius: 12px; border: 1px solid #f1f5f9; margin-top: 8px; font-size: 14px; line-height: 1.8; max-height: 400px; overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; color: #334155; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
   </style>
   <script>
-    // 隱藏 TailwindCDN 在 Console 的開發者警告，讓 Console 保持乾淨
     const originalWarn = console.warn;
     console.warn = function() {
       if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].includes('cdn.tailwindcss.com should not be used in production')) return;
@@ -144,25 +143,22 @@
           <i data-lucide="user" class="text-blue-600"></i> 會員專區
         </h2>
         
-        <!-- 這是原本的 會員 ID 區塊 -->
         <div class="bg-slate-50 p-5 rounded-xl mb-4 border border-slate-100 flex flex-col">
           <p class="text-sm text-slate-500 mb-1 font-medium">系統配發會員 ID</p>
           <p class="font-mono font-bold text-lg text-slate-800" id="ui-mid">-</p>
         </div>
 
-        <!-- 🌟 [新增] 這是全新的 會員代碼 區塊與複製按鈕 -->
         <div class="bg-slate-50 p-5 rounded-xl mb-6 border border-slate-100 flex flex-col">
           <p class="text-sm text-slate-500 mb-1 font-medium">專屬會員代碼</p>
           <div class="flex items-center justify-between">
             <p class="font-mono font-bold text-lg text-slate-800" id="ui-mcode">-</p>
-            <button type="button" onclick="copyMemberCode()" class="text-slate-500 hover:text-blue-600 bg-white border border-slate-200 hover:border-blue-200 shadow-sm px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors flex items-center gap-1.5">
-              <i data-lucide="copy" class="w-4 h-4"></i> 複製代碼
+            <button type="button" onclick="copyMemberCode()" class="text-slate-500 hover:text-blue-600 bg-white border border-slate-200 hover:border-blue-200 shadow-sm p-2 rounded-lg transition-colors flex items-center justify-center" title="複製代碼">
+              <i data-lucide="copy" class="w-5 h-5"></i>
             </button>
           </div>
         </div>
 
         <h3 class="font-bold text-slate-800 mb-4 text-sm tracking-wide">個人資料設定</h3>
-        <!-- 下方保留原本的 input 區塊... -->
         <div class="grid grid-cols-1 gap-4 mb-6">
           <input type="text" id="prf_姓名" class="input-ios cacheable" placeholder="姓名">
           <input type="tel" id="prf_電話" class="input-ios cacheable" placeholder="電話">
@@ -170,37 +166,41 @@
           <input type="text" id="prf_職稱" class="input-ios cacheable" placeholder="職稱">
           <input type="text" id="prf_註冊系統用途" class="input-ios cacheable" placeholder="註冊系統用途">
         </div>
-        <button type="button" onclick="saveData('saveProfile', 'prf_', this)" class="btn-ios mb-8 w-full">
+
+        <h3 class="font-bold text-slate-800 mb-4 text-sm tracking-wide mt-6 border-t border-slate-100 pt-6">API KEY 智能負載均衡管理 (至多 10 組)</h3>
+        <div id="apiKeyContainer" class="grid grid-cols-1 gap-3 mb-4"></div>
+        <button type="button" onclick="addApiKeyField()" class="btn-ios bg-slate-100 text-slate-700 hover:bg-slate-200 mb-8 w-full shadow-sm" title="新增一組 API KEY">
+          <i data-lucide="plus" class="w-5 h-5"></i> 新增金鑰
+        </button>
+
+        <button type="button" onclick="saveData('saveProfile', 'prf_', this)" class="btn-ios w-full">
           <i data-lucide="save" class="w-4 h-4"></i> 更新會員資料
         </button>
-        <div class="bg-slate-900 p-5 rounded-xl flex flex-col">
-          <p class="text-sm text-white font-medium mb-3 flex items-center gap-2">
-            <i data-lucide="link" class="w-4 h-4 text-blue-400"></i> 專屬 LINE Webhook 網址
-          </p>
-          <code class="block bg-black text-green-400 p-4 rounded-lg text-xs break-all border border-slate-800" id="ui-webhook"></code>
-        </div>
       </section>
 
       <section id="tab-settings" class="tab-content ios-card p-6 md:p-8">
         <h2 class="text-xl font-bold mb-6 flex items-center gap-2 tracking-tight">
-          <i data-lucide="bot" class="text-indigo-600"></i> 智能設定
+          <i data-lucide="bot" class="text-indigo-600"></i> 智能客服
         </h2>
         
+        <div class="bg-slate-900 p-5 rounded-xl flex flex-col items-start gap-3 mb-8">
+          <p class="text-sm text-white font-medium flex items-center gap-2">
+            <i data-lucide="link" class="w-4 h-4 text-blue-400"></i> 專屬 LINE Webhook 網址
+          </p>
+          <div class="flex items-center w-full gap-2">
+            <code class="flex-1 bg-black text-green-400 p-3 rounded-lg text-xs break-all border border-slate-800" id="ui-webhook"></code>
+            <button type="button" onclick="copyWebhook()" class="bg-white/10 hover:bg-white/20 text-white p-3 rounded-lg transition-colors flex items-center justify-center" title="複製網址">
+              <i data-lucide="copy" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
         <div class="flex flex-col space-y-6">
-          
-          <!-- LINE Token 設定 -->
           <div class="flex flex-col gap-2">
             <label for="set_LINE_TOKEN" class="text-sm font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="message-circle" class="w-4 h-4 text-green-500"></i> LINE Channel Access Token</label>
             <input type="password" id="set_LINE_TOKEN" class="input-ios cacheable" placeholder="請貼上您的 LINE Token">
           </div>
 
-          <!-- Gemini API 設定 -->
-          <div class="flex flex-col gap-2">
-            <label for="set_GEMINI_API_KEY" class="text-sm font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="key" class="w-4 h-4 text-amber-500"></i> 專屬 Gemini API Key (必填)</label>
-            <input type="password" id="set_GEMINI_API_KEY" class="input-ios cacheable" placeholder="請貼上您的 API Key">
-          </div>
-          
-          <!-- 角色基礎設定群組 (加上微灰底色框，視覺更集中) -->
           <div class="p-5 bg-slate-50 border border-slate-100 rounded-xl flex flex-col space-y-4">
             <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2 mb-1"><i data-lucide="user-cog" class="w-4 h-4 text-indigo-500"></i> 基礎角色設定</h3>
             
@@ -218,7 +218,6 @@
             </div>
           </div>
           
-          <!-- 進階 Prompt 設定 -->
           <div class="flex flex-col gap-2">
             <label for="set_講話風格" class="text-sm font-bold text-slate-700 flex items-center gap-1.5"><i data-lucide="mic" class="w-4 h-4 text-blue-500"></i> 講話風格</label>
             <textarea id="set_講話風格" class="input-ios cacheable h-24" placeholder="例: 參考方格子文章，作風幽默、同理心..."></textarea>
@@ -234,7 +233,6 @@
             <textarea id="set_回覆限制" class="input-ios cacheable h-24" placeholder="例: 每次回覆不要超過200字..."></textarea>
           </div>
           
-          <!-- 以下保留原有的 特定情境 與 參考資料來源 區塊 -->
           <div class="mt-4 border-t border-slate-100 pt-6 flex flex-col">
             <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="git-merge" class="w-4 h-4 text-indigo-500"></i> 特定情境與回覆策略設定</h3>
             <div id="strategy-list" class="flex flex-col space-y-3"></div>
@@ -248,6 +246,7 @@
           </div>
 
           <input type="hidden" id="set_資料來源JSON" class="cacheable">
+          <input type="hidden" id="set_LINE_Webhook網址" class="cacheable">
 
           <div class="pt-6">
             <button type="button" onclick="saveData('saveSettings', 'set_', this)" class="btn-ios w-full bg-indigo-600 hover:bg-indigo-700">
@@ -337,35 +336,28 @@
       </section>
 
       <section id="tab-marketing" class="tab-content relative font-sans text-base">
-         <!-- 修正 1：移除原本的 md:block 與 md:pt-24，讓 sticky 能完美運作 -->
          <div class="pb-32 flex flex-col relative -mx-4 md:mx-0">
           
-          <!-- 修正 2：全新的置頂玻璃質感導覽列 (Sticky Nav) -->
           <nav class="sticky top-[60px] md:top-0 w-full z-40 bg-white/85 backdrop-blur-xl border-b border-gray-200 px-4 md:px-8 py-3 flex flex-col md:flex-row justify-between items-center gap-3 mb-6 shadow-sm transition-all">
             
             <div class="font-bold text-xl tracking-tight text-gray-900 flex items-center w-full md:w-auto justify-between md:justify-start">
               GROWTHX <span class="text-gray-400 font-normal text-sm md:text-lg ml-2">AI 文章營銷經理</span>
             </div>
             
-            <!-- 修正 3：按鈕橫向排列，按鈕樣式升級為主/副視覺層次 -->
             <div class="flex flex-row items-center gap-2 w-full md:w-auto">
-              <button type="button" onclick="toggleSearchBlock()" class="flex-1 md:flex-none flex justify-center items-center text-sm bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl font-semibold hover:bg-gray-50 hover:text-blue-600 transition shadow-sm">
-                <span class="material-icons text-[18px] mr-1 text-gray-500">history</span> 讀取歷史
+              <button type="button" onclick="toggleSearchBlock()" class="flex-1 md:flex-none flex justify-center items-center bg-white border border-gray-200 text-gray-700 w-11 h-11 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition shadow-sm" title="讀取歷史">
+                <span class="material-icons text-[22px]">history</span>
               </button>
-              <button type="button" onclick="saveToDatabase(this)" class="flex-1 md:flex-none flex justify-center items-center text-sm bg-slate-900 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-slate-800 transition shadow-md shadow-slate-900/20">
-                <span class="material-icons text-[18px] mr-1">save</span> 儲存
+              <button type="button" onclick="saveToDatabase(this)" class="flex-1 md:flex-none flex justify-center items-center bg-slate-900 text-white w-11 h-11 rounded-xl hover:bg-slate-800 transition shadow-md shadow-slate-900/20" title="儲存">
+                <span class="material-icons text-[22px]">save</span>
               </button>
-              <button type="button" onclick="resetApp(this)" class="flex-1 md:flex-none flex justify-center items-center text-sm bg-red-50 text-red-600 px-4 py-2.5 rounded-xl font-semibold hover:bg-red-100 transition shadow-sm">
-                <span class="material-icons text-[18px] mr-1">refresh</span> 重置
+              <button type="button" onclick="resetApp(this)" class="flex-1 md:flex-none flex justify-center items-center bg-red-50 text-red-600 w-11 h-11 rounded-xl hover:bg-red-100 transition shadow-sm" title="重置">
+                <span class="material-icons text-[22px]">refresh</span>
               </button>
             </div>
-            
           </nav>
 
-          <!-- 這裡銜接原本的內部容器，並加上一點頂部邊距 -->
           <div class="max-w-4xl mx-auto px-4 md:px-6 flex flex-col w-full mt-2">
-
-         
             <div id="mktSystemToast" class="hidden fixed top-24 left-1/2 transform -translate-x-1/2 z-[200] bg-gray-900 text-white px-6 py-3 rounded-full shadow-lg font-semibold text-sm transition-opacity duration-300 w-11/12 max-w-md text-center"></div>
 
             <div id="inlineSearchBlock" class="hidden ios-card mb-8 flex flex-col overflow-hidden border-2 border-indigo-100 shadow-sm">
@@ -485,8 +477,8 @@
                     <h3 class="font-bold text-gray-900 text-lg flex items-center"><span class="material-icons text-[20px] mr-1 text-gray-500">analytics</span> GKP 數據對校</h3>
                     <p class="text-sm text-gray-500 mt-1">點擊複製 AI 關鍵字並前往 Google Keyword Planner。</p>
                   </div>
-                  <button type="button" id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white font-semibold py-2.5 px-5 rounded-xl shadow-sm transition flex items-center w-full justify-center">
-                    <span class="material-icons text-[18px] mr-1">content_copy</span> 複製並開啟
+                  <button type="button" id="copyGKPBtn" onclick="copyAndOpenGKP()" class="bg-[#0071e3] hover:bg-[#005bb5] text-white py-2.5 px-5 rounded-xl shadow-sm transition flex items-center justify-center w-full" title="複製並開啟 GKP">
+                    <span class="material-icons text-[24px]">content_copy</span>
                   </button>
                 </div>
                 <div class="mb-8 flex flex-col">
@@ -553,7 +545,7 @@
             <div id="step6" class="step-section hidden ios-card p-6 md:p-8 mb-8 flex flex-col">
               <div class="flex flex-col border-b border-gray-100 pb-4 mb-6 gap-3">
                 <h2 class="text-2xl font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-gray-400">looks_6</span> 專屬文章</h2>
-                <button type="button" onclick="copyContent('finalContent')" class="text-sm bg-gray-100 text-gray-800 px-4 py-3 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center justify-center w-full"><span class="material-icons text-[18px] mr-1">copy_all</span> 一鍵複製</button>
+                <button type="button" onclick="copyContent('finalContent')" class="text-sm bg-gray-100 text-gray-800 p-3 rounded-lg hover:bg-gray-200 transition flex items-center justify-center w-full" title="一鍵複製"><span class="material-icons text-[24px]">copy_all</span></button>
               </div>
               <div id="finalContent" contenteditable="true" class="prose prose-lg max-w-none text-gray-800 bg-slate-50 p-8 rounded-2xl border border-gray-200 vocus-reading outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"></div>
               <button type="button" id="nextTo7" onclick="goStep(7)" class="hidden w-full mt-8 bg-gray-100 text-gray-800 font-semibold py-4 rounded-xl hover:bg-gray-200 transition flex items-center justify-center">確認文章，進入 Step 7 產出社群圖文 <span class="material-icons text-[18px] ml-1">arrow_forward</span></button>
@@ -579,14 +571,14 @@
                 <div class="flex flex-col">
                   <div class="flex flex-col border-b border-gray-100 pb-3 mb-4 gap-3">
                     <h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-blue-500">article</span> 社群貼文</h3>
-                    <button type="button" onclick="copyContent('socialPostContent')" class="text-xs bg-gray-100 text-gray-800 px-3 py-2 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center justify-center w-full"><span class="material-icons text-[16px] mr-1">content_copy</span> 複製貼文</button>
+                    <button type="button" onclick="copyContent('socialPostContent')" class="bg-gray-100 text-gray-800 p-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center w-full" title="複製貼文"><span class="material-icons text-[24px]">content_copy</span></button>
                   </div>
                   <div id="socialPostContent" contenteditable="true" class="prose max-w-none text-gray-800 bg-slate-50 p-6 rounded-xl border border-gray-200 vocus-reading outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"></div>
                 </div>
                 <div class="flex flex-col">
                   <div class="flex flex-col border-b border-gray-100 pb-3 mb-4 gap-3">
                     <h3 class="text-lg font-bold text-gray-900 flex items-center"><span class="material-icons mr-2 text-green-500">image</span> 10頁輪播圖 Prompts</h3>
-                    <button type="button" onclick="copyContent('imagePromptsContent')" class="text-xs bg-gray-100 text-gray-800 px-3 py-2 rounded-lg font-semibold hover:bg-gray-200 transition flex items-center justify-center w-full"><span class="material-icons text-[16px] mr-1">content_copy</span> 複製 Prompts</button>
+                    <button type="button" onclick="copyContent('imagePromptsContent')" class="bg-gray-100 text-gray-800 p-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center w-full" title="複製 Prompts"><span class="material-icons text-[24px]">content_copy</span></button>
                   </div>
                   <textarea id="imagePromptsContent" class="input-ios h-80 text-sm leading-relaxed"></textarea>
                 </div>
@@ -622,7 +614,6 @@
     lucide.createIcons();
     marked.setOptions({ breaks: true, gfm: true });
     
-    // 這裡請務必確認為最新部署的網址
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzlWfI7ESL0syec7gQ5p-XIdF0R_5N2gDVBE0Spjygtj9P8exVWlZs3oKYAZ9l658-y/exec';
     
     let currentUser = JSON.parse(localStorage.getItem('sys_user') || 'null');
@@ -653,7 +644,7 @@
     function setBtnLoading(btn, text) {
       if(!btn) return;
       btn.dataset.originalText = btn.innerHTML;
-      btn.innerHTML = `<span class="material-icons animate-spin text-[20px] mr-2">sync</span> ${text}`;
+      btn.innerHTML = text ? `<span class="material-icons animate-spin text-[20px] mr-2">sync</span> ${text}` : `<span class="material-icons animate-spin text-[20px]">sync</span>`;
       btn.disabled = true;
     }
     
@@ -671,7 +662,7 @@
 
     const tabs = [
       { id: 'profile', name: '會員專區', icon: 'user' },
-      { id: 'settings', name: '智能設定', icon: 'bot' },
+      { id: 'settings', name: '智能客服', icon: 'bot' },
       { id: 'knowledge', name: '老闆智庫', icon: 'database' },
       { id: 'marketing', name: '營銷文章', icon: 'pen-tool' },
       { id: 'ecard', name: '電子名片', icon: 'credit-card' }
@@ -680,21 +671,12 @@
     if (currentUser) enterSystem();
 
     async function apiCall(action, data, btnContext = null) {
-      // 1. 確保 data 是物件，避免意外報錯
       data = data || {};
 
-      // 2. 帶入 Gemini Key (若有)
-      const geminiInput = document.getElementById('set_GEMINI_API_KEY');
-      data.geminiKey = geminiInput ? geminiInput.value : '';
-
-      // 3. 【終極防護機制】
-      // 只有在 data 裡面「沒有」 email，且 currentUser 存在時，才去撈取快取。
-      // 這樣可以保證我們在「登入驗證」時傳入的 email 絕對不會被蓋掉！
       if (!data.email && currentUser && currentUser.email) {
         data.email = currentUser.email;
       }
 
-      // 🌟 [除錯監視器]：在 Console 印出我們到底送了什麼資料給伺服器
       console.log(`[🚀 送出請求] 動作: ${action}`, data);
 
       try {
@@ -705,14 +687,11 @@
         });
         
         const json = await res.json();
-        
-        // 🌟 [除錯監視器]：在 Console 印出伺服器回傳了什麼
         console.log(`[📥 伺服器回應] 動作: ${action}`, json);
 
         if (json.status === 'success') {
           return json.data || json;
         }
-        
         throw new Error(json.message || json.error || "未知錯誤");
       } catch (err) {
         throw err; 
@@ -748,22 +727,17 @@
       const otp = document.getElementById('authOTP').value.trim();
       if (!otp) return showSysToast("請輸入驗證碼", "error");
 
-      // 防止使用者因為網路延遲而連續點擊按鈕
       if (btn.disabled) return; 
 
       setBtnLoading(btn, "驗證中...");
       try {
-        // apiCall 已經回傳了脫殼後的使用者資料
         const res = await apiCall("verifyOTP", { email: email, otp: otp });
         
-        // 修正：直接判斷 res 是否有資料即可，不要再用 res.data
         if(res) {
-          currentUser = res; // 修正：直接賦值 res
+          currentUser = res; 
           localStorage.setItem('sys_user', JSON.stringify(currentUser));
           processLoginData(currentUser);
           showSysToast("登入成功，已載入雲端資料。", "success");
-          
-          // 呼叫進入系統畫面的函式
           enterSystem(); 
         }
       } catch(e) {
@@ -822,11 +796,11 @@
       document.getElementById('view-main').style.display = 'block';
       
       document.getElementById('ui-mid').innerText = currentUser.memberId;
-      // 🌟 [新增] 將會員代碼填入畫面
       document.getElementById('ui-mcode').innerText = currentUser.memberCode || "-";
       
-      document.getElementById('ui-webhook').innerText = `${GAS_API_URL}?mid=${currentUser.memberId}`;
-      
+      const webhookUrl = `${GAS_API_URL}?mid=${currentUser.memberId}`;
+      document.getElementById('ui-webhook').innerText = webhookUrl;
+      document.getElementById('set_LINE_Webhook網址').value = webhookUrl;
       
       if(!document.getElementById('prf_姓名').value) document.getElementById('prf_姓名').value = currentUser.name || "";
       if(!document.getElementById('prf_電話').value) document.getElementById('prf_電話').value = currentUser.phone || "";
@@ -835,46 +809,65 @@
       if(!document.getElementById('prf_註冊系統用途').value) document.getElementById('prf_註冊系統用途').value = currentUser.purpose || "";
       if(currentUser.ecardUrl) document.getElementById('ecard_WebhookUrl').value = currentUser.ecardUrl;
 
+      renderApiKeys(currentUser.apiKeys || []);
+
       renderNav();
       restoreCsJSON();
       fetchBossFeed();
 
-      // [新增] 進入系統後，觸發背景同步，撈取最新雲端資料
       syncCurrentUserData();
     }
 
-    // 🌟 [新增] 複製會員代碼的函式
+    let apiKeyCount = 0;
+    function renderApiKeys(keysArray) {
+      const container = document.getElementById('apiKeyContainer');
+      container.innerHTML = '';
+      apiKeyCount = 0;
+      keysArray.forEach((key, idx) => {
+        if (key || idx === 0) {
+          addApiKeyField(key);
+        }
+      });
+      if (apiKeyCount === 0) addApiKeyField();
+    }
+
+    function addApiKeyField(val = '') {
+      if (apiKeyCount >= 10) return showSysToast("最多只能新增10組 API KEY", "warn");
+      apiKeyCount++;
+      const div = document.createElement('div');
+      div.className = "flex gap-2 items-center bg-white p-2 rounded-xl border border-slate-100 shadow-sm";
+      div.innerHTML = `
+        <span class="font-bold text-slate-400 text-xs w-6 text-center">${apiKeyCount}.</span>
+        <input type="password" id="prf_API_KEY_${apiKeyCount}" class="input-ios flex-1 !p-2 !border-none !bg-transparent" placeholder="請貼上 API Key" value="${val}">
+      `;
+      document.getElementById('apiKeyContainer').appendChild(div);
+    }
+
     function copyMemberCode() {
       const codeText = document.getElementById('ui-mcode').innerText;
-      
-      // 確保有代碼才可以複製
       if (codeText && codeText !== "-") {
         navigator.clipboard.writeText(codeText).then(() => {
-          // 利用你原本寫好的漂亮 Toast 元件顯示成功訊息
-          showSysToast("會員代碼已成功複製到剪貼簿！", "success");
-        }).catch(err => {
-          console.error('複製失敗:', err);
-          showSysToast("複製失敗，請手動選取複製", "error");
-        });
+          showSysToast("代碼已複製！", "success");
+        }).catch(err => showSysToast("複製失敗", "error"));
       }
     }
 
-    // [新增] 背景同步函式
+    function copyWebhook() {
+      const codeText = document.getElementById('ui-webhook').innerText;
+      if (codeText) {
+        navigator.clipboard.writeText(codeText).then(() => showSysToast("Webhook 已複製！", "success"));
+      }
+    }
+
     async function syncCurrentUserData() {
       if (!currentUser || !currentUser.email) return;
       try {
-        // 向 GAS 請求該信箱最新的所有資料（包含設定檔、名片網址等）
         const freshData = await apiCall("syncUserData", { email: currentUser.email });
-        
         if (freshData) {
-          // 覆寫本地快取
           currentUser = freshData;
           localStorage.setItem('sys_user', JSON.stringify(currentUser));
-          
-          // 重新載入設定與環境
           processLoginData(currentUser);
           
-          // 更新 UI 面板上的個人資料
           document.getElementById('prf_姓名').value = currentUser.name || "";
           document.getElementById('prf_電話').value = currentUser.phone || "";
           document.getElementById('prf_專業/產業別').value = currentUser.industry || "";
@@ -882,12 +875,10 @@
           document.getElementById('prf_註冊系統用途').value = currentUser.purpose || "";
           if(currentUser.ecardUrl) document.getElementById('ecard_WebhookUrl').value = currentUser.ecardUrl;
           
-          // 可以在 Console 中確認已同步
-          console.log("背景資料同步完成，已確保前端為最新資料！");
+          renderApiKeys(currentUser.apiKeys || []);
+          console.log("背景資料同步完成");
         }
-      } catch(e) {
-        console.warn("背景同步資料失敗", e);
-      }
+      } catch(e) { console.warn("背景同步資料失敗", e); }
     }
 
     function toggleMobileMenu() {
@@ -1220,7 +1211,7 @@
           try {
             const results = await Promise.all([
               apiCall("saveBossChunk", { base64Data: b64, mimeType: mimeType, folderId: recordData.folderId, rowIndex: recordData.rowIndex, chunkIndex: cIndex }),
-              apiCall("recognizeBossChunk", { base64Data: b64, mimeType: mimeType, rowIndex: recordData.rowIndex, chunkIndex: cIndex })
+              apiCall("recognizeBossChunk", { base64Data: b64, mimeType: mimeType, rowIndex: recordData.rowIndex, chunkIndex: cIndex, memberId: currentUser.memberId })
             ]);
             
             addSysLog(results[0]);
@@ -1495,7 +1486,6 @@
 
     async function runGasFunction(actionName, payload) {
       try {
-        payload.geminiKey = document.getElementById('set_GEMINI_API_KEY') ? document.getElementById('set_GEMINI_API_KEY').value : '';
         payload.memberId = currentUser.memberId; 
         let response = await fetch(GAS_API_URL, {
           method: 'POST',
@@ -1611,7 +1601,7 @@
 
     async function saveToDatabase(btn) {
       saveLocal(); 
-      setBtnLoading(btn, '同步中');
+      setBtnLoading(btn, '');
       try {
         state.memberId = currentUser.memberId;
         let res = await runGasFunction('syncDatabase', state);
@@ -1632,7 +1622,7 @@
       let startDate = document.getElementById('searchStart').value;
       let endDate = document.getElementById('searchEnd').value;
       
-      setBtnLoading(btn, "搜尋中");
+      setBtnLoading(btn, '');
       document.getElementById('searchResults').innerHTML = '<p class="text-blue-600 text-center py-10 font-semibold animate-pulse w-full">連線搜尋中...</p>';
       
       try {
@@ -1826,7 +1816,7 @@
     async function selectProposal(index, element) {
       state.proposal = state.proposalsList[index]; saveLocal();
       const btnInDiv = element.querySelector('button');
-      setBtnLoading(btnInDiv, "引導生成中");
+      setBtnLoading(btnInDiv, "");
       try {
         let data = await runGasFunction('step4_Socratic', state);
         document.getElementById('q_saw').innerHTML = `<span class="material-icons text-blue-500 mr-2 mt-0.5 text-[20px]">visibility</span> <span class="leading-relaxed">${data.questions.q_saw}</span>`;
